@@ -424,8 +424,10 @@ export const lmsStorage = {
 
     const attemptCount = await prisma.testResult.count({ where: { userId, testId } });
     const maxAttempts = (test as any).maxAttempts ?? 0;
-    // Urinishlar tugagan bo'lsagina to'g'ri javobni ko'rsatamiz
-    const revealCorrect = maxAttempts > 0 && attemptCount >= maxAttempts;
+    // Foydalanuvchi o'z natijasini ko'rayotganda har doim to'g'ri javobni ko'rsatamiz
+    // (topshirilgan urinishni ko'rish — o'rganish uchun). Cheat himoyasi kerak bo'lsa
+    // admin paneldan maxAttempts bilan boshqariladi, review doim ochiq.
+    const revealCorrect = true;
 
     let answers: Record<string, any> = {};
     try {

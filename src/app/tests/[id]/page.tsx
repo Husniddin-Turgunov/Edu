@@ -68,20 +68,35 @@ export default function TestTakePage() {
   }, []);
 
   const openReview = useCallback(async (resultId?: string) => {
+    if (!id) {
+      setReviewError("Test ID topilmadi");
+      setReviewOpen(true);
+      return;
+    }
     setReviewOpen(true);
     setReviewLoading(true);
     setReviewError(null);
     setReview(null);
     try {
       const qs = resultId ? `?resultId=${encodeURIComponent(resultId)}` : "";
-      const data = await fetch(`/api/tests/${id}/review${qs}`, { cache: "no-store" }).then((r) => r.json());
-      if (!data.ok) {
-        setReviewError(data.error || "Natijani yuklab bo'lmadi");
+      const res = await fetch(`/api/tests/${id}/review${qs}`, { cache: "no-store" });
+      const text = await res.text();
+      let data: any = null;
+      try { data = JSON.parse(text); } catch { data = null; }
+      if (!res.ok || !data?.ok) {
+        // 401 -> sessiya eskirgan
+        if (res.status === 401) {
+          setReviewError("Sessiya eskirgan — qayta kiring");
+        } else if (text && text.trim().startsWith("<")) {
+          setReviewError("Server javobi noto'g'ri — qayta urinib ko'ring");
+        } else {
+          setReviewError(data?.error || `Xato ${res.status}: Natijani yuklab bo'lmadi`);
+        }
       } else {
         setReview(data.review);
       }
     } catch {
-      setReviewError("Tarmoq xatosi");
+      setReviewError("Tarmoq xatosi — qayta urinib ko'ring");
     } finally {
       setReviewLoading(false);
     }
@@ -621,20 +636,19 @@ export default function TestTakePage() {
                   <RotateCcw className="h-4 w-4" /> Qayta topshirish (random)
                 </button>
               ) : (
-                <>
-                  <span data-testid="retake-blocked" className="rounded-xl bg-neutral-100 px-5 py-2.5 text-sm font-bold text-neutral-500">
-                    Urinishlar tugadi ({maxAttempts}/{maxAttempts})
-                  </span>
-                  <button
-                    type="button"
-                    data-testid="open-review-from-result"
-                    onClick={() => void openReview(result?.id)}
-                    className="flex items-center gap-2 rounded-xl bg-neutral-900 px-5 py-2.5 text-sm font-bold text-white hover:bg-black"
-                  >
-                    <ListChecks className="h-4 w-4" /> Javoblarni ko'rish
-                  </button>
-                </>
+                <span data-testid="retake-blocked" className="rounded-xl bg-neutral-100 px-5 py-2.5 text-sm font-bold text-neutral-500">
+                  Urinishlar tugadi ({maxAttempts}/{maxAttempts})
+                </span>
               )}
+              {/* Topshirilgan testni har doim ko'rish mumkin — urinish bor-yo'qligidan qat'i nazar */}
+              <button
+                type="button"
+                data-testid="open-review-from-result"
+                onClick={() => void openReview(result?.id || history[0]?.id)}
+                className="flex items-center gap-2 rounded-xl bg-neutral-900 px-5 py-2.5 text-sm font-bold text-white hover:bg-black"
+              >
+                <ListChecks className="h-4 w-4" /> {result?.id || history[0]?.id ? "Javoblarni ko'rish" : "Natijani yuklash..."}
+              </button>
               <Link href="/courses" className="flex items-center gap-2 rounded-xl bg-neutral-900 px-5 py-2.5 text-sm font-bold text-white">
                 Kurslarga qaytish <Trophy className="h-4 w-4" />
               </Link>
