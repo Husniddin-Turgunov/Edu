@@ -79,12 +79,11 @@ export default function TestTakePage() {
     setReview(null);
     try {
       const qs = resultId ? `?resultId=${encodeURIComponent(resultId)}` : "";
-      const res = await fetch(`/api/tests/${id}/review${qs}`, { cache: "no-store" });
+      const res = await fetch(`/api/tests/${id}/review${qs}`, { cache: "no-store", credentials: "include" });
       const text = await res.text();
       let data: any = null;
       try { data = JSON.parse(text); } catch { data = null; }
       if (!res.ok || !data?.ok) {
-        // 401 -> sessiya eskirgan
         if (res.status === 401) {
           setReviewError("Sessiya eskirgan — qayta kiring");
         } else if (text && text.trim().startsWith("<")) {
@@ -188,6 +187,8 @@ export default function TestTakePage() {
       setSubmitted(true);
       setTimeLeft(null);
       await loadHistory();
+      // Natijani majburiy ko'rsatish — test tugaganda darhol review ochiladi
+      setTimeout(() => { void openReview(data.result?.id); }, 450);
       if (data.result?.passed) {
         try {
           const confetti = (await import("canvas-confetti")).default;
@@ -337,6 +338,76 @@ export default function TestTakePage() {
             </div>
           </div>
         </div>
+
+        {/* Review modal — blocked ekranda ham majburiy */}
+        <AnimatePresence>
+          {reviewOpen && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 z-50 bg-black/50 px-4 py-8 backdrop-blur-sm"
+              onClick={() => setReviewOpen(false)}
+              data-testid="review-overlay"
+            >
+              <motion.div
+                initial={{ scale: 0.96, y: 16 }}
+                animate={{ scale: 1, y: 0 }}
+                exit={{ scale: 0.96, y: 16 }}
+                onClick={(e) => e.stopPropagation()}
+                className="mx-auto flex max-h-[calc(100dvh-4rem)] w-full max-w-3xl flex-col overflow-hidden rounded-3xl bg-white shadow-2xl"
+                data-testid="review-panel"
+              >
+                <div className="flex shrink-0 items-start gap-3 border-b border-neutral-100 px-5 py-4 sm:px-6">
+                  <div className="min-w-0 flex-1">
+                    <h2 className="truncate text-base font-black text-neutral-900 sm:text-lg">
+                      {review?.test?.title || "Natijani ko'rish"}
+                    </h2>
+                    {review?.result && (
+                      <p className="mt-0.5 text-xs text-neutral-500" data-testid="review-meta">
+                        Ball: {review.result.score ?? 0}% · {review.result.completedAt ? new Date(review.result.completedAt).toLocaleString() : ""} · to'g'ri javoblar ochiq
+                      </p>
+                    )}
+                  </div>
+                  <button type="button" data-testid="review-close" onClick={() => setReviewOpen(false)} className="shrink-0 rounded-xl border bg-white px-3 py-1.5 text-sm font-bold text-neutral-700 hover:bg-neutral-50">Yopish</button>
+                </div>
+                <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-5 py-4 sm:px-6" data-testid="review-scroll" style={{ maxHeight: "calc(100dvh - 10rem)" }}>
+                  {reviewLoading && <div className="grid place-items-center py-12" data-testid="review-loading"><Loader2 className="h-8 w-8 animate-spin text-violet-600" /></div>}
+                  {reviewError && <p className="rounded-xl bg-rose-50 px-4 py-3 text-sm font-semibold text-rose-700" data-testid="review-error">{reviewError}</p>}
+                  {review && !reviewLoading && (
+                    <div className="space-y-4" data-testid="review-questions">
+                      {review.questions.map((q: any, qi: number) => {
+                        const selected = q.selected;
+                        const selectedArr = Array.isArray(selected) ? selected : selected != null && selected !== "" ? [selected] : [];
+                        return (
+                          <div key={q.id} data-testid="review-question" className="rounded-2xl border border-neutral-200 bg-white p-4 ring-1 ring-neutral-100">
+                            <div className="mb-3 flex items-start gap-2.5"><span className="mt-0.5 grid h-7 w-7 shrink-0 place-items-center rounded-full bg-violet-600 text-xs font-bold text-white">{qi + 1}</span><p className="text-sm font-bold leading-snug text-neutral-900 sm:text-base">{q.text}</p></div>
+                            {q.type === "written" ? (
+                              <div className="space-y-2"><div className="rounded-xl bg-neutral-50 p-3"><p className="text-[11px] font-bold uppercase tracking-wide text-neutral-400">Sizning javobingiz</p><p className="mt-1 whitespace-pre-wrap text-sm text-neutral-800" data-testid="review-written-answer">{typeof selected === "string" && selected ? selected : "—"}</p></div>{q.correctAnswer && <div className="rounded-xl bg-emerald-50 p-3 ring-1 ring-emerald-200"><p className="text-[11px] font-bold uppercase tracking-wide text-emerald-600">To'g'ri javob</p><p className="mt-1 whitespace-pre-wrap text-sm text-emerald-900">{q.correctAnswer}</p></div>}</div>
+                            ) : (
+                              <div className="space-y-2">
+                                {q.choices.map((c: any) => {
+                                  const isSelected = selectedArr.includes(c.id);
+                                  const isCorrect = !!c.isCorrect;
+                                  let tone = "border-neutral-200 bg-white text-neutral-800";
+                                  if (isCorrect && isSelected) tone = "border-emerald-500 bg-emerald-50 text-emerald-900 ring-1 ring-emerald-400";
+                                  else if (isCorrect) tone = "border-emerald-400 bg-emerald-50 text-emerald-900";
+                                  else if (isSelected) tone = "border-rose-400 bg-rose-50 text-rose-900 ring-1 ring-rose-300";
+                                  return <div key={c.id} data-testid="review-choice" data-selected={isSelected ? "1" : "0"} data-correct={isCorrect ? "1" : "0"} className={`flex items-start gap-2.5 rounded-xl border p-3 text-sm ${tone}`}><span className="mt-0.5 grid h-6 w-6 shrink-0 place-items-center rounded-full border border-current/30 text-[11px] font-black opacity-80">{c.order !== undefined ? String.fromCharCode(65 + c.order) : "•"}</span><span className="flex-1 font-medium">{c.text}</span>{isSelected && <span className="shrink-0 rounded-md bg-white/80 px-1.5 py-0.5 text-[10px] font-black uppercase" data-testid="badge-selected">Siz</span>}{isCorrect && <span className="shrink-0 rounded-md bg-emerald-600 px-1.5 py-0.5 text-[10px] font-black uppercase text-white" data-testid="badge-correct">To'g'ri</span>}</div>;
+                                })}
+                              </div>
+                            )}
+                            {q.explanation && <p className="mt-3 rounded-xl bg-indigo-50 px-3 py-2 text-xs leading-relaxed text-indigo-900">{q.explanation}</p>}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+              </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </main>
     );
   }
