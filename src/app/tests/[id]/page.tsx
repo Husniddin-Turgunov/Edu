@@ -386,14 +386,29 @@ export default function TestTakePage() {
                               <div className="space-y-2"><div className="rounded-xl bg-neutral-50 p-3"><p className="text-[11px] font-bold uppercase tracking-wide text-neutral-400">Sizning javobingiz</p><p className="mt-1 whitespace-pre-wrap text-sm text-neutral-800" data-testid="review-written-answer">{typeof selected === "string" && selected ? selected : "—"}</p></div>{q.correctAnswer && <div className="rounded-xl bg-emerald-50 p-3 ring-1 ring-emerald-200"><p className="text-[11px] font-bold uppercase tracking-wide text-emerald-600">To'g'ri javob</p><p className="mt-1 whitespace-pre-wrap text-sm text-emerald-900">{q.correctAnswer}</p></div>}</div>
                             ) : (
                               <div className="space-y-2">
+                                {(() => {
+                                  const isAnswered = selectedArr.length > 0;
+                                  const selectedTexts = selectedArr.map((sid: string) => q.choices.find((x: any) => x.id === sid)?.text).filter(Boolean) as string[];
+                                  const correctTexts = q.choices.filter((x: any) => x.isCorrect).map((x: any) => x.text) as string[];
+                                  const isCorrectSelected = isAnswered && selectedArr.some((sid: string) => q.choices.find((x: any) => x.id === sid)?.isCorrect);
+                                  return isAnswered ? (
+                                    isCorrectSelected ? (
+                                      <p className="rounded-lg bg-emerald-100 px-3 py-2 text-xs font-bold text-emerald-800">✅ To'g'ri — Siz: {selectedTexts.join(", ")}</p>
+                                    ) : (
+                                      <p className="rounded-lg bg-rose-100 px-3 py-2 text-xs font-bold text-rose-800">❌ Noto'g'ri — Siz: {selectedTexts.join(", ") || String(selected)} · To'g'ri: {correctTexts.join(", ") || "—"}</p>
+                                    )
+                                  ) : (
+                                    <p className="rounded-lg bg-amber-50 px-3 py-2 text-xs font-bold text-amber-800">⚠️ Javob berilmagan · To'g'ri: {correctTexts.join(", ")}</p>
+                                  );
+                                })()}
                                 {q.choices.map((c: any) => {
                                   const isSelected = selectedArr.includes(c.id);
                                   const isCorrect = !!c.isCorrect;
                                   let tone = "border-neutral-200 bg-white text-neutral-800";
-                                  if (isCorrect && isSelected) tone = "border-emerald-500 bg-emerald-50 text-emerald-900 ring-1 ring-emerald-400";
-                                  else if (isCorrect) tone = "border-emerald-400 bg-emerald-50 text-emerald-900";
-                                  else if (isSelected) tone = "border-rose-400 bg-rose-50 text-rose-900 ring-1 ring-rose-300";
-                                  return <div key={c.id} data-testid="review-choice" data-selected={isSelected ? "1" : "0"} data-correct={isCorrect ? "1" : "0"} className={`flex items-start gap-2.5 rounded-xl border p-3 text-sm ${tone}`}><span className="mt-0.5 grid h-6 w-6 shrink-0 place-items-center rounded-full border border-current/30 text-[11px] font-black opacity-80">{c.order !== undefined ? String.fromCharCode(65 + c.order) : "•"}</span><span className="flex-1 font-medium">{c.text}</span>{isSelected && <span className="shrink-0 rounded-md bg-white/80 px-1.5 py-0.5 text-[10px] font-black uppercase" data-testid="badge-selected">Siz</span>}{isCorrect && <span className="shrink-0 rounded-md bg-emerald-600 px-1.5 py-0.5 text-[10px] font-black uppercase text-white" data-testid="badge-correct">To'g'ri</span>}</div>;
+                                  if (isCorrect && isSelected) tone = "border-emerald-500 bg-emerald-100 text-emerald-900 ring-2 ring-emerald-500";
+                                  else if (isCorrect) tone = "border-emerald-500 bg-emerald-50 text-emerald-900 ring-1 ring-emerald-400";
+                                  else if (isSelected) tone = "border-rose-500 bg-rose-100 text-rose-900 ring-2 ring-rose-500";
+                                  return <div key={c.id} data-testid="review-choice" data-selected={isSelected ? "1" : "0"} data-correct={isCorrect ? "1" : "0"} className={`flex items-start gap-2.5 rounded-xl border p-3 text-sm ${tone}`}><span className="mt-0.5 grid h-6 w-6 shrink-0 place-items-center rounded-full border border-current/30 text-[11px] font-black opacity-80">{c.order !== undefined ? String.fromCharCode(65 + c.order) : "•"}</span><span className="flex-1 font-medium">{c.text}</span>{isSelected && <span className={`shrink-0 rounded-md px-1.5 py-0.5 text-[10px] font-black uppercase ${isCorrect ? "bg-emerald-600 text-white" : "bg-rose-600 text-white"}`} data-testid="badge-selected">Siz</span>}{isCorrect && <span className="shrink-0 rounded-md bg-emerald-600 px-1.5 py-0.5 text-[10px] font-black uppercase text-white" data-testid="badge-correct">To'g'ri</span>}</div>;
                                 })}
                               </div>
                             )}
@@ -846,13 +861,28 @@ export default function TestTakePage() {
                             </div>
                           ) : (
                             <div className="space-y-2">
+                              {(() => {
+                                const isAnswered = selectedArr.length > 0;
+                                const selectedTexts = selectedArr.map((sid: string) => q.choices.find((x: any) => x.id === sid)?.text).filter(Boolean) as string[];
+                                const correctTexts = q.choices.filter((x: any) => x.isCorrect).map((x: any) => x.text) as string[];
+                                const isCorrectSelected = isAnswered && selectedArr.some((sid: string) => q.choices.find((x: any) => x.id === sid)?.isCorrect);
+                                return isAnswered ? (
+                                  isCorrectSelected ? (
+                                    <p className="rounded-lg bg-emerald-100 px-3 py-2 text-xs font-bold text-emerald-800">✅ To'g'ri — Siz: {selectedTexts.join(", ")}</p>
+                                  ) : (
+                                    <p className="rounded-lg bg-rose-100 px-3 py-2 text-xs font-bold text-rose-800">❌ Noto'g'ri — Siz: {selectedTexts.join(", ") || String(selected)} · To'g'ri: {correctTexts.join(", ") || "—"}</p>
+                                  )
+                                ) : (
+                                  <p className="rounded-lg bg-amber-50 px-3 py-2 text-xs font-bold text-amber-800">⚠️ Javob berilmagan · To'g'ri: {correctTexts.join(", ")}</p>
+                                );
+                              })()}
                               {q.choices.map((c: any) => {
                                 const isSelected = selectedArr.includes(c.id);
-                                const isCorrect = review.revealCorrect && c.isCorrect;
+                                const isCorrect = !!c.isCorrect;
                                 let tone = "border-neutral-200 bg-white text-neutral-800";
-                                if (isCorrect && isSelected) tone = "border-emerald-500 bg-emerald-50 text-emerald-900 ring-1 ring-emerald-400";
-                                else if (isCorrect) tone = "border-emerald-400 bg-emerald-50 text-emerald-900";
-                                else if (isSelected) tone = "border-rose-400 bg-rose-50 text-rose-900 ring-1 ring-rose-300";
+                                if (isCorrect && isSelected) tone = "border-emerald-500 bg-emerald-100 text-emerald-900 ring-2 ring-emerald-500";
+                                else if (isCorrect) tone = "border-emerald-500 bg-emerald-50 text-emerald-900 ring-1 ring-emerald-400";
+                                else if (isSelected) tone = "border-rose-500 bg-rose-100 text-rose-900 ring-2 ring-rose-500";
                                 return (
                                   <div
                                     key={c.id}
@@ -866,7 +896,10 @@ export default function TestTakePage() {
                                     </span>
                                     <span className="flex-1 font-medium">{c.text}</span>
                                     {isSelected && (
-                                      <span className="shrink-0 rounded-md bg-white/80 px-1.5 py-0.5 text-[10px] font-black uppercase" data-testid="badge-selected">
+                                      <span
+                                        className={`shrink-0 rounded-md px-1.5 py-0.5 text-[10px] font-black uppercase ${isCorrect ? "bg-emerald-600 text-white" : "bg-rose-600 text-white"}`}
+                                        data-testid="badge-selected"
+                                      >
                                         Siz
                                       </span>
                                     )}
@@ -878,11 +911,6 @@ export default function TestTakePage() {
                                   </div>
                                 );
                               })}
-                              {!review.revealCorrect && (
-                                <p className="text-[11px] font-semibold text-neutral-400">
-                                  To'g'ri javoblar urinishlar tugagach ochiladi
-                                </p>
-                              )}
                             </div>
                           )}
 
