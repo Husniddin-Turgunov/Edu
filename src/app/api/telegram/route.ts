@@ -49,7 +49,56 @@ function mainMenu(): InlineButton[][] {
   ];
 }
 
+/**
+ * Eski (avvalgi versiyada yuborilgan) doimiy reply-klaviatura mijozda saqlanib
+ * qoladi va uni bosganda oddiy MATN keladi (callback emas). Shu matnlarni
+ * bo'limlarga aylantiramiz, klaviaturani esa bir marta olib tashlaymiz.
+ */
+const keyboardCleaned = new Set<number>();
+
+async function ensureNoOldKeyboard(chatId: number) {
+  if (!chatId || keyboardCleaned.has(chatId)) return;
+  keyboardCleaned.add(chatId);
+  try {
+    await sendMessage(chatId, "⌨️ Klaviatura yangilandi — barcha tugmalar endi xabar ichida.", {
+      reply_markup: { remove_keyboard: true },
+    });
+  } catch {
+    /* muhim emas */
+  }
+}
+
+/** Matn (tugma yozuvi yoki /buyruq) ni menyu bo'limiga aylantiradi */
+function sectionFromText(text: string): string | null {
+  const key = String(text || "")
+    .replace(/[^\p{L}\p{N}]+/gu, "")
+    .toLowerCase();
+  const map: Record<string, string> = {
+    statistika: "stats",
+    статистика: "stats",
+    foydalanuvchilar: "users",
+    пользователи: "users",
+    kutilayotgan: "pending",
+    ожидают: "pending",
+    testlar: "tests",
+    тесты: "tests",
+    yordam: "help",
+    помощь: "help",
+    yangilash: "refresh",
+    menyu: "home",
+    бошменю: "home",
+  };
+  return map[key] || null;
+}
+
+/** Bo'limni matn + inline tugmalar bilan yuborish */
+async function sendSection(chatId: number, section: string) {
+  const { text, buttons } = await menuSection(section);
+  await sendMessage(chatId, text, { reply_markup: buttons });
+}
+
 const HELP_TEXT = [
+  "ℹ️ <b>AKELA GROUP bot — yordam</b>",
   "ℹ️ <b>AKELA GROUP bot — yordam</b>",
   "",
   "Barcha bo'limlar pastdagi <b>tugmalar</b> orqali ochiladi:",
@@ -152,6 +201,8 @@ async function pendingSection(): Promise<{ text: string; buttons: InlineButton[]
     },
     { text: "❌ Rad etish", callback_data: `reject:${u.id}` },
   ]);
+  // Har doim asosiy menyuga qaytish tugmasi bo'lsin
+  buttons.push([{ text: "⬅️ Asosiy menyu", callback_data: "menu:home" }]);
   return { text: lines.join("\n"), buttons };
 }
 
@@ -186,6 +237,7 @@ async function menuSection(section: string): Promise<{ text: string; buttons: In
       return { text: await testsText(), buttons: mainMenu() };
     case "help":
       return { text: HELP_TEXT, buttons: mainMenu() };
+    case "home":
     case "refresh":
     default:
       return { text: await statsText(), buttons: mainMenu() };
@@ -307,8 +359,28 @@ async function handleMessage(msg: any) {
 
   if (!text) return;
 
+  // Eski reply-klaviatura tugmalari ("📊 Statistika" kabi) yoki erkin matn
+  if (!text.startsWith("/")) {
+    await ensureNoOldKeyboard(chatId);
+    const section = sectionFromText(text);
+    if (section) {
+      await sendSection(chatId, section);
+      return;
+    }
+    // Tushunilmagan matn — baribir inline menyu bilan javob qaytaramiz
+    const { text: menuText, buttons } = await menuSection("home");
+    await sendMessage(
+      chatId,
+      `${menuText}\n\n❓ "<b>${escapeHtml(text)}</b>" tushunilmadi. Pastdagi tugmalardan foydalaning.`,
+      { reply_markup: buttons },
+    );
+    return;
+  }
+
   // /start — inline klaviyatura (DOM menyusi) bilan, hamma buyruqlar shu tugmalardan
   if (text.startsWith("/start")) {
+    // Eski doimiy (reply) klaviatura bo'lsa — uni olib tashlaymiz
+    await ensureNoOldKeyboard(chatId);
     const total = await subscriberCount();
     await sendMessage(
       chatId,
@@ -460,7 +532,14 @@ async function handleCallbackQuery(cq: any) {
     await answerCallbackQuery(cq.id);
     if (chatId && messageId) {
       const { text, buttons } = await menuSection(section);
-      await editMessageText(chatId, messageId, text, { parse_mode: "HTML", reply_markup: buttons });
+      const edited: any = await editMessageText(chatId, messageId, text, {
+        parse_mode: "HTML",
+        reply_markup: buttons,
+      });
+      // Tahrirlash imkoni bo'lmasa (juda eski xabar va h.k.) — yangi xabar yuboramiz
+      if (!edited?.ok && !String(edited?.description || "").includes("not modified")) {
+        await sendMessage(chatId, text, { reply_markup: buttons });
+      }
     }
     return;
   }
