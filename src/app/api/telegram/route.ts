@@ -91,10 +91,10 @@ function sectionFromText(text: string): string | null {
   return map[key] || null;
 }
 
-/** Bo'limni matn + inline tugmalar bilan yuborish */
+/** Bo'limni matn + inline tugmalar bilan yuborish (yuborilganini qaytaradi) */
 async function sendSection(chatId: number, section: string) {
   const { text, buttons } = await menuSection(section);
-  await sendMessage(chatId, text, { reply_markup: buttons });
+  return sendMessage(chatId, text, { reply_markup: buttons });
 }
 
 const HELP_TEXT = [
@@ -364,16 +364,18 @@ async function handleMessage(msg: any) {
     await ensureNoOldKeyboard(chatId);
     const section = sectionFromText(text);
     if (section) {
-      await sendSection(chatId, section);
+      const sent: any = await sendSection(chatId, section);
+      console.log("[telegram] text->section", JSON.stringify({ text, section, sent: sent?.ok }));
       return;
     }
     // Tushunilmagan matn — baribir inline menyu bilan javob qaytaramiz
     const { text: menuText, buttons } = await menuSection("home");
-    await sendMessage(
+    const sent: any = await sendMessage(
       chatId,
       `${menuText}\n\n❓ "<b>${escapeHtml(text)}</b>" tushunilmadi. Pastdagi tugmalardan foydalaning.`,
       { reply_markup: buttons },
     );
+    console.log("[telegram] text->menu(home)", JSON.stringify({ text, sent: sent?.ok }));
     return;
   }
 
@@ -540,6 +542,10 @@ async function handleCallbackQuery(cq: any) {
       if (!edited?.ok && !String(edited?.description || "").includes("not modified")) {
         await sendMessage(chatId, text, { reply_markup: buttons });
       }
+      console.log(
+        "[telegram] callback->menu",
+        JSON.stringify({ data, edited: edited?.ok, desc: edited?.description }),
+      );
     }
     return;
   }
