@@ -7,7 +7,7 @@
 export type Locale = "uz" | "ru" | "en";
 
 export type OnboardingStep = {
-  id: "welcome" | "history" | "about" | "structure" | "rules";
+  id: "welcome" | "history" | "about" | "structure" | "leadership" | "timeline" | "rules";
   index: number;
   icon: string; // lucide icon name
   title: string;
@@ -23,40 +23,42 @@ export const ONBOARDING_STEPS: Record<Locale, OnboardingStep[]> = {
       id: "welcome",
       index: 0,
       icon: "Sparkles",
-      title: "AKELA GROUPga xush kelibsiz",
-      body: "Ishni boshlashdan oldin kompaniya, uning tuzilmasi va qoidalari bilan tanishing. Bu besh qadamlik yo'l sizga jamoaga tezroq moslashishga yordam beradi.",
+      title: "AKELA GROUP MACHINERYga xush kelibsiz",
+      body: "Sizni «AKELA GROUP MACHINERY» MChJ oilasiga qo'shilayotganingiz bilan chin dildan tabriklaymiz. Kompaniya 2004 yilda tashkil etilgan bo'lib, sanoat uskunalarini yetkazib berish, servis xizmati va texnik qo'llab-quvvatlash sohasida faoliyat yuritadi. Bugungi kunda kompaniya 100 dan ortiq xodim bilan ishlaydi va xalqaro hamkorlikni rivojlantirishda davom etmoqda. Ushbu 7 qadam sizga tez va to'g'ri moslashishga yordam beradi.",
       points: [
-        "Barcha besh qadamni tartib bilan o'ting.",
-        "Yakunlangandan keyin materiallar bosh sahifada qoladi.",
-        "Keyin o'qish, testlar va kunlik hisobotlar ochiladi.",
+        "Kompaniya tarixi, qadriyatlari va tashkiliy tuzilmasi bilan tanishing",
+        "Xodimlarning huquq va majburiyatlari, ish tartibi va axloq qoidalarini o'rganing",
+        "Birinchi ish kuningiz uchun tayyor bo'ling: HRga murojaat, hujjatlar, tizimga kirish",
       ],
-      accentFrom: "from-emerald-500/30",
+      accentFrom: "from-indigo-500/30",
       accentTo: "to-amber-300/20",
     },
     {
       id: "history",
       index: 1,
       icon: "BookOpen",
-      title: "Kompaniya tarixi",
-      body: "AKELA GROUP ish, ta'lim va natija uchun javobgarlik standartlarini rivojlantiruvchi kompaniya. Biz bir necha yo'nalishlarda faol bo'lib, jamoani doimiy o'sishga olib boramiz.",
+      title: "Kompaniya tarixi va qadriyatlari",
+      body: "2004 yilda AKELA GROUP brendi tashkil etildi va sanoat uskunalarini yetkazib berish faoliyati boshlandi. 2015 yilda AKELA GROUP MACHINERY MChJ davlat ro'yxatidan o'tkazildi. 2016–2020 yillarda poligrafiya, qadoqlash, metall, yog'och, oziq-ovqat, farmatsevtika sanoat tarmoqlari uchun uskunalar yetkazib berish yo'lga qo'yildi. 2021 yildan beri xalqaro hamkorlik rivojlantirilib, servis xizmati kuchaytirildi.",
       points: [
-        "Kompaniya yo'nalishlar va professional jamoalarni rivojlantirish orqali o'sdi.",
-        "Tajriba jarayonlar, yo'riqnomalar va o'quv materiallarida saqlanadi.",
-        "Har bir yangi xodim yagona moslashuv yo'lidan o'tadi.",
+        "Mijozlar, xodimlar, halollik, sifat va hamkorlik — asosiy qadriyatlarimiz",
+        "Inson — eng katta boylik va taraqqiyotimizning asosi",
+        "Tajriba jarayonlar, yo'riqnomalar va o'quv materiallarida saqlanadi",
+        "Har bir yangi xodim yagona moslashuv yo'lidan o'tadi",
       ],
       accentFrom: "from-amber-400/30",
-      accentTo: "to-emerald-500/20",
+      accentTo: "to-indigo-500/20",
     },
     {
       id: "about",
       index: 2,
       icon: "Building2",
       title: "Kompaniya nima bilan shug'ullanadi",
-      body: "AKELA GROUP bo'limlari qiymat yaratish va kompaniya ishini qo'llab-quvvatlash uchun birga ishlaydi. Har bir bo'lim o'z professional yo'nalishiga mas'ul.",
+      body: "AKELA GROUP MACHINERY MChJ sanoat, qadoqlash, metall, yog'och, oziq-ovqat, farmatsevtika va boshqa tarmoqlar uchun uskunalar yetkazib beradi. Kompaniya tuzilmasi Bosh direktor (Kadirov Akbar Abdumanapovich) rahbarligida 9 ta asosiy bo'limdan iborat: HR, Buxgalteriya, Savdo, Xarid, Marketing, Texnik xizmat, Logistika, Ombor, IT va Ofis. Bosh direktor bilan uchrashuv faqat rahbar yordamchisi orqali oldindan kelishilgan holda amalga oshiriladi.",
       points: [
-        "Har bir bo'lim o'z professional yo'nalishi uchun javob beradi.",
-        "Natija sifat, muddat va tushunarli muloqotga asoslanadi.",
-        "Xodimlar umumiy vositalar va hamkorlik standartlaridan foydalanadi.",
+        "Birinchi ish kuni: HRga murojaat, shartnoma bilan tanishish, kompyuter va korporativ akkaunt olish",
+        "Osnova va Bitrix24 tizimlariga kirish huquqini olish",
+        "Bo'lim rahbari bilan tanishish va ichki tartib qoidalari bilan tanishish",
+        "Bitrix24 CRM orqali barcha ish jarayonlari yuritiladi",
       ],
       accentFrom: "from-teal-500/30",
       accentTo: "to-amber-300/20",
@@ -65,30 +67,61 @@ export const ONBOARDING_STEPS: Record<Locale, OnboardingStep[]> = {
       id: "structure",
       index: 3,
       icon: "Network",
-      title: "Kompaniya tuzilmasi",
-      body: "Tuzilma kim qaysi yo'nalish uchun javob berishini va ish masalalari bo'yicha kimga murojaat qilishni ko'rsatadi. Pastda bo'limlar va ularning rahbarlari keltirilgan.",
+      title: "Tashkiliy tuzilma",
+      body: "Kompaniyaning boshqaruv tuzilmasi aniq iyerarxiyaga asoslangan: xodim → bo'lim boshlig'ining o'rinbosari → bo'lim boshlig'i → departament boshlig'i → Bosh direktor. Kompaniya 9 ta asosiy bo'lim va 100+ xodimdan iborat. Har bir bo'lim o'z professional yo'nalishi uchun mas'ul: HR (Rajabova Sug'diyona), Buxgalteriya (Gulnora Jakudayeva), Savdo (Elvira Kadirova), Xarid (Sardor Xaqqulov), Texnik xizmat (Husniddin Turg'unov), Logistika (Yoqubjon Yaqubov), Ombor (Mirzaxon Abdusamatov).",
       points: [
-        "Rahbarlar maqsadlarni belgilaydi va asosiy qarorlarni qabul qiladi.",
-        "Bo'limlar alohida ish yo'nalishlari uchun javob beradi.",
-        "Har bir xodimning lavozimi, rahbari va mas'uliyat sohasi bor.",
+        "Bosh direktor: Kadirov Akbar Abdumanapovich",
+        "HR bo'limi: xodim qabul qilish, onboarding, buyruqlar, ta'tillar",
+        "Buxgalteriya: ish haqi, soliqlar, hisob-kitoblar, moliyaviy hisobotlar",
+        "Texnik xizmat: uskunalarni o'rnatish, texnik xizmat, kafolat ishlari, ta'mirlash",
       ],
-      accentFrom: "from-emerald-600/30",
+      accentFrom: "from-indigo-600/30",
       accentTo: "to-amber-400/20",
     },
     {
-      id: "rules",
+      id: "leadership",
       index: 4,
-      icon: "ShieldCheck",
-      title: "Kompaniyada ishlash qoidalari",
-      body: "Umumiy qoidalar jamoaga xavfsiz, oldindan aytib bo'ladigan va samarali ishlashga yordam beradi. Bu qoidalar barcha xodimlar uchun majburiy hisoblanadi.",
+      icon: "Users",
+      title: "Rahbariyat va kompaniya boshqaruvi",
+      body: "AKELA GROUP MACHINERY MChJ-ni boshqaruvi Bosh direktor A. A. Kadirov (Akbar Abdumanapovich) tomonidan amalga oshiriladi. Rahbariyat kompaniyaning strategik rivojlanishini, xalqaro hamkorlik hamda mijozlar bilan ishlashni boshqaradi. Har bir bo'lim boshligi o'z professional yo'nalishi uchun mas'ul.",
       points: [
-        "O'z vaqtida keling va o'zgarishlar haqida oldindan xabar bering.",
-        "Vazifa va muddatlarni ish tizimlarida yuriting.",
-        "Maxfiylik va axborot xavfsizligi qoidalariga rioya qiling.",
-        "Vazifa tushunarsiz bo'lsa, darhol mentorga murojaat qiling.",
+        "Bosh direktor: A. A. Kadirov — umumiy strategiya va rivojlanish",
+        "HR bo'limi: Rajabova Sug'diyona — xodimlar qabuli va onboarding",
+        "Har bir bo'lim boshlig'i o'z yo'nalishini mustakblilik qiladi",
+        "Rahbarlar bilan uchrashuv faqat oldindan kelishilgan holda amalga oshiriladi",
+      ],
+      accentFrom: "from-purple-500/30",
+      accentTo: "to-indigo-500/20",
+    },
+    {
+      id: "timeline",
+      index: 5,
+      icon: "Calendar",
+      title: "Tarix chiziqlari",
+      body: "2004 yilda AKELA GROUP brendi tashkil etildi va sanoat uskunalarini yetkazib berish boshlandi. 2015 yilda AKELA GROUP MACHINERY MChJ davlat ro'yxatidan o'tkazildi. 2016–2020 yillarda poligrafiya, qadoqlash, metall, yog'och, oziq-ovqat, farmatsevtika va boshqa sanoat tarmoqlari uchun uskunalar yetkazib berish yo'lga qo'yildi. 2021 yildan beri xalqaro hamkorlik rivojlantirilib, servis xizmati va texnik qo'llab-quvvatlash kuchaytirildi. Bugungi kunda kompaniya 100 dan ortiq xodim bilan ishlaydi.",
+      points: [
+        "2004 — AKELA GROUP brendi tashkil etildi",
+        "2015 — AKELA GROUP MACHINERY MChJ davlat ro'yxatidan o'tkazildi",
+        "2016–2020 — 6 sanoat tarmog'iga ish yo'lga qo'yildi",
+        "2021–hozirgacha — xalqaro hamkorlik va servis kuchaytirildi",
+      ],
+      accentFrom: "from-teal-400/30",
+      accentTo: "to-amber-500/20",
+    },
+    {
+      id: "rules",
+      index: 6,
+      icon: "ShieldCheck",
+      title: "Ish qoidalari va axloq kodeksi",
+      body: "Kompaniya 6 kunlik ish haftasi bilan ishlaydi. Ish vaqti 09:00 dan 18:00 gacha, tushlik 13:00 dan 14:00 gacha. Oylik ish haqi har oyning 10-sanasida, avans (40%) 25-sanasida to'lanadi. Yangi xodimlar 5 kunlik bepul sinov muddatidan so'ng, 3 oylik fuqarolik-huquqiy shartnoma asosida, keyin mehnat shartnomasi tuziladi. Axloq kodeksi 10 ta bobdan iborat: umumiy qoidalar, kasbiy madaniyat, xizmat faoliyati, tashqi ko'rinish, manfaatlar to'qnashuvi, javobgarlik va boshqalar. Tijorat sirlari 10 yil muddatga himoyalanadi.",
+      points: [
+        "Kiyinish: klassik ofis yoki biznes-kasual, sport kiyim taqiqlanadi",
+        "Maxfiylik: kompaniya ichki ma'lumotlari va tijorat sirlarini saqlash majburiy",
+        "Kechikish: sababni darhol rahbarga xabar qilish, tizimli kechikish jarimaga sabab",
+        "5 kunlik sinov muddati bepul, 3 oylik sinov pullik, attestatsiyadan keyin mehnat shartnomasi",
       ],
       accentFrom: "from-amber-500/30",
-      accentTo: "to-emerald-600/20",
+      accentTo: "to-indigo-600/20",
     },
   ],
   ru: [
@@ -99,33 +132,33 @@ export const ONBOARDING_STEPS: Record<Locale, OnboardingStep[]> = {
       title: "Добро пожаловать в AKELA GROUP",
       body: "Перед началом работы познакомьтесь с компанией, её структурой и общими правилами.",
       points: [
-        "Пройдите все пять вводных шагов по порядку.",
-        "После завершения материалы останутся на главной странице.",
+        "Пройдите все семь вводных С€Р°Ріов по порядку.",
+        "После завРµСЂС€РµРЅиСЏ материалы останутся на главной странице.",
         "Дальше откроются обучение, тесты и ежедневные отчёты стажёра.",
       ],
-      accentFrom: "from-emerald-500/30",
+      accentFrom: "from-indigo-500/30",
       accentTo: "to-amber-300/20",
     },
     {
       id: "history",
       index: 1,
       icon: "BookOpen",
-      title: "История компании",
+      title: "История коРјРїР°РЅии",
       body: "AKELA GROUP развивает единые стандарты работы, обучения и ответственности за результат.",
       points: [
         "Компания росла через развитие направлений и профессиональных команд.",
-        "Опыт компании закрепляется в процессах, инструкциях и обучающих материалах.",
+        "Опыт коРјРїР°РЅии закрепляется в процессах, инструкциях и обучающих материалах.",
         "Каждый новый сотрудник проходит единый путь знакомства и адаптации.",
       ],
       accentFrom: "from-amber-400/30",
-      accentTo: "to-emerald-500/20",
+      accentTo: "to-indigo-500/20",
     },
     {
       id: "about",
       index: 2,
       icon: "Building2",
       title: "Чем занимается компания",
-      body: "Подразделения AKELA GROUP совместно создают ценность для клиентов и поддерживают работу компании.",
+      body: "Подразделения AKELA GROUP совместно создают ценность для клиентов и поддерживают работу коРјРїР°РЅии.",
       points: [
         "Каждое подразделение отвечает за своё профессиональное направление.",
         "Результат строится на качестве, сроках и понятной коммуникации.",
@@ -138,30 +171,60 @@ export const ONBOARDING_STEPS: Record<Locale, OnboardingStep[]> = {
       id: "structure",
       index: 3,
       icon: "Network",
-      title: "Структура компании",
-      body: "Структура показывает, кто за какое направление отвечает и к кому обращаться по рабочим вопросам.",
+      title: "Структура коРјРїР°РЅии",
+      body: "Структура показывает, кто за кР°коРµ направление отвечает и к кому обращаться по рабочим вопросам.",
       points: [
-        "Руководители определяют цели и принимают ключевые решения.",
+        "Руководители определяют цели и принимают ключевые СЂРµС€РµРЅиСЏ.",
         "Подразделения и отделы отвечают за отдельные направления работы.",
-        "У каждого сотрудника есть должность, руководитель и зона ответственности.",
+        "У каждого сотрудника есть должность, руководитель и Р·она ответственности.",
       ],
-      accentFrom: "from-emerald-600/30",
+      accentFrom: "from-indigo-600/30",
       accentTo: "to-amber-400/20",
     },
     {
-      id: "rules",
+      id: "leadership",
       index: 4,
+      icon: "Users",
+      title: "Руководство и управление",
+      body: "AKELA GROUP MACHINERY MChJ управляется Генеральным директором А. А. Кадыровым (Акбар Абдуманапович). Руководство определяет стратегию развития коРјРїР°РЅии, международное сотрудничество и работу с клиентами. Каждый руководитель отдела отвечает за свою профессиональную область.",
+      points: [
+        "Генеральный директор: А. А. Кадыров — стратегия и развитие",
+        "Отдел HR: Раджабова Сугдия — подбор и адаптация сотрудников",
+        "Каждый руководитель отвечает за свою область",
+        "Встречи с руководителями назначаются заранее",
+      ],
+      accentFrom: "from-purple-500/30",
+      accentTo: "to-indigo-500/20",
+    },
+    {
+      id: "timeline",
+      index: 5,
+      icon: "Calendar",
+      title: "Исторические вехи",
+      body: "В 2004 году был создан бренд AKELA GROUP и началась поставка РїСЂоРјС‹С€Р»РµРЅРЅоРіо оборудования. В 2015 году AKELA GROUP MACHINERY MChJ была включена в государственный реестр. В 2016–2020 годах была СЂР°СЃС€иСЂРµна деятельность по поставкам для полиграфии, упаковке, металлу, дереву, пищевой и фармацевтической РїСЂоРјС‹С€Р»РµРЅРЅоСЃС‚и. С 2021 года развиваются международные связи, усилена сервисная поддержка. В настоящее время компания работает с Р±оР»РµРµ чем 100 сотрудниками.",
+      points: [
+        "2004 — создан бренд AKELA GROUP",
+        "2015 — AKELA GROUP MACHINERY MChJ включена в реестр",
+        "2016–2020 — СЂР°СЃС€иСЂРµРЅС‹ направления поставок",
+        "2021–РЅ.в. — развитие международного сотрудничества",
+      ],
+      accentFrom: "from-teal-400/30",
+      accentTo: "to-amber-500/20",
+    },
+    {
+      id: "rules",
+      index: 6,
       icon: "ShieldCheck",
-      title: "Правила работы в компании",
+      title: "Правила работы в коРјРїР°РЅии",
       body: "Соблюдение общих правил помогает команде работать безопасно, предсказуемо и эффективно.",
       points: [
-        "Приходите вовремя, соблюдайте график и заранее сообщайте об изменениях.",
+        "Приходите вовремя, соблюдайте график и заранее сообщайте оР± изменениях.",
         "Ведите задачи и сроки в рабочих системах, фиксируйте результат.",
         "Соблюдайте конфиденциальность и правила информационной безопасности.",
         "Если задача непонятна — сразу обращайтесь к наставнику.",
       ],
       accentFrom: "from-amber-500/30",
-      accentTo: "to-emerald-600/20",
+      accentTo: "to-indigo-600/20",
     },
   ],
   en: [
@@ -172,11 +235,11 @@ export const ONBOARDING_STEPS: Record<Locale, OnboardingStep[]> = {
       title: "Welcome to AKELA GROUP",
       body: "Before starting work, learn about the company, its structure, and shared rules.",
       points: [
-        "Complete all five orientation steps in order.",
+        "Complete all seven orientation steps in order.",
         "After completion, these materials remain available on your home page.",
         "Learning, tests, and intern daily reports become your next steps.",
       ],
-      accentFrom: "from-emerald-500/30",
+      accentFrom: "from-indigo-500/30",
       accentTo: "to-amber-300/20",
     },
     {
@@ -191,7 +254,7 @@ export const ONBOARDING_STEPS: Record<Locale, OnboardingStep[]> = {
         "Every new employee follows one consistent adaptation path.",
       ],
       accentFrom: "from-amber-400/30",
-      accentTo: "to-emerald-500/20",
+      accentTo: "to-indigo-500/20",
     },
     {
       id: "about",
@@ -218,12 +281,42 @@ export const ONBOARDING_STEPS: Record<Locale, OnboardingStep[]> = {
         "Divisions and departments own separate areas of work.",
         "Every employee has a role, manager, and area of responsibility.",
       ],
-      accentFrom: "from-emerald-600/30",
+      accentFrom: "from-indigo-600/30",
       accentTo: "to-amber-400/20",
+    },
+     {
+      id: "leadership",
+      index: 4,
+      icon: "Users",
+      title: "Leadership and management",
+      body: "AKELA GROUP MACHINERY MChJ is managed by General Director A. A. Kadirov (Akbar Abdumanapovich). Leadership drives the company's strategic development, international cooperation, and client relations. Each department head is responsible for their professional area.",
+      points: [
+        "General Director: A. A. Kadirov — strategy and development",
+        "HR department: Rajabova Sug'diyona — recruitment and onboarding",
+        "Each department head manages their own area",
+        "Meetings with managers are scheduled in advance",
+      ],
+      accentFrom: "from-purple-500/30",
+      accentTo: "to-indigo-500/20",
+    },
+    {
+      id: "timeline",
+      index: 5,
+      icon: "Calendar",
+      title: "Historical milestones",
+      body: "In 2004, the AKELA GROUP brand was established and industrial equipment supply began. In 2015, AKELA GROUP MACHINERY MChJ was registered. From 2016–2020, supply was launched for printing, packaging, metal, wood, food, and pharmaceutical industries. Since 2021, international cooperation has been developing and service support has been strengthened. Today the company operates with 100+ employees.",
+      points: [
+        "2004 — AKELA GROUP brand established",
+        "2015 — AKELA GROUP MACHINERY registered",
+        "2016–2020 — expanded into 6 industries",
+        "2021–present — international cooperation and service growth",
+      ],
+      accentFrom: "from-teal-400/30",
+      accentTo: "to-amber-500/20",
     },
     {
       id: "rules",
-      index: 4,
+      index: 6,
       icon: "ShieldCheck",
       title: "Company work rules",
       body: "Shared rules help the team work safely and effectively.",
@@ -234,7 +327,7 @@ export const ONBOARDING_STEPS: Record<Locale, OnboardingStep[]> = {
         "If a task is unclear, contact your mentor immediately.",
       ],
       accentFrom: "from-amber-500/30",
-      accentTo: "to-emerald-600/20",
+      accentTo: "to-indigo-600/20",
     },
   ],
 };
@@ -251,68 +344,73 @@ export const DISCIPLINE_RULES: Record<Locale, DisciplineRule[]> = {
   uz: [
     {
       icon: "Clock",
-      title: "Vaqt intizomi",
+      title: "Ish vaqti va intizomi",
       description:
-        "Ish kuni belgilangan grafik asosida tashkil etiladi. Ishga kech qolish yoki ish joyida bo'lmaslik oldindan kelishilgan holda rahbar va HR ga xabar qilinishi shart.",
+        "Kompaniyada 6 kunlik ish haftasi joriy etilgan. Ish vaqti har kuni 09:00 dan 18:00 gacha, tushlik 13:00 dan 14:00 gacha. Xodim ertalab va tushlikdan keyin belgilangan vaqtda ish joyida bo'lishi shart. Yangi xodimlar 5 kunlik (bepul) sinov muddatidan, so'ngra 3 oylik fuqarolik-huquqiy shartnoma asosida qabul qilinadi.",
       examples: [
         "Ish boshlanishidan 5 daqiqa oldin ish joyida bo'lish.",
-        "Kechikish yoki kasallik haqida ertalab soat 8:30 gacha xabar berish.",
-        "Tushlik va tanaffuslar grafikdan chetga chiqmasligi.",
+        "Kechikish yoki kasallik haqida ertalab soat 8:30 gacha rahbarga xabar berish.",
+        "Ishga tizimli kechikish moliyaviy jarima yoki mehnat munosabatlarini tugatishga sabab bo'ladi.",
+        "Oylik ish haqi har oyning 10-sanasida, avans (40%) 25-sanasida to'lanadi.",
       ],
     },
     {
-      icon: " Shirt",
-      title: "Tashqi ko'rinish va kiyim",
+      icon: "Shirt",
+      title: "Tashqi ko'rinish va kiyinish",
       description:
-        "AKELA GROUP xodimlari biznes-uslubda kiyinishi tavsiya etiladi. Kiyim toza, NEAT va kompaniya obro'siga mos bo'lishi kerak.",
+        "AKELA GROUP MACHINERY xodimlari klassik ofis yoki biznes-kasual uslubda kiyinishi shart. Kiyim toza, ozoda va kompaniya obro'siga mos bo'lishi kerak. Texnik xodimlar uchun kompaniya maxsus kiyim va shaxsiy himoya vositalarini taqdim etadi.",
       examples: [
-        "Biznes-casual uslub asosiy standart.",
-        "Mijozlar bilan uchrashuvlarda rasmiyroq kiyim.",
-        "Tijoriy logotipli elementlar kompaniya tomonidan taqdim etiladi.",
+        "Klassik ofis kiyimi yoki biznes-kasual asosiy standart.",
+        "Mijozlar bilan uchrashuvlarda rasmiyroq kiyim kiyish.",
+        "Sport kiyim, shortiklar, futbolkalar, juda tor yoki kalta kiyimlar taqiqlanadi.",
       ],
     },
     {
       icon: "Lock",
-      title: "Maxfiylik va axborot xavfsizligi",
+      title: "Maxfiylik va tijorat sirlari",
       description:
-        "Kompaniyaning ichki ma'lumotlari, mijozlar bazasi va moliyaviy ko'rsatkichlar uchinchi shaxslarga berilmaydi. Xodim kompaniya bilan maxfiylik shartnomasini imzolaydi.",
+        "Kompaniyaning ichki ma'lumotlari, mijozlar bazasi, moliyaviy ko'rsatkichlari va tijorat sirlari uchinchi shaxslarga berilmaydi. Tijorat sirlari 10 yil muddatga himoyalanadi. Buxgalteriya ma'lumotlari, shartnoma shartlari, marketing tadqiqotlari, texnologiyalar va narxlar — bularning barchasi tijorat siriga kiradi.",
       examples: [
-        "Parollarni qog'ozga yozib qo'ymaslik.",
-        "Ichki hujjatlarni shaxsiy bulutga yuklamaslik.",
+        "Parollarni qog'ozga yozmaslik, maxfiy hujjatlarni shaxsiy bulutga yuklamaslik.",
         "Ishdan bo'shashdan keyin ham maxfiylik saqlanadi.",
+        "Tijorat sirlarini oshkor qilish qonuniy javobgarlikka tortilishga sabab bo'ladi.",
+        "Yangi xodim tijorat sirlari bilan tilxat asosida imzo qo'yish orqali tanishtiriladi.",
       ],
     },
     {
       icon: "MessagesSquare",
-      title: "Ichki muloqot",
+      title: "Ichki muloqot va axloq",
       description:
-        "Barcha ichki muloqotlar rasmiy kanallar orqali yuritiladi: korporativ Telegram, e-mail va ish tizimi. Shaxsiy telefonlar orqali muhim qarorlar qabul qilinmaydi.",
+        "Barcha ichki muloqotlar rasmiy kanallar orqali yuritiladi: Bitrix24, korporativ Telegram, e-mail. Mijozlar bilan aloqa faqat korporativ kontaktlardan amalga oshiriladi. Kompaniya 10 boblik axloq kodeksiga ega: umumiy qoidalar, kasbiy madaniyat, xizmat faoliyati, tashqi ko'rinish, manfaatlar to'qnashuvi va boshqalar.",
       examples: [
-        "Vazifalar faqat ish tizimida belgilanadi.",
-        "Mijozlar bilan aloqa faqat korporativ kontaktlardan.",
+        "Vazifalar faqat Bitrix24 ish tizimida belgilanadi.",
         "Jamoaviy chatlarda hurmatli va aniq yozish.",
+        "Hamkasblarni muhokama qilish taqiqlanadi (kollegiallik tamoyili).",
+        "Mijoz, hamkor yoki bo'ysunuvchini jinsi, irqi, yoshi bo'yicha kamsitishga yo'l qo'yilmaydi.",
       ],
     },
     {
       icon: "FileCheck",
       title: "Hisobot va natija",
       description:
-        "Har bir xodim kunlik va haftalik hisobot beradi. Hisobot natijani, kechikish sabablarini va keyingi qadamlarni aniq ko'rsatishi kerak.",
+        "Har bir xodim kunlik va haftalik hisobot beradi. Normativ xlsx jadvaliga ko'ra kunlik, haftalik va oylik hisobotlar to'ldiriladi. Har bir lavozim uchun aniq me'yorlar (normativ) belgilangan — ular bajarilishi monitoring qilinadi.",
       examples: [
-        "Kunlik hisobot ish kuni oxirida topshiriladi.",
+        "Kunlik hisobot ish kuni oxirida Bitrix24da topshiriladi.",
         "Vazifa o'zgartirilganda darhol tizimga kiritiladi.",
         "Muddat o'tib ketishining oldini olish uchun oldindan ogohlantirish.",
+        "Bajarildi / Bajarilmadi / % ko'rsatkichlari doim to'ldiriladi.",
       ],
     },
     {
       icon: "HandHeart",
-      title: "Jamoaviy hurmat",
+      title: "Jamoaviy hurmat va muvaffaqiyat",
       description:
-        "Hamkasblar va rahbarlarga nisbatan hurmatli munosabat majburiy. Hech qanday shaklda kamsitish, haqorat yoki bullyingga yo'l qo'yilmaydi.",
+        "Hamkasblar va rahbarlarga nisbatan hurmatli munosabat majburiy. Hech qanday shaklda kamsitish, haqorat yoki bullyingga yo'l qo'yilmaydi. 3 oylik sinov muddatidan muvaffaqiyatli o'tgan xodimlarga 20% gacha oylik maoshini oshirish masalasi ko'rib chiqiladi. Har yarim yilda tavsiyanoma asosida 20% gacha oshirish mumkin. Kompaniya har chorakda xodimlarni moddiy rag'batlantirish uchun mukofot puli ajratadi.",
       examples: [
         "Tenglik va xilma-xillik prinsipiga rioya qilish.",
         "Konfliktlarni tinch yo'l bilan hal qilish.",
         "Yangi xodimlarga yordam berish va qo'llab-quvvatlash.",
+        "3 oy ichida attestatsiyadan o'tib, mehnat shartnomasi tuzish.",
       ],
     },
   ],
@@ -324,13 +422,13 @@ export const DISCIPLINE_RULES: Record<Locale, DisciplineRule[]> = {
         "Рабочий день организован по графику. Опоздания и отсутствия согласовываются заранее с руководителем и HR.",
       examples: [
         "Быть на рабочем месте за 5 минут до начала.",
-        "Сообщать о задержке или болезни до 8:30 утра.",
+        "Сообщать о задержке иР»и Р±оР»РµР·РЅи до 8:30 утра.",
         "Перерывы и обед не выходят за рамки графика.",
       ],
     },
     {
       icon: "Shirt",
-      title: "Внешний вид",
+      title: "Р’неС€РЅиР№ вид",
       description:
         "Сотрудникам AKELA GROUP рекомендуется деловой стиль одежды. Опрятность и аккуратность обязательны.",
       examples: [
@@ -343,10 +441,10 @@ export const DISCIPLINE_RULES: Record<Locale, DisciplineRule[]> = {
       icon: "Lock",
       title: "Конфиденциальность",
       description:
-        "Внутренние данные, клиентская база и финансовые показатели не передаются третьим лицам. Сотрудник подписывает NDA.",
+        "Внутренние данные, клиентская Р±Р°за и финансовые показатели не передаются третьим лицам. Сотрудник подписывает NDA.",
       examples: [
         "Не записывать пароли на бумаге.",
-        "Не загружать внутренние документы в личное облако.",
+        "Не загружать внутренние документы в личное оР±Р»Р°ко.",
         "Конфиденциальность сохраняется и после увольнения.",
       ],
     },
@@ -354,7 +452,7 @@ export const DISCIPLINE_RULES: Record<Locale, DisciplineRule[]> = {
       icon: "MessagesSquare",
       title: "Внутренние коммуникации",
       description:
-        "Общение ведётся через корпоративные каналы: Telegram, e-mail, рабочая система. Личные телефоны для решений не используются.",
+        "Общение ведётся через корпоративные каналы: Telegram, e-mail, рабочая система. Личные телефоны для СЂРµС€РµРЅиР№ не используются.",
       examples: [
         "Задачи ставятся только в рабочей системе.",
         "Контакты с клиентами — только корпоративные.",
@@ -365,7 +463,7 @@ export const DISCIPLINE_RULES: Record<Locale, DisciplineRule[]> = {
       icon: "FileCheck",
       title: "Отчётность",
       description:
-        "Каждый сотрудник предоставляет дневной и недельный отчёт с результатами, причинами задержек и следующими шагами.",
+        "Каждый сотрудник предоставляет дневной и недельный отчёт с результатами, причинами задержек и следующими С€Р°РіР°Рји.",
       examples: [
         "Дневной отчёт — в конце рабочего дня.",
         "Изменения по задаче сразу вносятся в систему.",
@@ -374,12 +472,12 @@ export const DISCIPLINE_RULES: Record<Locale, DisciplineRule[]> = {
     },
     {
       icon: "HandHeart",
-      title: "Уважение в команде",
+      title: "УвР°Р¶РµРЅиРµ в команде",
       description:
-        "Уважительное отношение к коллегам и руководителям обязательно. Дискриминация, оскорбления и буллинг недопустимы.",
+        "Уважительное оС‚РЅоС€РµРЅиРµ к коР»Р»РµРіР°Рј и руководителям обязательно. Дискриминация, оскорбления и буллинг недопустимы.",
       examples: [
         "Соблюдение принципов равенства и разнообразия.",
-        "Мирное разрешение конфликтов.",
+        "Мирное СЂР°Р·СЂРµС€РµРЅиРµ конфликтов.",
         "Помощь и поддержка новых сотрудников.",
       ],
     },
@@ -459,6 +557,7 @@ export type UiStrings = {
   nav_onboarding: string;
   nav_structure: string;
   nav_discipline: string;
+  nav_guides: string;
   nav_contact: string;
   hero_eyebrow: string;
   hero_title_1: string;
@@ -470,6 +569,19 @@ export type UiStrings = {
   stats_departments: string;
   stats_years: string;
   stats_onboarding_steps: string;
+  hero_showcase_title: string;
+  hero_showcase_subtitle: string;
+  hero_showcase_live: string;
+  hero_showcase_progress: string;
+  hero_showcase_new_hire: string;
+  hero_showcase_team: string;
+  hero_showcase_step_welcome: string;
+  hero_showcase_step_history: string;
+  hero_showcase_step_about: string;
+  hero_showcase_step_structure: string;
+  hero_showcase_step_leadership: string;
+  hero_showcase_step_timeline: string;
+  hero_showcase_step_rules: string;
   onboarding_eyebrow: string;
   onboarding_title: string;
   onboarding_subtitle: string;
@@ -492,6 +604,8 @@ export type UiStrings = {
   footer_company: string;
   footer_rights: string;
   footer_address: string;
+  footer_contact_category: string;
+  footer_contact_blurb: string;
 };
 
 export const UI_STRINGS: Record<Locale, UiStrings> = {
@@ -500,22 +614,36 @@ export const UI_STRINGS: Record<Locale, UiStrings> = {
     nav_onboarding: "Tanishtirish",
     nav_structure: "Tuzilma",
     nav_discipline: "Intizom",
+    nav_guides: "Yo'riqlar",
     nav_contact: "Bog'lanish",
-    hero_eyebrow: "Yangi xodimlar uchun adaptatsiya portali",
+    hero_eyebrow: "«AKELA GROUP MACHINERY» — Yangi xodim adaptatsiya portali",
     hero_title_1: "AKELA GROUPga",
     hero_title_2: "xush kelibsiz",
     hero_subtitle:
-      "Bu portal sizga kompaniya, uning tuzilmasi va ish qoidalarini qisqa vaqt ichida o'rganishga yordam beradi. Liquid glass dizayn va interaktiv qadamlar orqali tanishtirishga tayyor bo'ling.",
+      "2004 yildan beri sanoat uskunalarini yetkazib berish va servis xizmati ko'rsatish sohasida faoliyat yurituvchi «AKELA GROUP MACHINERY» MChJ oilasiga qo'shilayotganingiz bilan tabriklaymiz. Bu portal sizga kompaniya tarixi, tuzilmasi, qoidalari va yangi xodim moslashuvi haqida qisqa vaqt ichida to'liq ma'lumot beradi.",
     hero_cta_start: "Tanishtirishni boshlash",
     hero_cta_explore: "Tuzilmani ko'rish",
     stats_employees: "Xodimlar",
     stats_departments: "Bo'limlar",
     stats_years: "Yillik tajriba",
-    stats_onboarding_steps: "Tanishtirish qadamlari",
-    onboarding_eyebrow: "5 qadamlik yo'l",
+    stats_onboarding_steps: "Qadamlar",
+    hero_showcase_title: "Tanishtirish xaritasi",
+    hero_showcase_subtitle: "7 qadamlik sayohat",
+    hero_showcase_live: "Jonli",
+    hero_showcase_progress: "Jarayon",
+    hero_showcase_new_hire: "Yangi xodim\ntayyor",
+    hero_showcase_team: "Jamoa\nkutmoqda",
+    hero_showcase_step_welcome: "Xush kelibsiz",
+    hero_showcase_step_history: "Tarix",
+    hero_showcase_step_about: "Faoliyat",
+    hero_showcase_step_structure: "Tuzilma",
+    hero_showcase_step_leadership: "Rahbariyat",
+    hero_showcase_step_timeline: "Chiziqlar",
+    hero_showcase_step_rules: "Qoidalar",
+    onboarding_eyebrow: "7 qadamlik yo'l",
     onboarding_title: "Yangi xodim tanishtirish",
     onboarding_subtitle:
-      "Quyidagi qadamlarni tartib bilan o'ting. Har bir qadamda kompaniya haqida muhim ma'lumotlar jamlangan.",
+      "Quyidagi 7 qadam tartib bilan o'ting. Har bir qadamda AKELA GROUP MACHINERY kompaniyasi tarixi, qadriyatlari, tuzilmasi, bo'limlari va axloq qoidalari haqida muhim ma'lumotlar jamlangan.",
     onboarding_step_label: "Qadam",
     onboarding_of: "/",
     onboarding_next: "Keyingisi",
@@ -525,25 +653,29 @@ export const UI_STRINGS: Record<Locale, UiStrings> = {
     structure_eyebrow: "Tashkilot tuzilmasi",
     structure_title: "Bo'limlar va jamoa",
     structure_subtitle:
-      "AKELA GROUP 21 bo'lim va 60+ xodimdan iborat. Quyida har bir bo'lim va uning a'zolari keltirilgan.",
+      "«AKELA GROUP MACHINERY» 21 bo'lim va 63 xodimdan iborat. Bosh direktor Kadirov Akbar Abdumanapovich rahbarligida HR, Buxgalteriya, Savdo, Xarid, Marketing, Texnik xizmat, Logistika, Ombor, IT va Ofis bo'limlari birgalikda ishlaydi.",
     structure_total: "Jami",
     structure_members: "a'zo",
     discipline_eyebrow: "Ish intizomi va qoidalar",
     discipline_title: "Bizning qoidalarimiz",
     discipline_subtitle:
-      "Quyidagi oltita asosiy intizom sohasi barcha xodimlar uchun majburiy hisoblanadi.",
+      "Quyidagi oltita asosiy intizom sohasi barcha xodimlar uchun majburiy: ish vaqti, kiyinish, maxfiylik, muloqot, hisobot va jamoa hurmati. Har birining buzilishi intizomiy va moliyaviy choralarga sabab bo'lishi mumkin.",
     discipline_examples: "Amaliy namunalar",
     footer_tagline:
       "Yangi xodimlar uchun interaktiv adaptatsiya portali.",
-    footer_company: "AKELA GROUP",
+    footer_company: "AKELA GROUP MACHINERY",
     footer_rights: "Barcha huquqlar himoyalangan.",
-    footer_address: "Toshkent, O'zbekiston",
+    footer_address: "Tarixt e shar ko'chasi, 3-bino, Zangiatin tumani, Toshkent viloyati, O'zbekiston",
+    footer_contact_category: "HR bo'limi",
+    footer_contact_blurb:
+      "Yangi e'lonlar va yangilanishlardan xabar topishingiz uchun emailingizni kiriting.",
   },
   ru: {
     nav_home: "Главная",
     nav_onboarding: "Знакомство",
     nav_structure: "Структура",
     nav_discipline: "Дисциплина",
+    nav_guides: "Инструкции",
     nav_contact: "Контакты",
     hero_eyebrow: "Портал адаптации новых сотрудников",
     hero_title_1: "Добро пожаловать в",
@@ -555,8 +687,21 @@ export const UI_STRINGS: Record<Locale, UiStrings> = {
     stats_employees: "Сотрудников",
     stats_departments: "Отделов",
     stats_years: "Лет опыта",
-    stats_onboarding_steps: "Шагов знакомства",
-    onboarding_eyebrow: "Путь из 5 шагов",
+    stats_onboarding_steps: "Шаги",
+    hero_showcase_title: "Карта адаптации",
+    hero_showcase_subtitle: "Путешествие из 7 шагов",
+    hero_showcase_live: "Эфир",
+    hero_showcase_progress: "Прогресс",
+    hero_showcase_new_hire: "Новичок\nготов",
+    hero_showcase_team: "Команда\nждет",
+    hero_showcase_step_welcome: "Приветствие",
+    hero_showcase_step_history: "История",
+    hero_showcase_step_about: "О компании",
+    hero_showcase_step_structure: "Структура",
+    hero_showcase_step_leadership: "Руководство",
+    hero_showcase_step_timeline: "Вехи",
+    hero_showcase_step_rules: "Правила",
+    onboarding_eyebrow: "Путь из 7 шагов",
     onboarding_title: "Знакомство нового сотрудника",
     onboarding_subtitle:
       "Пройдите шаги по порядку. На каждом — важная информация о компании.",
@@ -581,13 +726,17 @@ export const UI_STRINGS: Record<Locale, UiStrings> = {
       "Интерактивный портал адаптации новых сотрудников.",
     footer_company: "AKELA GROUP",
     footer_rights: "Все права защищены.",
-    footer_address: "Ташкент, Узбекистан",
+    footer_address: "Здание 3, улица Тарихтешар, район Зангиатин, Ташкентская область, Узбекистан",
+    footer_contact_category: "Отдел HR",
+    footer_contact_blurb:
+      "Введите адрес электронной почты, чтобы получать новые объявления и обновления.",
   },
   en: {
     nav_home: "Home",
     nav_onboarding: "Onboarding",
     nav_structure: "Structure",
     nav_discipline: "Discipline",
+    nav_guides: "Guides",
     nav_contact: "Contact",
     hero_eyebrow: "New employee onboarding portal",
     hero_title_1: "Welcome to",
@@ -599,8 +748,21 @@ export const UI_STRINGS: Record<Locale, UiStrings> = {
     stats_employees: "Employees",
     stats_departments: "Departments",
     stats_years: "Years of experience",
-    stats_onboarding_steps: "Onboarding steps",
-    onboarding_eyebrow: "5-step journey",
+    stats_onboarding_steps: "Steps",
+    hero_showcase_title: "Onboarding Map",
+    hero_showcase_subtitle: "7-step journey",
+    hero_showcase_live: "Live",
+    hero_showcase_progress: "Progress",
+    hero_showcase_new_hire: "New hire\nready",
+    hero_showcase_team: "Team\nwaiting",
+    hero_showcase_step_welcome: "Welcome",
+    hero_showcase_step_history: "History",
+    hero_showcase_step_about: "About",
+    hero_showcase_step_structure: "Structure",
+    hero_showcase_step_leadership: "Leadership",
+    hero_showcase_step_timeline: "Milestones",
+    hero_showcase_step_rules: "Rules",
+    onboarding_eyebrow: "7-step journey",
     onboarding_title: "New employee onboarding",
     onboarding_subtitle:
       "Complete the steps in order. Each contains essential information about the company.",
@@ -625,6 +787,9 @@ export const UI_STRINGS: Record<Locale, UiStrings> = {
       "Interactive onboarding portal for new employees.",
     footer_company: "AKELA GROUP",
     footer_rights: "All rights reserved.",
-    footer_address: "Tashkent, Uzbekistan",
+    footer_address: "Building 3, Tarixteshar Street, Zangiata District, Tashkent Region, Uzbekistan",
+    footer_contact_category: "HR Department",
+    footer_contact_blurb:
+      "Enter your email to receive new announcements and updates.",
   },
 };

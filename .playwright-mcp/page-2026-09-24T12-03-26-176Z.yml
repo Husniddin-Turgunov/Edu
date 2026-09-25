@@ -1,0 +1,97 @@
+- generic [active] [ref=e1]:
+  - main [ref=e2]:
+    - navigation [ref=e4]:
+      - button [ref=e5]:
+        - img "AKELA" [ref=e7]
+      - generic [ref=e8]:
+        - button "Bosh sahifa" [ref=e9]
+        - button "Tanishtirish" [ref=e11]
+        - button "Tuzilma" [ref=e12]
+        - button "Intizom" [ref=e13]
+        - button "Yo'riqlar" [ref=e14]
+        - button "Bog'lanish" [ref=e15]
+        - link "Darslar" [ref=e16] [cursor=pointer]:
+          - /url: /courses
+      - generic [ref=e17]:
+        - generic [ref=e18]:
+          - button "O'z" [ref=e19]
+          - button "Ru" [ref=e20]
+          - button "En" [ref=e21]
+        - link "Kirish" [ref=e22] [cursor=pointer]:
+          - /url: /login
+        - link "Ro'yxatdan o'tish" [ref=e26] [cursor=pointer]:
+          - /url: /register
+        - button "Tanishtirishni boshlash" [ref=e27]
+    - article [ref=e31]:
+      - generic [ref=e32]:
+        - generic [ref=e33]:
+          - link "Yo'riqlar" [ref=e34] [cursor=pointer]:
+            - /url: /guides
+          - generic [ref=e39]: Boshlash
+        - generic [ref=e44]:
+          - text: Darslik
+          - heading "Katalog tovarlarini yaratish va sozlash" [level=1] [ref=e45]
+        - paragraph [ref=e46]: "Katalog — CRM va internet-do'kon uchun yagona mahsulot bazasi: bo'limlar, xususiyatlar va narx. Quyida katalogni yaratish va sozlash tartibi."
+        - img "Katalog tovarlarini yaratish va sozlash" [ref=e48]
+      - generic [ref=e49]:
+        - heading "Bitrix24 interfeys rasmlari" [level=2] [ref=e50]
+        - generic [ref=e51]:
+          - figure [ref=e52]:
+            - img "Katalog tovarlarini yaratish va sozlash — 1" [ref=e53]
+          - figure [ref=e54]:
+            - img "Katalog tovarlarini yaratish va sozlash — 2" [ref=e55]
+          - figure [ref=e56]:
+            - img "Katalog tovarlarini yaratish va sozlash — 3" [ref=e57]
+          - figure [ref=e58]:
+            - img "Katalog tovarlarini yaratish va sozlash — 4" [ref=e59]
+          - figure [ref=e60]:
+            - img "Katalog tovarlarini yaratish va sozlash — 5" [ref=e61]
+          - figure [ref=e62]:
+            - img "Katalog tovarlarini yaratish va sozlash — 6" [ref=e63]
+          - figure [ref=e64]:
+            - img "Katalog tovarlarini yaratish va sozlash — 7" [ref=e65]
+          - figure [ref=e66]:
+            - img "Katalog tovarlarini yaratish va sozlash — 8" [ref=e67]
+          - figure [ref=e68]:
+            - img "Katalog tovarlarini yaratish va sozlash — 9"
+          - figure [ref=e69]:
+            - img "Katalog tovarlarini yaratish va sozlash — 10"
+          - figure [ref=e70]:
+            - img "Katalog tovarlarini yaratish va sozlash — 11"
+          - figure [ref=e71]:
+            - img "Katalog tovarlarini yaratish va sozlash — 12"
+      - generic [ref=e72]:
+        - generic [ref=e73]:
+          - heading "Katalogni yoqish" [level=2] [ref=e74]
+          - list [ref=e75]:
+            - listitem [ref=e76]:
+              - generic [ref=e77]: "1"
+              - generic [ref=e78]: CRM → Katalog (yoki Internet-do'kon → Katalog) bo'limiga o'ting.
+            - listitem [ref=e79]:
+              - generic [ref=e80]: "2"
+              - generic [ref=e81]: Katalogni yoqing — bo'lim daraxti paydo bo'ladi.
+            - listitem [ref=e82]:
+              - generic [ref=e83]: "3"
+              - generic [ref=e84]: "Asosiy bo'limlarni yarating (masalan: Uskunalar, Ehtiyot qismlar, Xizmatlar)."
+        - generic [ref=e85]:
+          - heading "Mahsulot va xususiyatlar" [level=2] [ref=e86]
+          - paragraph [ref=e87]: Har bir mahsulotga nom, artikul, narx va kerakli xususiyatlar (o'lcham, rang, model) qo'shing. Xususiyatlarni bo'limlar bo'yicha saqlang — keyinchalik filtr va SEO uchun ishlatiladi.
+        - generic [ref=e88]:
+          - heading "Internet-do'konga ulash" [level=2] [ref=e89]
+          - paragraph [ref=e90]: Katalog tayyor bo'lgach, sayt konstruktorida "Mahsulotlar" blokini qo'shing yoki CRM savdo sahifasidan to'g'ridan-to'g'ri tanlang. Ombor bilan integratsiya yoqilsa, qoldiq avtomatik ko'rinadi.
+        - complementary [ref=e91]:
+          - generic [ref=e95]:
+            - paragraph [ref=e96]: Maslahat
+            - paragraph [ref=e97]: Avval bo'lim tuzilishini planlang, keyin mahsulotlarni to'ldiring — keyinchalik qayta tashkillashtirish qiyin.
+      - generic [ref=e98]:
+        - heading "Boshqa yo'riqlar" [level=2] [ref=e99]
+        - generic [ref=e100]:
+          - link "Bitrix24 bilan tanishish" [ref=e101] [cursor=pointer]:
+            - /url: /guides/161724
+          - link "Bitrix24 yordam markazi" [ref=e102] [cursor=pointer]:
+            - /url: /guides/148408
+      - link "Barcha yo'riqlar" [ref=e104] [cursor=pointer]:
+        - /url: /guides
+  - region "Notifications (F8)":
+    - list
+  - alert [ref=e107]

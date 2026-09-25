@@ -1,0 +1,37 @@
+- generic [ref=e2]:
+  - generic [ref=e5]:
+    - link [ref=e7] [cursor=pointer]:
+      - /url: https://www.bitrix24.ru
+    - generic [ref=e8]: Помогает бизнесу работать
+  - generic [ref=e16]:
+    - generic [ref=e18]:
+      - heading "Войти в akelagroup.bitrix24.ru" [level=2] [ref=e19]
+      - generic [ref=e20]:
+        - heading "E-mail или телефон" [level=4] [ref=e21]
+        - textbox [active] [ref=e25]:
+          - /placeholder: name@company.ru
+        - button "Продолжить" [ref=e26] [cursor=pointer]
+        - generic [ref=e28]:
+          - generic [ref=e29]: Войти с помощью
+          - generic [ref=e30]:
+            - button [ref=e31] [cursor=pointer]
+            - button [ref=e33] [cursor=pointer]
+            - button [ref=e35] [cursor=pointer]
+            - button [ref=e37] [cursor=pointer]
+            - button [ref=e39] [cursor=pointer]
+    - generic [ref=e42]:
+      - generic [ref=e43]: Вход без логинаи пароля
+      - generic [ref=e44]: Наведите камеруна QR-код, чтобы быстровойти в Битрикс24
+      - generic "https://b24.to/a/s1/cloud_auth2/QLXah8fit37AAGEOtMHNE1iLZR2XsIHn/" [ref=e46]:
+        - img "Scan me!" [ref=e47]
+      - generic [ref=e48]:
+        - link [ref=e49] [cursor=pointer]:
+          - /url: "#"
+        - link [ref=e50] [cursor=pointer]:
+          - /url: "#"
+  - generic:
+    - generic:
+      - generic [ref=e51] [cursor=pointer]: Русский
+      - link "Политика обработки персональных данных" [ref=e53] [cursor=pointer]:
+        - /url: https://www.bitrix24.ru/about/privacy.php
+    - button "Помощь" [ref=e54] [cursor=pointer]

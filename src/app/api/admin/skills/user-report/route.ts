@@ -2,7 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { PrismaClient } from "@prisma/client";
 import { parseAnswersJson } from "@/lib/answers-json";
 import { PDFDocument, rgb } from "pdf-lib";
-import * as fontkit from "@pdf-lib/fontkit";
+import * as fontkitNS from "@pdf-lib/fontkit";
+const fontkit: any = (fontkitNS as any).default || fontkitNS;
 import { readFile } from "node:fs/promises";
 import path from "node:path";
 
@@ -188,6 +189,7 @@ export async function GET(req: NextRequest) {
       },
     });
   } catch (e: any) {
-    return NextResponse.json({ error: e.message }, { status: 500 });
+    console.error("[user-report]", e);
+    return NextResponse.json({ error: e?.message || String(e) }, { status: 500 });
   }
 }

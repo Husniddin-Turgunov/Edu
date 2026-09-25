@@ -1,0 +1,379 @@
+- generic [active] [ref=f9e1]:
+  - generic [ref=f9e8]:
+    - link "Bitrix24" [ref=f9e11] [cursor=pointer]:
+      - /url: https://www.bitrix24.ru
+    - generic [ref=f9e20]:
+      - link "Возможности" [ref=f9e23] [cursor=pointer]:
+        - /url: https://www.bitrix24.ru/features/all.php
+      - link "Цены" [ref=f9e26] [cursor=pointer]:
+        - /url: https://www.bitrix24.ru/prices/
+      - link "Интеграции" [ref=f9e29] [cursor=pointer]:
+        - /url: https://www.bitrix24.ru/apps/market.php
+      - link "Внедрение" [ref=f9e32] [cursor=pointer]:
+        - /url: https://www.bitrix24.ru/partners/
+      - generic [ref=f9e34] [cursor=pointer]:
+        - link "Разработчикам" [ref=f9e35]:
+          - /url: https://apidocs.bitrix24.ru/
+        - generic [ref=f9e36]: New
+    - generic [ref=f9e38]:
+      - link "Получить бесплатно" [ref=f9e41] [cursor=pointer]:
+        - /url: https://www.bitrix24.ru/create.php?b24_type=shop
+      - generic [ref=f9e42]: Вход
+  - generic [ref=f9e50]:
+    - heading "Поддержка24" [level=1] [ref=f9e56]
+    - generic [ref=f9e59]:
+      - link "Поддержка24" [ref=f9e61] [cursor=pointer]:
+        - /url: /
+      - generic [ref=f9e62]: Интернет-магазин
+      - generic [ref=f9e63]: Каталог товаров
+    - generic [ref=f9e65]:
+      - generic [ref=f9e66]:
+        - heading "Как создать и настроить каталог товаров" [level=1] [ref=f9e67]
+        - generic [ref=f9e69]:
+          - img "Анна Молитвик" [ref=f9e71]
+          - generic [ref=f9e72]:
+            - generic [ref=f9e73]: "Автор: Анна Молитвик"
+            - generic [ref=f9e74]: "Последнее обновление: 23 июля 2026 г."
+        - generic [ref=f9e75]:
+          - paragraph [ref=f9e76]: В Битрикс24 единый каталог товаров для CRM и интернет-магазинов. Когда вы создаете страницу в интернет-магазине, ее можно быстро наполнить товарами из каталога. Когда вы работаете с клиентами в CRM, можно добавлять товары в счет или торговое предложение.
+          - paragraph [ref=f9e77]: "Откройте каталог товаров в любом из разделов:"
+          - list [ref=f9e78]:
+            - listitem [ref=f9e79]: CRM > Товары и Склады > Каталог товаров
+            - listitem [ref=f9e80]: Сайты и магазины > Товары и Склады > Каталог товаров
+          - paragraph [ref=f9e81]:
+            - text: Перед тем как добавить товары в каталог, нужно создать разделы и добавить пользовательские
+            - generic [ref=f9e82]: свойства товаров.
+          - heading "Как создать разделы товаров" [level=2] [ref=f9e83]
+          - list [ref=f9e84]:
+            - listitem [ref=f9e85]: Нажмите на значок рядом с кнопкой Создать.
+            - listitem [ref=f9e86]: Выберите Раздел.
+            - listitem [ref=f9e87]: Заполните название и описание.
+            - listitem [ref=f9e88]: Сохраните изменения.
+          - link [ref=f9e90] [cursor=pointer]:
+            - /url: /images/helpdesk/screenshots/ru/am/screen/36.jpg
+            - img "Скрин.jpg" [ref=f9e91]
+          - link [ref=f9e94] [cursor=pointer]:
+            - /url: /images/helpdesk/screenshots/ru/am/screen/37.jpg
+            - img "Скрин.jpg" [ref=f9e95]
+          - paragraph [ref=f9e97]: В разделах можно создавать подразделы. Чтобы привязать подраздел к основному, в поле Родительский раздел укажите его название. Заполните поля и сохраните.
+          - link [ref=f9e99] [cursor=pointer]:
+            - /url: /images/helpdesk/screenshots/ru/am/screen/38.jpg
+            - img "Скрин.jpg" [ref=f9e100]
+          - heading "Как добавить свойства товаров" [level=2] [ref=f9e102]
+          - paragraph [ref=f9e103]: "В Битрикс24 есть набор стандартных свойств: наименование товара, бренд, единица измерения. Чтобы создать пользовательские свойства, откройте Сайты и Магазины > Товары и Склады > Настройки > Товарный каталог > Свойства товаров. Нажмите Создать."
+          - link [ref=f9e105] [cursor=pointer]:
+            - /url: /images/helpdesk/screenshots/ru/am/screen/39.jpg
+            - img "Скрин.jpg" [ref=f9e106]
+          - link [ref=f9e109] [cursor=pointer]:
+            - /url: /images/helpdesk/screenshots/ru/am/screen/40.jpg
+            - img "Скрин.jpg" [ref=f9e110]
+          - paragraph [ref=f9e112]: "Чтобы добавить свойство, заполните поля во вкладке Общее:"
+          - list [ref=f9e113]:
+            - listitem [ref=f9e114]: "Тип — определяет какие данные могут хранится в поле: список, число, файл и другие."
+            - listitem [ref=f9e115]: Символьный код — может содержать только латинские символы, цифры и знаки подчеркивания.
+            - listitem [ref=f9e116]: Название — название поля.
+            - listitem [ref=f9e117]: Сортировка — влияет на расположение свойства в интернет-магазине.
+            - listitem [ref=f9e118]: Активность — поставьте галочку, если хотите выводить поле в карточке товара.
+            - listitem [ref=f9e119]: Множественное — можно выбрать несколько значений одновременно.
+            - listitem [ref=f9e120]: Обязательное — обязательно для заполнения.
+            - listitem [ref=f9e121]: Значения участвуют в поиске — это значит, что поиск по значению из поля будет в каталоге товаров и в интернет-магазине.
+            - listitem [ref=f9e122]: Показывать в интернет-магазине — эта настройка выводит поле в интернет-магазине, в карточках товаров, в каталоге.
+          - link [ref=f9e124] [cursor=pointer]:
+            - /url: /images/helpdesk/screenshots/ru/am/screen/41.jpg
+            - img "Скрин.jpg" [ref=f9e125]
+          - paragraph [ref=f9e127]: "Дополнительно:"
+          - list [ref=f9e128]:
+            - listitem [ref=f9e129]: Показывать в фильтре каталога товаров — поле будет выведено внутри системного фильтра в интернет-магазине.
+            - listitem [ref=f9e130]: "Вид в умном фильтре — выберите вид отображения значений в поле: флажки, радиокнопки, выпадающий список."
+            - listitem [ref=f9e131]: Показать развернутым — значения поля можно сразу показывать клиентам в развернутом виде.
+            - listitem [ref=f9e132]: Подсказка в умном фильтре для посетителей — выводится в интернет-магазине в виде вопроса рядом с полей.
+          - paragraph [ref=f9e133]: Сохраните изменения. Теперь поле доступно для заполнения в карточке товара.
+          - link [ref=f9e135] [cursor=pointer]:
+            - /url: /images/helpdesk/screenshots/ru/am/screen/42.jpg
+            - img "Скрин.jpg" [ref=f9e136]
+          - paragraph [ref=f9e138]:
+            - text: Добавить свойства товаров можно и в CRM. Подробно об этом, рассказали в отдельной статье.
+            - link "Как добавить свойства товаров в CRM" [ref=f9e139] [cursor=pointer]:
+              - /url: https://helpdesk.bitrix24.ru/open/5488473/
+          - heading "Как создать товар" [level=2] [ref=f9e140]
+          - paragraph [ref=f9e141]: Откройте в каталоге товаров нужный раздел и нажмите Создать.
+          - link [ref=f9e143] [cursor=pointer]:
+            - /url: /images/helpdesk/screenshots/ru/am/screen/43.jpg
+            - img "Скрин.jpg" [ref=f9e144]
+          - paragraph [ref=f9e146]:
+            - text: Заполните необходимые поля, укажите характеристики, цену и закрепите товар за разделом.
+            - link "Как создать новый товар в каталоге" [ref=f9e147] [cursor=pointer]:
+              - /url: https://helpdesk.bitrix24.ru/open/11657084/
+          - paragraph [ref=f9e148]:
+            - text: В карточке можно добавить несколько вариаций товара. Вариации — это дополнительные характеристики одного товара. Например, разные размеры или цвета одной и той же футболки. Для таких товаров вы можете создать вариации, которые будут учитывать их свойства и отличия в каталоге.
+            - link "Работа с вариациями товара" [ref=f9e149] [cursor=pointer]:
+              - /url: https://helpdesk.bitrix24.ru/open/11657102/
+          - link [ref=f9e151] [cursor=pointer]:
+            - /url: /images/helpdesk/screenshots/ru/am/screen/44.jpg
+            - img "Скрин.jpg" [ref=f9e152]
+          - paragraph [ref=f9e154]:
+            - text: Если у вас есть список товаров в формате csv, его можно импортировать в Битрикс24.
+            - link "Как импортировать товары в CRM" [ref=f9e155] [cursor=pointer]:
+              - /url: https://helpdesk.bitrix24.ru/open/13210236
+            - link "Право на запусĸ импорта и эĸспорта товаров" [ref=f9e156] [cursor=pointer]:
+              - /url: https://helpdesk.bitrix24.ru/open/16342582/?sphrase_id=138345348
+          - heading "Как настроить каталог товаров" [level=2] [ref=f9e157]
+          - paragraph [ref=f9e158]: Нажмите Настройки (⚙️) и выберите, какие поля хотите вывести в каталоге товаров. Опция Для всех включает остальным сотрудникам такой же список, который вы настроили себе. Нажмите Применить > Подтвердить.
+          - link [ref=f9e160] [cursor=pointer]:
+            - /url: /images/helpdesk/screenshots/ru/am/screen/45.jpg
+            - img "Скрин.jpg" [ref=f9e161]
+          - paragraph [ref=f9e163]: В режиме просмотра Список можно быстро изменить несколько параметров, не открывая карточку. Выберите товары и нажмите Редактировать. Впишите новые данные и сохраните изменения. Если у товара есть вариация, вы можете выбрать ее и работать с параметрами из списка.
+          - link [ref=f9e165] [cursor=pointer]:
+            - /url: /images/helpdesk/screenshots/ru/am/screen/46.jpg
+            - img "Скрин.jpg" [ref=f9e166]
+          - link [ref=f9e169] [cursor=pointer]:
+            - /url: /images/helpdesk/screenshots/ru/am/screen/47.jpg
+            - img "Скрин.jpg" [ref=f9e170]
+          - generic [ref=f9e172]:
+            - heading "Коротко" [level=2] [ref=f9e173]
+            - list [ref=f9e174]:
+              - listitem [ref=f9e175]: В Битрикс24 единый каталог товаров для CRM и интернет-магазинов. Когда вы создаете страницу в интернет-магазине, ее можно быстро наполнить товарами из каталога. Когда вы работаете с клиентами в CRM, можно добавлять товары в счет или торговое предложение.
+              - listitem [ref=f9e176]: Перед тем как добавить товары в каталог нужно создать разделы и добавить пользовательские свойства товаров.
+              - listitem [ref=f9e177]: Чтобы добавить товар, откройте Каталог товаров. Заполните необходимые поля, укажите характеристики, цену и закрепите товар за разделом.
+        - generic [ref=f9e179]:
+          - generic [ref=f9e180]: Похожие статьи
+          - link "Как настроить детальную страницу товара в интернет-магазине" [ref=f9e181] [cursor=pointer]:
+            - /url: /open/28160586/
+          - link "Как изменить заголовок страницы с каталогом в интернет-магазине" [ref=f9e182] [cursor=pointer]:
+            - /url: /open/28073708/
+          - link "Как настроить каталог товаров в интернет-магазине" [ref=f9e183] [cursor=pointer]:
+            - /url: /open/28160612/
+          - link "Как настроить правила работы с корзиной в интернет-магазине" [ref=f9e184] [cursor=pointer]:
+            - /url: /open/28858582/
+          - link "Как скрыть товар в интернет-магазине Битрикс24" [ref=f9e185] [cursor=pointer]:
+            - /url: /open/27845414/
+          - link "Как настроить типы цен для товаров в интернет-магазине" [ref=f9e186] [cursor=pointer]:
+            - /url: /open/28399378/
+          - link "Как включить подписку на отсутствующие товары в интернет-магазине" [ref=f9e187] [cursor=pointer]:
+            - /url: /open/28207802/
+        - generic [ref=f9e188]:
+          - generic [ref=f9e189]:
+            - generic [ref=f9e191] [cursor=pointer]:
+              - generic [ref=f9e192]: 
+              - generic [ref=f9e194]:
+                - generic [ref=f9e195]: Спасибо, помогло!
+                - generic [ref=f9e196]: Спасибо :)
+            - generic [ref=f9e198] [cursor=pointer]:
+              - generic [ref=f9e199]: 
+              - generic [ref=f9e201]:
+                - generic [ref=f9e202]: Не помогло
+                - generic [ref=f9e203]: Очень жаль :(
+            - generic [ref=f9e205] [cursor=pointer]:
+              - generic [ref=f9e206]: 
+              - generic [ref=f9e208]: Помощь интегратора
+          - generic [ref=f9e210]:
+            - generic [ref=f9e211]: Это не то, что я ищу
+            - generic [ref=f9e213]: Написано очень сложно и непонятно
+            - generic [ref=f9e215]: Есть устаревшая информация
+            - generic [ref=f9e217]: Слишком коротко, мне не хватает информации
+            - generic [ref=f9e219]: Мне не нравится, как это работает
+      - generic [ref=f9e221]:
+        - generic [ref=f9e224]:
+          - textbox "Я ищу" [ref=f9e225]
+          - button "Найти" [ref=f9e226] [cursor=pointer]
+        - generic [ref=f9e228]:
+          - generic [ref=f9e229]: Прочитайте готовые ответы
+          - generic [ref=f9e232]:
+            - generic [ref=f9e233]: Новые статьи
+            - generic [ref=f9e239]: Поддержка Битрикс24
+            - generic [ref=f9e245]: Регистрация и вход
+            - generic [ref=f9e251]: Безопасность в Битрикс24
+            - generic [ref=f9e257]: Тарифы и оплата
+            - generic [ref=f9e263]: Покупки и документы
+            - generic [ref=f9e269]: С чего начать
+            - generic [ref=f9e275]: AI в Битрикс24
+            - generic [ref=f9e281]: Вайбкод
+            - generic [ref=f9e287]: Коворк/Код
+            - generic [ref=f9e293]: Лента Новостей
+            - generic [ref=f9e299]: Задачи
+            - generic [ref=f9e305]: Проекты AI
+            - generic [ref=f9e311]: Мессенджер
+            - generic [ref=f9e317]: Календарь
+            - generic [ref=f9e323]: Диск
+            - generic [ref=f9e329]: База знаний
+            - generic [ref=f9e335]: Сайты
+            - generic [ref=f9e342]:
+              - generic [ref=f9e343] [cursor=pointer]: Интернет-магазин
+              - generic [ref=f9e348]:
+                - generic [ref=f9e349]: Начало работы
+                - generic [ref=f9e355]:
+                  - generic [ref=f9e356] [cursor=pointer]: Каталог товаров
+                  - generic [ref=f9e360]:
+                    - link "Как создать и настроить каталог товаров" [ref=f9e363] [cursor=pointer]:
+                      - /url: /open/20922462/
+                    - link "Как настроить каталог товаров в интернет-магазине" [ref=f9e366] [cursor=pointer]:
+                      - /url: /open/28160612/
+                    - link "Как изменить заголовок страницы с каталогом в интернет-магазине" [ref=f9e369] [cursor=pointer]:
+                      - /url: /open/28073708/
+                    - link "Как настроить детальную страницу товара в интернет-магазине" [ref=f9e372] [cursor=pointer]:
+                      - /url: /open/28160586/
+                    - link "Как включить подписку на отсутствующие товары в интернет-магазине" [ref=f9e375] [cursor=pointer]:
+                      - /url: /open/28207802/
+                    - link "Как настроить типы цен для товаров в интернет-магазине" [ref=f9e378] [cursor=pointer]:
+                      - /url: /open/28399378/
+                    - link "Как настроить правила работы с корзиной в интернет-магазине" [ref=f9e381] [cursor=pointer]:
+                      - /url: /open/28858582/
+                    - link "Как скрыть товар в интернет-магазине Битрикс24" [ref=f9e384] [cursor=pointer]:
+                      - /url: /open/27845414/
+                - generic [ref=f9e385]: Работа с заказами
+                - generic [ref=f9e390]: Настройки интернет-магазина
+                - generic [ref=f9e395]: Автоматизация
+            - generic [ref=f9e400]: Складской учет
+            - generic [ref=f9e406]: Почта
+            - generic [ref=f9e412]: CRM
+            - generic [ref=f9e418]: Онлайн-запись
+            - generic [ref=f9e424]: КЭДО
+            - generic [ref=f9e430]: Подпись
+            - generic [ref=f9e436]: Маркетинг
+            - generic [ref=f9e442]: Центр продаж
+            - generic [ref=f9e448]: Аналитика
+            - generic [ref=f9e454]: BI Конструктор
+            - generic [ref=f9e460]: Автоматизация
+            - generic [ref=f9e466]: Интеграция 1С и Битрикс24
+            - generic [ref=f9e472]: Сотрудники
+            - generic [ref=f9e478]: Бизнес-процессы
+            - generic [ref=f9e484]: Маркетплейс
+            - generic [ref=f9e490]: Контакт-центр
+            - generic [ref=f9e496]: Настройки
+            - generic [ref=f9e502]: Виджет сотрудника
+            - generic [ref=f9e508]: Телефония
+            - generic [ref=f9e514]: Филиальная сеть
+            - generic [ref=f9e520]: Приложение Битрикс24
+            - generic [ref=f9e526]: Общие вопросы
+            - generic [ref=f9e532]: Битрикс24 в коробке
+            - generic [ref=f9e538]: Изменения в статьях (архив)
+  - generic [ref=f9e545]:
+    - generic [ref=f9e547]:
+      - generic [ref=f9e549]:
+        - generic [ref=f9e550]: Возможности
+        - generic [ref=f9e551]:
+          - link "CRM" [ref=f9e553] [cursor=pointer]:
+            - /url: https://www.bitrix24.ru/features/crm/
+          - link "Чат" [ref=f9e555] [cursor=pointer]:
+            - /url: https://www.bitrix24.ru/features/chat/
+          - link "CoPilot" [ref=f9e557] [cursor=pointer]:
+            - /url: https://www.bitrix24.ru/features/copilot/
+          - link "Задачи и проекты" [ref=f9e559] [cursor=pointer]:
+            - /url: https://www.bitrix24.ru/features/tasks.php
+          - link "Сайты" [ref=f9e561] [cursor=pointer]:
+            - /url: https://www.bitrix24.ru/features/sites.php
+          - link "Магазины" [ref=f9e563] [cursor=pointer]:
+            - /url: https://www.bitrix24.ru/features/shop.php
+      - generic [ref=f9e565]:
+        - generic [ref=f9e566]: Помощь
+        - generic [ref=f9e567]:
+          - link "Вопросы и ответы" [ref=f9e569] [cursor=pointer]:
+            - /url: https://helpdesk.bitrix24.ru/
+          - link "Обучение" [ref=f9e571] [cursor=pointer]:
+            - /url: https://www.bitrix24.ru/features/pages/training.php
+          - link "Вебинары" [ref=f9e573] [cursor=pointer]:
+            - /url: https://www.bitrix24.ru/support/webinars.php
+          - link "Битрикс24 Журнал" [ref=f9e575] [cursor=pointer]:
+            - /url: https://www.bitrix24.ru/journal/
+          - link "Задать вопрос" [ref=f9e577] [cursor=pointer]:
+            - /url: https://helpdesk.bitrix24.ru/ticket.php
+          - link "Отзывы" [ref=f9e579] [cursor=pointer]:
+            - /url: https://www.bitrix24.ru/reviews/
+      - generic [ref=f9e581]:
+        - generic [ref=f9e582]: Внедрение
+        - generic [ref=f9e583]:
+          - generic [ref=f9e584]: Заказать внедрение
+          - link "Партнеры" [ref=f9e586] [cursor=pointer]:
+            - /url: https://www.bitrix24.ru/partners/
+          - link "Стать партнером" [ref=f9e588] [cursor=pointer]:
+            - /url: http://partners24.1c-bitrix.ru/
+          - link "Битрикс24 для энтерпрайз" [ref=f9e590] [cursor=pointer]:
+            - /url: https://www.bitrix24.ru/enterprise/
+          - link "Мероприятия партнеров" [ref=f9e592] [cursor=pointer]:
+            - /url: https://www.bitrix24.ru/partners/events/
+      - generic [ref=f9e594]:
+        - generic [ref=f9e595]: Цены и тарифы
+        - generic [ref=f9e596]:
+          - link "Сколько стоит?" [ref=f9e598] [cursor=pointer]:
+            - /url: https://www.bitrix24.ru/prices/
+          - link "Коробочная версия" [ref=f9e600] [cursor=pointer]:
+            - /url: https://www.bitrix24.ru/prices/self-hosted.php
+          - link "Для бухгалтера" [ref=f9e602] [cursor=pointer]:
+            - /url: https://www.bitrix24.ru/prices/accounting.php
+      - generic [ref=f9e604]:
+        - generic [ref=f9e605]: Приложения
+        - generic [ref=f9e606]:
+          - link "Мобильное приложение" [ref=f9e608] [cursor=pointer]:
+            - /url: https://www.bitrix24.ru/apps/mobile-and-desktop-apps.php
+          - link "Приложение для Windows и Mac" [ref=f9e610] [cursor=pointer]:
+            - /url: https://www.bitrix24.ru/features/desktop.php
+          - link "Битрикс24 Маркет" [ref=f9e612] [cursor=pointer]:
+            - /url: https://www.bitrix24.ru/apps/
+          - link "Разработчикам приложений" [ref=f9e614] [cursor=pointer]:
+            - /url: https://www.bitrix24.ru/apps/dev.php
+    - generic [ref=f9e618]:
+      - generic [ref=f9e619]:
+        - list [ref=f9e622]:
+          - listitem [ref=f9e623]:
+            - link "Безопасность" [ref=f9e624] [cursor=pointer]:
+              - /url: https://www.bitrix24.ru/security/
+          - listitem [ref=f9e625]:
+            - link "Конфиденциальность" [ref=f9e626] [cursor=pointer]:
+              - /url: https://www.bitrix24.ru/about/privacy.php
+          - listitem [ref=f9e627]:
+            - link "Соглашение" [ref=f9e628] [cursor=pointer]:
+              - /url: https://www.bitrix24.ru/about/agreement.php
+          - listitem [ref=f9e629]:
+            - link "О нас" [ref=f9e630] [cursor=pointer]:
+              - /url: https://www.bitrix24.ru/about/
+          - listitem [ref=f9e631]:
+            - link "Вакансии" [ref=f9e632] [cursor=pointer]:
+              - /url: https://career.bitrix24.site/
+          - listitem [ref=f9e633]:
+            - link "Контакты" [ref=f9e634] [cursor=pointer]:
+              - /url: https://www.bitrix24.ru/about/contacts.php
+        - list [ref=f9e637]:
+          - listitem [ref=f9e638]:
+            - link "Соглашение об использовании сайта" [ref=f9e639] [cursor=pointer]:
+              - /url: https://www.1c-bitrix.ru/download/files/manuals/ru/agreement_2014.htm
+          - listitem [ref=f9e640]:
+            - link "Политика обработки персональных данных" [ref=f9e641] [cursor=pointer]:
+              - /url: https://www.bitrix24.ru/about/privacy.php
+          - listitem [ref=f9e642]:
+            - link "Правила использования Битрикс24.Сайты" [ref=f9e643] [cursor=pointer]:
+              - /url: https://www.bitrix24.ru/abuse/sites.php
+      - generic [ref=f9e647]:
+        - list [ref=f9e650]:
+          - listitem [ref=f9e651]:
+            - link "Vk" [ref=f9e652] [cursor=pointer]:
+              - /url: https://vk.com/bitrix24
+          - listitem [ref=f9e655]:
+            - link "Telegram" [ref=f9e656] [cursor=pointer]:
+              - /url: https://t.me/bitrix24clients
+          - listitem [ref=f9e659]:
+            - link "TenChat" [ref=f9e660] [cursor=pointer]:
+              - /url: https://tenchat.ru/bitrix24
+          - listitem [ref=f9e663]:
+            - link "YouTube" [ref=f9e664] [cursor=pointer]:
+              - /url: https://www.youtube.com/channel/UCfYCeX2rohHIAuWfAXxLfhg
+          - listitem [ref=f9e667]:
+            - link "Yandex Zen" [ref=f9e668] [cursor=pointer]:
+              - /url: https://zen.yandex.ru/id/5acc6cb24bf161ef0d740c39
+          - listitem [ref=f9e671]:
+            - link "Rutube" [ref=f9e672] [cursor=pointer]:
+              - /url: https://rutube.ru/channel/24776390/
+        - generic [ref=f9e678]:
+          - textbox "Что ищем?" [ref=f9e679]
+          - button "Submit" [ref=f9e680] [cursor=pointer]
+    - generic [ref=f9e687]:
+      - text: "© 2001-2026 «Битрикс», «1С-Битрикс». Работает на «1С-Битрикс: Управление сайтом»"
+      - generic [ref=f9e688]: 16+
+  - generic [ref=f9e690]:
+    - generic [ref=f9e691]:
+      - text: Продолжая пользоваться сайтом, вы соглашаетесь на обработку данных cookies для корректной работы сайта, анализа его посещаемости и других целей, предусмотренных
+      - link "Политикой" [ref=f9e692] [cursor=pointer]:
+        - /url: https://www.1c-bitrix.ru/about/privacy.php
+      - text: .
+    - generic [ref=f9e693]:
+      - generic [ref=f9e694]: ОК
+      - generic [ref=f9e697] [cursor=pointer]

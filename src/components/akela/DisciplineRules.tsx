@@ -22,12 +22,12 @@ const ICONS: Record<string, LucideIcon> = {
 };
 
 const PALETTES = [
-  "from-emerald-500 to-emerald-600",
+  "from-indigo-500 to-indigo-600",
   "from-amber-400 to-amber-500",
   "from-teal-500 to-teal-600",
-  "from-emerald-600 to-emerald-700",
+  "from-indigo-600 to-indigo-700",
   "from-amber-500 to-amber-600",
-  "from-emerald-700 to-emerald-800",
+  "from-indigo-700 to-indigo-800",
 ];
 
 export function DisciplineRules({

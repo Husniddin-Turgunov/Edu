@@ -2,6 +2,9 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono, Plus_Jakarta_Sans } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "@/components/ui/toaster";
+import AuthProvider from "./providers";
+import { LiquidBackground } from "@/components/akela/LiquidBackground";
+import { GradingFAB } from "@/components/GradingFAB";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -50,12 +53,17 @@ export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="uz" suppressHydrationWarning>
+    <html lang="uz" suppressHydrationWarning data-scroll-behavior="smooth">
       <body
         className={`${geistSans.variable} ${geistMono.variable} ${jakarta.variable} antialiased bg-background text-foreground`}
       >
-        {children}
-        <Toaster />
+        {/* YAGONA KO'K FON — har bir oynada bir xil background kafolati */}
+        <LiquidBackground />
+        <AuthProvider>
+          {children}
+          <GradingFAB />
+          <Toaster />
+        </AuthProvider>
       </body>
     </html>
   );

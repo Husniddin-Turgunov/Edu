@@ -9,8 +9,9 @@ import {
   Crown,
   Hash,
 } from "lucide-react";
-import type { UiStrings } from "@/lib/akela-content";
+import type { UiStrings, Locale } from "@/lib/akela-content";
 import staffing from "@/data/akela-staffing.json";
+import { translateDepartment, translateRole, translateName } from "@/lib/staff-translate";
 
 type Member = {
   code: string;
@@ -32,21 +33,21 @@ function deptCode(dept: string): string {
   return m ? m[0] : "";
 }
 
-function deptName(dept: string): string {
-  return dept.replace(/\s*AGM\/[\d\/]+/, "").trim();
+function deptName(dept: string, locale: Locale): string {
+  return translateDepartment(dept, locale);
 }
 
 // Color rotation for department badges
 const PALETTES = [
-  "from-emerald-500 to-emerald-600",
+  "from-indigo-500 to-indigo-600",
   "from-amber-400 to-amber-500",
   "from-teal-500 to-teal-600",
-  "from-emerald-600 to-emerald-700",
+  "from-indigo-600 to-indigo-700",
   "from-amber-500 to-amber-600",
-  "from-emerald-700 to-emerald-800",
+  "from-indigo-700 to-indigo-800",
 ];
 
-export function CompanyStructure({ strings }: { strings: UiStrings }) {
+export function CompanyStructure({ strings, locale }: { strings: UiStrings; locale: Locale }) {
   const [openIdx, setOpenIdx] = useState<number | null>(0);
   const totalEmployees = DEPARTMENTS.reduce(
     (acc, d) => acc + d.members.length,
@@ -88,14 +89,15 @@ export function CompanyStructure({ strings }: { strings: UiStrings }) {
           </div>
         </div>
 
-        {/* Departments accordion */}
-        <div className="mt-10 grid gap-3 sm:grid-cols-2">
+        {/* Departments accordion — single open at a time */}
+        <div className="mt-10 grid gap-3 sm:grid-cols-2 items-start">
           {DEPARTMENTS.map((dept, i) => {
             const open = openIdx === i;
             const palette = PALETTES[i % PALETTES.length];
             const head = dept.members[0];
             const code = deptCode(dept.department);
-            const name = deptName(dept.department);
+            const name = deptName(dept.department, locale);
+            const isLastOdd = DEPARTMENTS.length % 2 === 1 && i === DEPARTMENTS.length - 1;
 
             return (
               <motion.div
@@ -104,9 +106,9 @@ export function CompanyStructure({ strings }: { strings: UiStrings }) {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true, margin: "-50px" }}
                 transition={{ duration: 0.5, delay: (i % 6) * 0.05 }}
-                className={`glass-card rounded-3xl transition-all ${
-                  open ? "shadow-2xl" : ""
-                }`}
+                className={`glass-card rounded-3xl transition-all overflow-hidden ${
+                  open ? "shadow-2xl ring-2 ring-indigo-300" : ""
+                } ${isLastOdd ? "sm:col-span-2 sm:mx-auto sm:w-full sm:max-w-[calc(50%-6px)]" : ""}`}
               >
                 <button
                   onClick={() => setOpenIdx(open ? null : i)}
@@ -129,7 +131,11 @@ export function CompanyStructure({ strings }: { strings: UiStrings }) {
                         {dept.members.length} {strings.structure_members}
                       </span>
                     </div>
-                    <div className="mt-1 truncate text-sm font-bold text-[color:var(--emerald-deep)] sm:text-base">
+                    {/* Bo'lim nomi — border/karta ichida to'liq sig'ishi uchun 2 qatorga ruxsat */}
+                    <div
+                      title={name || dept.department}
+                      className="mt-1 line-clamp-2 break-words text-sm font-bold leading-snug text-[color:var(--emerald-deep)] sm:text-base"
+                    >
                       {name || dept.department}
                     </div>
                   </div>
@@ -173,7 +179,7 @@ export function CompanyStructure({ strings }: { strings: UiStrings }) {
                                     className={`grid h-9 w-9 shrink-0 place-items-center rounded-xl text-xs font-bold ${
                                       isHead
                                         ? "bg-gradient-to-br from-amber-400 to-amber-500 text-white"
-                                        : "bg-emerald-100 text-[color:var(--emerald-deep)]"
+                                        : "bg-indigo-100 text-[color:var(--emerald-deep)]"
                                     }`}
                                   >
                                     {isHead ? (
@@ -184,10 +190,10 @@ export function CompanyStructure({ strings }: { strings: UiStrings }) {
                                   </div>
                                   <div className="min-w-0 flex-1">
                                     <div className="truncate text-sm font-semibold text-[color:var(--emerald-deep)]">
-                                      {m.name}
+                                      {translateName(m.name)}
                                     </div>
                                     <div className="truncate text-xs text-[color:var(--ink-soft)]">
-                                      {m.role}
+                                      {translateRole(m.role, locale)}
                                     </div>
                                     <div className="mt-0.5 font-mono text-[10px] text-[color:var(--ink-soft)]/80">
                                       {m.code}

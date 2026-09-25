@@ -1,0 +1,295 @@
+﻿diff --git a/src/lib/lms-storage.ts b/src/lib/lms-storage.ts
+index 3c29292..3d13346 100644
+--- a/src/lib/lms-storage.ts
++++ b/src/lib/lms-storage.ts
+@@ -12,6 +12,26 @@ export type CourseInput = {
+   folderId?: string;
+ };
+ 
++/**
++ * Tanlangan javob to'g'rimi тАФ review uchun serverda hisoblanadi.
++ * true = to'g'ri, false = noto'g'ri, null = javob berilmagan.
++ */
++function computeAnswerCorrect(q: any, selected: any): boolean | null {
++  if (q.type === "written") {
++    if (selected == null || selected === "") return null;
++    const a = String(selected).trim().toLowerCase();
++    const b = String(q.correctAnswer || "").trim().toLowerCase();
++    if (!b) return null;
++    return a === b;
++  }
++  const correctIds: string[] = (q.choices || []).filter((c: any) => c.isCorrect).map((c: any) => c.id);
++  if (selected == null || selected === "" || (Array.isArray(selected) && selected.length === 0)) return null;
++  if (Array.isArray(selected)) {
++    return selected.length === correctIds.length && selected.every((s: any) => correctIds.includes(s));
++  }
++  return correctIds.includes(selected);
++}
++
+ export const lmsStorage = {
+   // ====== COURSES ======
+   async getAllCourses(authorId?: string) {
+@@ -310,16 +330,34 @@ export const lmsStorage = {
+         if (!ids.includes(userId)) return null; // not allowed
+       } catch { return null; }
+     }
+-    // maxAttempts check
++    // maxAttempts check тАФ faqat TUGALLANGAN (completedAt != null) urinishlar
++    // hisoblanadi. Retake placeholder (gradingStatus="retake", completedAt=null)
++    // qo'shimcha imkoniyat beradi: u bor ekan test qayta ochiladi.
++    const unconsumedRetakes = await prisma.testResult.count({
++      where: { userId, testId, gradingStatus: "retake", completedAt: null },
++    });
+     if (test.maxAttempts && test.maxAttempts > 0) {
+-      const count = await prisma.testResult.count({ where: { userId, testId } });
+-      if (count >= test.maxAttempts) return { blocked: true, test, attempts: count } as any;
++      const completed = await prisma.testResult.count({
++        where: { userId, testId, completedAt: { not: null } },
++      });
++      // Bloklash: tugallangan urinishlar yetdi VA kutilayotgan retake yo'q
++      if (completed >= test.maxAttempts && unconsumedRetakes === 0) {
++        return { blocked: true, test, attempts: completed } as any;
++      }
+     }
+-    // shuffle
++    // ===== Savollar soni cheklovi (questionCount) =====
++    // Muhim: random YOQILGAN bo'lsa avval BUTUN savol bazasi aralashtiriladi,
++    // keyin shu aralashgan ro'yxatdan kerakli sonda savol olinadi тАФ natijada har
++    // bir urinishda bazadan TASODIFIY savollar tanlanadi (faqat tartibi emas).
++    // Random o'chirilgan bo'lsa тАФ savollar tartibi bo'yicha birinchi N tasi olinadi.
+     let questions = [...test.questions];
+     if (test.shuffleQuestions) {
+       questions = this.shuffleArray(questions);
+     }
++    const limit = Number((test as any).questionCount) || 0;
++    if (limit > 0 && questions.length > limit) {
++      questions = questions.slice(0, limit);
++    }
+     questions = questions.map((q) => {
+       let choices = [...(q as any).choices];
+       if ((test as any).shuffleChoices) {
+@@ -327,10 +365,18 @@ export const lmsStorage = {
+       }
+       return { ...q, choices };
+     });
+-    return { ...test, questions };
++    return {
++      ...test,
++      questions,
++      // Ko'rsatilgan savollar soni (cheklov qo'llangandan keyin)
++      presentedCount: questions.length,
++      // Bazadagi jami savollar soni
++      totalQuestions: test.questions.length,
++      retakePending: unconsumedRetakes > 0,
++    };
+   },
+ 
+-  async submitTestResult(data: { userId: string; testId: string; answers: Record<string, string>; }) {
++  async submitTestResult(data: { userId: string; testId: string; answers: Record<string, string>; questionIds?: string[]; }) {
+     const test = await prisma.test.findUnique({
+       where: { id: data.testId },
+       include: { questions: { include: { choices: true } } },
+@@ -345,13 +391,46 @@ export const lmsStorage = {
+         if (!ids.includes(data.userId)) throw new Error("Sizga bu test biriktirilmagan");
+       } catch (e) { throw e; }
+     }
+-    // maxAttempts
++    // maxAttempts тАФ faqat tugallangan urinishlar; retake placeholder
++    // qo'shimcha imkoniyat beradi (u bor ekan submit mumkin)
+     if ((test as any).maxAttempts && (test as any).maxAttempts > 0) {
+-      const cnt = await prisma.testResult.count({ where: { userId: data.userId, testId: data.testId } });
+-      if (cnt >= (test as any).maxAttempts) throw new Error(`Urinishlar tugadi (${(test as any).maxAttempts} / ${cnt})`);
++      const completed = await prisma.testResult.count({
++        where: { userId: data.userId, testId: data.testId, completedAt: { not: null } },
++      });
++      const unconsumedRetakes = await prisma.testResult.count({
++        where: { userId: data.userId, testId: data.testId, gradingStatus: "retake", completedAt: null },
++      });
++      if (completed >= (test as any).maxAttempts && unconsumedRetakes === 0) {
++        throw new Error(`Urinishlar tugadi (${(test as any).maxAttempts} / ${completed})`);
++      }
+     }
+ 
+-    const questions = test.questions as any[];
++    // Cheklangan testda (questionCount) ball faqat KO'RSATILGAN savollar asosida
++    // hisoblanadi: 30 savoldan 30 tasi to'g'ri тЖТ 100%. Klient ko'rgan savollar
++    // ro'yxati `questionIds` orqali keladi (faqat shu testga tegishli ID lar olinadi).
++    // Yuborilmagan javoblar (javobsiz qolganlar) noto'g'ri hisoblanadi.
++    const allQuestions = test.questions as any[];
++    const allIds = new Set(allQuestions.map((q) => String(q.id)));
++    const limit = Number((test as any).questionCount) || 0;
++    const answeredIds = Object.keys(data.answers || {}).filter(
++      (k) => !k.startsWith("__") && allIds.has(k),
++    );
++    let presentedIds: string[];
++    if (Array.isArray(data.questionIds) && data.questionIds.length > 0) {
++      presentedIds = Array.from(
++        new Set(data.questionIds.map(String).filter((qid) => allIds.has(qid))),
++      );
++    } else if (limit > 0 && answeredIds.length > 0) {
++      // Zaxira (eski/keshdagi klient): cheklangan testda javob berilgan savollar тАФ
++      // ko'rsatilgan savollar hisoblanadi.
++      presentedIds = answeredIds;
++    } else {
++      presentedIds = allQuestions.map((q) => String(q.id));
++    }
++    const presentedSet = new Set(presentedIds);
++    const questions = allQuestions.filter((q) => presentedSet.has(String(q.id)));
++    // Review/grading shu ro'yxatdan foydalanishi uchun natijaga saqlaymiz
++    const answersToStore = { ...data.answers, __questionIds: presentedIds };
+ 
+     // Score: savollar SONI asosida тАФ to'g'ri javoblar / jami MCQ savollar * 100
+     // (points vazni emas, shuning uchun barcha to'g'ri bo'lsa 100% bo'ladi)
+@@ -375,35 +454,63 @@ export const lmsStorage = {
+     const finalScore = hasWritten ? null : percent;
+     const passed = hasWritten ? false : percent >= test.passScore;
+ 
+-    const result = await prisma.testResult.create({
+-      data: {
+-        userId: data.userId,
+-        testId: data.testId,
+-        score: finalScore as number | undefined,
+-        passed,
+-        answers: JSON.stringify(data.answers),
+-        completedAt: new Date(),
+-        gradingStatus: hasWritten ? "pending" : "auto",
+-      },
++    const completedAt = new Date();
++    const gradingStatus = hasWritten ? "pending" : "auto";
++
++    // Retake placeholder bo'lsa тАФ uni yangi natijaga aylantiramiz (yeyib,
++    // takror qator yaratmaymiz) va `__retake: true` belgisini yozamiz.
++    // Shu belgi admin panelida "qayta topshirishdan keyingi natija" deya
++    // ko'rsatiladi. Placeholder yo'q bo'la тАФ oddiy natija yaratiladi.
++    const placeholder = await prisma.testResult.findFirst({
++      where: { userId: data.userId, testId: data.testId, gradingStatus: "retake", completedAt: null },
++      orderBy: { startedAt: "desc" },
+     });
++
++    let result;
++    if (placeholder) {
++      result = await prisma.testResult.update({
++        where: { id: placeholder.id },
++        data: {
++          score: finalScore as number | undefined,
++          passed,
++          answers: JSON.stringify({ ...answersToStore, __retake: true }),
++          completedAt,
++          gradingStatus,
++        },
++      });
++    } else {
++      result = await prisma.testResult.create({
++        data: {
++          userId: data.userId,
++          testId: data.testId,
++          score: finalScore as number | undefined,
++          passed,
++          answers: JSON.stringify(answersToStore),
++          completedAt,
++          gradingStatus,
++        },
++      });
++    }
+     return result;
+   },
+ 
+   async getTestHistory(userId: string, testId?: string) {
+-    const where: any = { userId };
++    // Faqat tugallangan natijalar (retake placeholder ko'rinmaydi)
++    const where: any = { userId, completedAt: { not: null } };
+     if (testId) where.testId = testId;
+     return prisma.testResult.findMany({ where, orderBy: { startedAt: "desc" }, include: { test: { select: { title: true } } } });
+   },
+ 
+   async getAllTestResultsForAdmin(testId?: string) {
+-    const where: any = {};
++    // Faqat tugallangan natijalar (placeholder ko'rinmaydi)
++    const where: any = { completedAt: { not: null } };
+     if (testId) where.testId = testId;
+     return prisma.testResult.findMany({ where, orderBy: { startedAt: "desc" }, include: { user: { select: { id: true, name: true, surname: true, email: true } }, test: { select: { title: true } } } });
+   },
+ 
+   /**
+    * Oldingi urinishni ko'rish: savollar + tanlangan javoblar.
+-   * isCorrect faqat urinishlar tugaganda (bunibossa) ochiladi тАФ avvalgi urinishlarda cheat oldini olish uchun.
++   * isCorrect faqat urinishlar tugaganda ochiladi тАФ cheat oldini olish uchun.
+    */
+   async getAttemptReview(testId: string, userId: string, resultId?: string) {
+     const test = await prisma.test.findUnique({
+@@ -414,7 +521,7 @@ export const lmsStorage = {
+     });
+     if (!test) return null;
+ 
+-    const resultWhere: any = { userId, testId };
++    const resultWhere: any = { userId, testId, completedAt: { not: null } };
+     if (resultId) resultWhere.id = resultId;
+     const result = await prisma.testResult.findFirst({
+       where: resultWhere,
+@@ -422,7 +529,7 @@ export const lmsStorage = {
+     });
+     if (!result) return null;
+ 
+-    const attemptCount = await prisma.testResult.count({ where: { userId, testId } });
++    const attemptCount = await prisma.testResult.count({ where: { userId, testId, completedAt: { not: null } } });
+     const maxAttempts = (test as any).maxAttempts ?? 0;
+     // Foydalanuvchi o'z natijasini ko'rayotganda har doim to'g'ri javobni ko'rsatamiz
+     // (topshirilgan urinishni ko'rish тАФ o'rganish uchun). Cheat himoyasi kerak bo'lsa
+@@ -436,6 +543,12 @@ export const lmsStorage = {
+       answers = {};
+     }
+ 
++    // Cheklangan testda faqat KO'RSATILGAN savollarni ko'rsatamiz
++    // (`__questionIds` submit paytida saqlanadi).
++    const presentedIds: string[] = Array.isArray((answers as any).__questionIds)
++      ? (answers as any).__questionIds.map(String)
++      : [];
++
+     return {
+       result: {
+         id: result.id,
+@@ -452,22 +565,28 @@ export const lmsStorage = {
+       },
+       attemptCount,
+       revealCorrect,
+-      questions: (test as any).questions.map((q: any) => ({
+-        id: q.id,
+-        text: q.text,
+-        type: q.type,
+-        points: q.points,
+-        order: q.order,
+-        explanation: revealCorrect ? q.explanation : null,
+-        correctAnswer: revealCorrect ? q.correctAnswer : null,
+-        selected: answers[q.id] ?? null,
+-        choices: (q.choices || []).map((c: any) => ({
+-          id: c.id,
+-          text: c.text,
+-          order: c.order,
+-          isCorrect: revealCorrect ? !!c.isCorrect : false,
+-        })),
+-      })),
++      questions: (test as any).questions
++        .filter((q: any) => presentedIds.length === 0 || presentedIds.includes(String(q.id)))
++        .map((q: any) => {
++        const selected = answers[q.id] ?? null;
++        return {
++          id: q.id,
++          text: q.text,
++          type: q.type,
++          points: q.points,
++          order: q.order,
++          explanation: revealCorrect ? q.explanation : null,
++          correctAnswer: revealCorrect ? q.correctAnswer : null,
++          selected,
++          answerCorrect: computeAnswerCorrect(q, selected),
++          choices: (q.choices || []).map((c: any) => ({
++            id: c.id,
++            text: c.text,
++            order: c.order,
++            isCorrect: revealCorrect ? !!c.isCorrect : false,
++          })),
++        };
++      }),
+     };
+   },
+ };

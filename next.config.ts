@@ -1,12 +1,17 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  output: "standalone",
   /* config options here */
   typescript: {
     ignoreBuildErrors: true,
   },
   reactStrictMode: false,
+  // Telegram natija kartochkasi (next/og) uchun shriftlar serverless funksiya
+  // ichida ham bo'lishi kerak.
+  outputFileTracingIncludes: {
+    "/api/telegram/**": ["./public/fonts/**"],
+    "/api/tests/**": ["./public/fonts/**"],
+  },
 };
 
 export default nextConfig;

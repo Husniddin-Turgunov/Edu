@@ -1,0 +1,198 @@
+- generic [active] [ref=f14e1]:
+  - generic [ref=f14e8]:
+    - link "Bitrix24" [ref=f14e11] [cursor=pointer]:
+      - /url: https://www.bitrix24.ru
+    - generic [ref=f14e20]:
+      - link "Возможности" [ref=f14e23] [cursor=pointer]:
+        - /url: https://www.bitrix24.ru/features/all.php
+      - link "Цены" [ref=f14e26] [cursor=pointer]:
+        - /url: https://www.bitrix24.ru/prices/
+      - link "Интеграции" [ref=f14e29] [cursor=pointer]:
+        - /url: https://www.bitrix24.ru/apps/market.php
+      - link "Внедрение" [ref=f14e32] [cursor=pointer]:
+        - /url: https://www.bitrix24.ru/partners/
+      - generic [ref=f14e34] [cursor=pointer]:
+        - link "Разработчикам" [ref=f14e35]:
+          - /url: https://apidocs.bitrix24.ru/
+        - generic [ref=f14e36]: New
+    - generic [ref=f14e38]:
+      - link "Получить бесплатно" [ref=f14e41] [cursor=pointer]:
+        - /url: https://www.bitrix24.ru/create.php
+      - generic [ref=f14e42]: Вход
+  - generic [ref=f14e50]:
+    - heading "Поддержка24" [level=1] [ref=f14e56]
+    - link "Поддержка24" [ref=f14e61] [cursor=pointer]:
+      - /url: /
+    - generic [ref=f14e63]:
+      - strong [ref=f14e66]: К сожалению, по вашему поисковому запросу ничего не нашлось
+      - generic [ref=f14e67]:
+        - generic [ref=f14e70]:
+          - textbox "Я ищу" [ref=f14e71]
+          - button "Найти" [ref=f14e72] [cursor=pointer]
+        - generic [ref=f14e74]:
+          - generic [ref=f14e75]: Прочитайте готовые ответы
+          - generic [ref=f14e78]:
+            - generic [ref=f14e79]: Новые статьи
+            - generic [ref=f14e85]: Поддержка Битрикс24
+            - generic [ref=f14e91]: Регистрация и вход
+            - generic [ref=f14e97]: Безопасность в Битрикс24
+            - generic [ref=f14e103]: Тарифы и оплата
+            - generic [ref=f14e109]: Покупки и документы
+            - generic [ref=f14e115]: С чего начать
+            - generic [ref=f14e121]: AI в Битрикс24
+            - generic [ref=f14e127]: Вайбкод
+            - generic [ref=f14e133]: Коворк/Код
+            - generic [ref=f14e139]: Лента Новостей
+            - generic [ref=f14e145]: Задачи
+            - generic [ref=f14e151]: Проекты AI
+            - generic [ref=f14e157]: Мессенджер
+            - generic [ref=f14e163]: Календарь
+            - generic [ref=f14e169]: Диск
+            - generic [ref=f14e175]: База знаний
+            - generic [ref=f14e181]: Сайты
+            - generic [ref=f14e187]: Интернет-магазин
+            - generic [ref=f14e193]: Складской учет
+            - generic [ref=f14e199]: Почта
+            - generic [ref=f14e205]: CRM
+            - generic [ref=f14e211]: Онлайн-запись
+            - generic [ref=f14e217]: КЭДО
+            - generic [ref=f14e223]: Подпись
+            - generic [ref=f14e229]: Маркетинг
+            - generic [ref=f14e235]: Центр продаж
+            - generic [ref=f14e241]: Аналитика
+            - generic [ref=f14e247]: BI Конструктор
+            - generic [ref=f14e253]: Автоматизация
+            - generic [ref=f14e259]: Интеграция 1С и Битрикс24
+            - generic [ref=f14e265]: Сотрудники
+            - generic [ref=f14e271]: Бизнес-процессы
+            - generic [ref=f14e277]: Маркетплейс
+            - generic [ref=f14e283]: Контакт-центр
+            - generic [ref=f14e289]: Настройки
+            - generic [ref=f14e295]: Виджет сотрудника
+            - generic [ref=f14e301]: Телефония
+            - generic [ref=f14e307]: Филиальная сеть
+            - generic [ref=f14e313]: Приложение Битрикс24
+            - generic [ref=f14e319]: Общие вопросы
+            - generic [ref=f14e325]: Битрикс24 в коробке
+            - generic [ref=f14e331]: Изменения в статьях (архив)
+  - generic [ref=f14e338]:
+    - generic [ref=f14e340]:
+      - generic [ref=f14e342]:
+        - generic [ref=f14e343]: Возможности
+        - generic [ref=f14e344]:
+          - link "CRM" [ref=f14e346] [cursor=pointer]:
+            - /url: https://www.bitrix24.ru/features/crm/
+          - link "Чат" [ref=f14e348] [cursor=pointer]:
+            - /url: https://www.bitrix24.ru/features/chat/
+          - link "CoPilot" [ref=f14e350] [cursor=pointer]:
+            - /url: https://www.bitrix24.ru/features/copilot/
+          - link "Задачи и проекты" [ref=f14e352] [cursor=pointer]:
+            - /url: https://www.bitrix24.ru/features/tasks.php
+          - link "Сайты" [ref=f14e354] [cursor=pointer]:
+            - /url: https://www.bitrix24.ru/features/sites.php
+          - link "Магазины" [ref=f14e356] [cursor=pointer]:
+            - /url: https://www.bitrix24.ru/features/shop.php
+      - generic [ref=f14e358]:
+        - generic [ref=f14e359]: Помощь
+        - generic [ref=f14e360]:
+          - link "Вопросы и ответы" [ref=f14e362] [cursor=pointer]:
+            - /url: https://helpdesk.bitrix24.ru/
+          - link "Обучение" [ref=f14e364] [cursor=pointer]:
+            - /url: https://www.bitrix24.ru/features/pages/training.php
+          - link "Вебинары" [ref=f14e366] [cursor=pointer]:
+            - /url: https://www.bitrix24.ru/support/webinars.php
+          - link "Битрикс24 Журнал" [ref=f14e368] [cursor=pointer]:
+            - /url: https://www.bitrix24.ru/journal/
+          - link "Задать вопрос" [ref=f14e370] [cursor=pointer]:
+            - /url: https://helpdesk.bitrix24.ru/ticket.php
+          - link "Отзывы" [ref=f14e372] [cursor=pointer]:
+            - /url: https://www.bitrix24.ru/reviews/
+      - generic [ref=f14e374]:
+        - generic [ref=f14e375]: Внедрение
+        - generic [ref=f14e376]:
+          - generic [ref=f14e377]: Заказать внедрение
+          - link "Партнеры" [ref=f14e379] [cursor=pointer]:
+            - /url: https://www.bitrix24.ru/partners/
+          - link "Стать партнером" [ref=f14e381] [cursor=pointer]:
+            - /url: http://partners24.1c-bitrix.ru/
+          - link "Битрикс24 для энтерпрайз" [ref=f14e383] [cursor=pointer]:
+            - /url: https://www.bitrix24.ru/enterprise/
+          - link "Мероприятия партнеров" [ref=f14e385] [cursor=pointer]:
+            - /url: https://www.bitrix24.ru/partners/events/
+      - generic [ref=f14e387]:
+        - generic [ref=f14e388]: Цены и тарифы
+        - generic [ref=f14e389]:
+          - link "Сколько стоит?" [ref=f14e391] [cursor=pointer]:
+            - /url: https://www.bitrix24.ru/prices/
+          - link "Коробочная версия" [ref=f14e393] [cursor=pointer]:
+            - /url: https://www.bitrix24.ru/prices/self-hosted.php
+          - link "Для бухгалтера" [ref=f14e395] [cursor=pointer]:
+            - /url: https://www.bitrix24.ru/prices/accounting.php
+      - generic [ref=f14e397]:
+        - generic [ref=f14e398]: Приложения
+        - generic [ref=f14e399]:
+          - link "Мобильное приложение" [ref=f14e401] [cursor=pointer]:
+            - /url: https://www.bitrix24.ru/apps/mobile-and-desktop-apps.php
+          - link "Приложение для Windows и Mac" [ref=f14e403] [cursor=pointer]:
+            - /url: https://www.bitrix24.ru/features/desktop.php
+          - link "Битрикс24 Маркет" [ref=f14e405] [cursor=pointer]:
+            - /url: https://www.bitrix24.ru/apps/
+          - link "Разработчикам приложений" [ref=f14e407] [cursor=pointer]:
+            - /url: https://www.bitrix24.ru/apps/dev.php
+    - generic [ref=f14e411]:
+      - generic [ref=f14e412]:
+        - list [ref=f14e415]:
+          - listitem [ref=f14e416]:
+            - link "Безопасность" [ref=f14e417] [cursor=pointer]:
+              - /url: https://www.bitrix24.ru/security/
+          - listitem [ref=f14e418]:
+            - link "Конфиденциальность" [ref=f14e419] [cursor=pointer]:
+              - /url: https://www.bitrix24.ru/about/privacy.php
+          - listitem [ref=f14e420]:
+            - link "Соглашение" [ref=f14e421] [cursor=pointer]:
+              - /url: https://www.bitrix24.ru/about/agreement.php
+          - listitem [ref=f14e422]:
+            - link "О нас" [ref=f14e423] [cursor=pointer]:
+              - /url: https://www.bitrix24.ru/about/
+          - listitem [ref=f14e424]:
+            - link "Вакансии" [ref=f14e425] [cursor=pointer]:
+              - /url: https://career.bitrix24.site/
+          - listitem [ref=f14e426]:
+            - link "Контакты" [ref=f14e427] [cursor=pointer]:
+              - /url: https://www.bitrix24.ru/about/contacts.php
+        - list [ref=f14e430]:
+          - listitem [ref=f14e431]:
+            - link "Соглашение об использовании сайта" [ref=f14e432] [cursor=pointer]:
+              - /url: https://www.1c-bitrix.ru/download/files/manuals/ru/agreement_2014.htm
+          - listitem [ref=f14e433]:
+            - link "Политика обработки персональных данных" [ref=f14e434] [cursor=pointer]:
+              - /url: https://www.bitrix24.ru/about/privacy.php
+          - listitem [ref=f14e435]:
+            - link "Правила использования Битрикс24.Сайты" [ref=f14e436] [cursor=pointer]:
+              - /url: https://www.bitrix24.ru/abuse/sites.php
+      - generic [ref=f14e440]:
+        - list [ref=f14e443]:
+          - listitem [ref=f14e444]:
+            - link "Vk" [ref=f14e445] [cursor=pointer]:
+              - /url: https://vk.com/bitrix24
+          - listitem [ref=f14e448]:
+            - link "Telegram" [ref=f14e449] [cursor=pointer]:
+              - /url: https://t.me/bitrix24clients
+          - listitem [ref=f14e452]:
+            - link "TenChat" [ref=f14e453] [cursor=pointer]:
+              - /url: https://tenchat.ru/bitrix24
+          - listitem [ref=f14e456]:
+            - link "YouTube" [ref=f14e457] [cursor=pointer]:
+              - /url: https://www.youtube.com/channel/UCfYCeX2rohHIAuWfAXxLfhg
+          - listitem [ref=f14e460]:
+            - link "Yandex Zen" [ref=f14e461] [cursor=pointer]:
+              - /url: https://zen.yandex.ru/id/5acc6cb24bf161ef0d740c39
+          - listitem [ref=f14e464]:
+            - link "Rutube" [ref=f14e465] [cursor=pointer]:
+              - /url: https://rutube.ru/channel/24776390/
+        - generic [ref=f14e471]:
+          - textbox "Что ищем?" [ref=f14e472]
+          - button "Submit" [ref=f14e473] [cursor=pointer]
+    - generic [ref=f14e480]:
+      - text: "© 2001-2026 «Битрикс», «1С-Битрикс». Работает на «1С-Битрикс: Управление сайтом»"
+      - generic [ref=f14e481]: 16+

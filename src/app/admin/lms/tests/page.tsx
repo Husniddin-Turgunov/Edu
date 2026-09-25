@@ -33,6 +33,7 @@ import {
   EyeOff,
 } from "lucide-react";
 import { AdminSidebar } from "@/components/admin/AdminSidebar";
+import { api } from "@/lib/api";
 import { parseExcelFileToQuestions, downloadTestTemplate } from "@/lib/job-test-excel";
 
 type Test = {
@@ -113,6 +114,10 @@ export default function AdminTestsPage() {
   const [pendingTestQuestions, setPendingTestQuestions] = useState<import("@/lib/job-test-excel").QuizItem[]>([]);
   const [toast, setToast] = useState<{ kind: "ok" | "err"; msg: string } | null>(null);
   const [togglingTestId, setTogglingTestId] = useState<string | null>(null);
+  // Ko'pchilikdan himoya: kartochkada alohida 🗑 yo'q — faqat "Tanlab" bitta bosishda o'chirish
+  const [selectMode, setSelectMode] = useState(false);
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const [bulkDeleting, setBulkDeleting] = useState(false);
   const showToast = (kind: "ok" | "err", msg: string) => {
     setToast({ kind, msg });
     setTimeout(() => setToast(null), 3000);
@@ -200,20 +205,21 @@ export default function AdminTestsPage() {
     if (status === "authenticated" && (session?.user as any)?.role !== "admin") router.push("/dashboard");
   }, [status, session, router]);
 
-  const fetchTests = useCallback(async () => {
-    setLoading(true);
+  const fetchTests = useCallback(async (opts?: { background?: boolean }) => {
+    const background = opts?.background === true;
+    if (!background) setLoading(true);
     try {
-      const res = await fetch("/api/admin/tests");
+      const res = await fetch("/api/admin/tests", { cache: "no-store" });
       const data = await res.json();
       if (data.ok) setTests(data.tests);
     } finally {
-      setLoading(false);
+      if (!background) setLoading(false);
     }
   }, []);
 
   const fetchUsers = useCallback(async () => {
     try {
-      const res = await fetch("/api/admin/users");
+      const res = await fetch("/api/admin/users", { cache: "no-store" });
       const data = await res.json();
       if (data.ok) setUsers(data.users.map((u: any) => ({ id: u.id, email: u.email, name: u.name, surname: u.surname, department: u.department })));
     } catch {}
@@ -271,7 +277,7 @@ export default function AdminTestsPage() {
         }
         setShowCreate(false);
         setTestForm({ title: "", description: "", language: "uz", timeLimit: 0, passScore: 60, maxAttempts: 1, questionCount: 10, shuffleQuestions: true, shuffleChoices: true, visibility: "all", assignedUserIds: [] });
-        fetchTests();
+        fetchTests({ background: true });
       }
     } finally {
       setSubmitting(false);
@@ -305,7 +311,7 @@ export default function AdminTestsPage() {
           setPendingTestQuestions([]);
         }
         setEditingTest(null);
-        fetchTests();
+        fetchTests({ background: true });
       }
     } finally {
       setSubmitting(false);
@@ -384,7 +390,7 @@ setTestForm({
             { text: "", isCorrect: false },
           ],
         });
-        fetchTests();
+        fetchTests({ background: true });
       } else {
         const err = await res.json();
         alert("Xato: " + err.error);
@@ -394,17 +400,39 @@ setTestForm({
     }
   };
 
-  const handleDelete = async (id: string) => {
-    if (!confirm("Testni o'chirishni xohlaysizmi?")) return;
-    await fetch(`/api/admin/tests/${id}`, { method: "DELETE" });
-    fetchTests();
+  const toggleSelect = (id: string) =>
+    setSelectedIds((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]));
+
+  // Bitta bosishda tanlanganlarni o'chirish (bitta confirm — tez rejim)
+  const handleBulkDelete = async () => {
+    if (selectedIds.length === 0 || bulkDeleting) return;
+    if (!confirm(`Tanlangan ${selectedIds.length} ta test o'chirilsinmi? Bu amalni qaytarib bo'lmaydi.`)) return;
+    setBulkDeleting(true);
+    const ids = selectedIds;
+    const prev = tests;
+    setTests((t) => t.filter((x) => !ids.includes(x.id))); // optimistic — UI darhol toza
+    let failed = 0;
+    for (const id of ids) {
+      const r = await api(`/api/admin/tests/${id}`, { method: "DELETE" });
+      if (!r.ok) failed++;
+    }
+    setBulkDeleting(false);
+    setSelectedIds([]);
+    setSelectMode(false);
+    if (failed > 0) {
+      setTests(prev);
+      showToast("err", `${failed} ta testni o'chirib bo'lmadi — qayta urinib ko'ring`);
+      return;
+    }
+    showToast("ok", `${ids.length} ta test o'chirildi`);
+    await fetchTests({ background: true });
   };
 
   const openHistory = async (test: Test) => {
     setViewHistory(test);
     setLoadingHistory(true);
     try {
-      const res = await fetch(`/api/tests/history?testId=${test.id}&all=1`);
+      const res = await fetch(`/api/tests/history?testId=${test.id}&all=1`, { cache: "no-store" });
       const data = await res.json();
       if (data.ok) setHistory(data.results);
       else setHistory([]);
@@ -442,9 +470,18 @@ setTestForm({
             <h1 className="text-xl font-bold text-neutral-900">Testlar</h1>
             <p className="text-sm text-neutral-500 mt-0.5">Barcha testlar — kimga ko'rinishi, necha urinish, randomizer va tarix bilan</p>
           </div>
-          <button onClick={() => { setPendingTestQuestions([]); setShowCreate(true); }} className="flex items-center gap-2 px-4 py-2 text-sm font-semibold text-white bg-neutral-900 rounded-lg hover:from-blue-800 hover:to-indigo-700">
-            <Plus className="w-4 h-4" /> Test yaratish
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => { setSelectMode((v) => !v); setSelectedIds([]); }}
+              data-testid="toggle-select-mode"
+              className={`flex items-center gap-2 px-4 py-2 text-sm font-semibold rounded-lg border transition ${selectMode ? "bg-rose-50 border-rose-300 text-rose-700" : "bg-white border-neutral-200 text-neutral-700 hover:bg-neutral-50"}`}
+            >
+              <Trash2 className="w-4 h-4" /> {selectMode ? "Tanlovni bekor qilish" : "Tanlab o'chirish"}
+            </button>
+            <button onClick={() => { setPendingTestQuestions([]); setShowCreate(true); }} className="flex items-center gap-2 px-4 py-2 text-sm font-semibold text-white bg-neutral-900 rounded-lg hover:from-blue-800 hover:to-indigo-700">
+              <Plus className="w-4 h-4" /> Test yaratish
+            </button>
+          </div>
         </div>
 
         <AnimatePresence>
@@ -457,6 +494,33 @@ setTestForm({
         </AnimatePresence>
 
         <div className="p-8 max-w-[1600px]">
+          {/* Tanlab o'chirish bar — bitta bosishda ko'p testni o'chirish */}
+          {selectMode && (
+            <div className="flex flex-wrap items-center gap-3 mb-4 px-4 py-3 rounded-xl bg-rose-50 border border-rose-200" data-testid="bulk-delete-bar">
+              <span className="text-sm font-bold text-rose-800">{selectedIds.length} ta tanlandi</span>
+              <button
+                onClick={() => setSelectedIds(filtered.map((t) => t.id))}
+                className="px-3 py-1.5 text-xs font-semibold bg-white border border-rose-200 text-rose-700 rounded-lg hover:bg-rose-100"
+              >
+                Ko'rsatilganlarini hammasini tanlash
+              </button>
+              <button
+                onClick={() => setSelectedIds([])}
+                className="px-3 py-1.5 text-xs font-semibold bg-white border border-neutral-200 text-neutral-600 rounded-lg hover:bg-neutral-50"
+              >
+                Tozalash
+              </button>
+              <button
+                onClick={() => void handleBulkDelete()}
+                disabled={selectedIds.length === 0 || bulkDeleting}
+                data-testid="bulk-delete-btn"
+                className="ml-auto flex items-center gap-1.5 px-4 py-2 text-sm font-bold bg-rose-600 text-white rounded-lg hover:bg-rose-700 disabled:opacity-50"
+              >
+                {bulkDeleting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />}
+                {bulkDeleting ? "O'chirilmoqda..." : `Tanlanganlarni o'chirish (${selectedIds.length})`}
+              </button>
+            </div>
+          )}
           <div className="flex flex-col gap-3 mb-6">
             <div className="flex items-center gap-3">
               <div className="relative flex-1 max-w-md">
@@ -515,7 +579,16 @@ setTestForm({
                 return (
                   <div key={test.id} className="group relative bg-white border border-neutral-200 rounded-2xl overflow-hidden hover:shadow-lg transition-shadow flex flex-col" data-testid="admin-test-card" data-visible={isActive ? "1" : "0"}>
                     <div className="h-28 bg-gradient-to-br from-violet-900 to-purple-950 relative">
-                      <div className="absolute top-3 left-3 flex gap-1.5">
+                      <div className="absolute top-3 left-3 flex gap-1.5 items-center">
+                        {selectMode && (
+                          <input
+                            type="checkbox"
+                            checked={selectedIds.includes(test.id)}
+                            onChange={() => toggleSelect(test.id)}
+                            data-testid="test-select-checkbox"
+                            className="w-4 h-4 rounded border-rose-300 text-rose-600 focus:ring-rose-400 cursor-pointer"
+                          />
+                        )}
                         <span className={`px-2 py-0.5 text-[10px] font-bold rounded ${isActive ? "bg-emerald-100 text-emerald-700" : status.className}`}>{isActive ? "KO'RINADI" : test.status === "archived" ? "ARXIV" : "YASHIRIN"}</span>
                         {isLimited && <span className="px-2 py-0.5 text-[10px] font-bold rounded bg-amber-100 text-amber-700 flex items-center gap-1"><UserCheck className="w-3 h-3" /> Tanlangan</span>}
                       </div>
@@ -579,7 +652,7 @@ setTestForm({
                         <button onClick={() => setAddingQuestionTo(test.id)} className="flex-1 flex items-center justify-center gap-1 px-2 py-1 text-[11px] font-medium text-neutral-600 bg-neutral-100 rounded-md hover:bg-neutral-200"><PlusIcon className="w-3 h-3" /> Savol</button>
                         <button onClick={() => openHistory(test)} className="px-2 py-1 text-[11px] font-medium text-violet-700 bg-violet-50 border border-violet-200 rounded-md hover:bg-violet-100 flex items-center gap-1"><History className="w-3 h-3" /> Tarix</button>
                         <button onClick={() => openEdit(test)} className="p-1 text-neutral-600 hover:bg-neutral-100 rounded-md"><Settings className="w-3 h-3" /></button>
-                        <button onClick={() => handleDelete(test.id)} className="p-1 text-rose-600 hover:bg-rose-50 rounded-md"><Trash2 className="w-3 h-3" /></button>
+                        {/* O'chirish kartochkadan olib tashlandi — faqat sarlavhadagi "Tanlab o'chirish" orqali */}
                       </div>
                     </div>
                   </div>

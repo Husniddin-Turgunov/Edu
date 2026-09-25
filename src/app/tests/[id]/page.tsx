@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
@@ -22,6 +22,7 @@ import {
 import { motion, AnimatePresence } from "framer-motion";
 import { LiquidBackground } from "@/components/akela/LiquidBackground";
 import { Navbar } from "@/components/akela/Navbar";
+import { TestReviewList } from "@/components/akela/TestReviewList";
 import { UI_STRINGS, type Locale } from "@/lib/akela-content";
 
 type Test = any;
@@ -85,9 +86,9 @@ export default function TestTakePage() {
       try { data = JSON.parse(text); } catch { data = null; }
       if (!res.ok || !data?.ok) {
         if (res.status === 401) {
-          setReviewError("Sessiya eskirgan — qayta kiring");
+          setReviewError("Sessiya eskirgan вЂ” qayta kiring");
         } else if (text && text.trim().startsWith("<")) {
-          setReviewError("Server javobi noto'g'ri — qayta urinib ko'ring");
+          setReviewError("Server javobi noto'g'ri вЂ” qayta urinib ko'ring");
         } else {
           setReviewError(data?.error || `Xato ${res.status}: Natijani yuklab bo'lmadi`);
         }
@@ -95,7 +96,7 @@ export default function TestTakePage() {
         setReview(data.review);
       }
     } catch {
-      setReviewError("Tarmoq xatosi — qayta urinib ko'ring");
+      setReviewError("Tarmoq xatosi вЂ” qayta urinib ko'ring");
     } finally {
       setReviewLoading(false);
     }
@@ -107,7 +108,7 @@ export default function TestTakePage() {
 
   const loadHistory = useCallback(async () => {
     try {
-      const h = await fetch(`/api/tests/history?testId=${id}`).then((r) => r.json()).catch(() => null);
+      const h = await fetch(`/api/tests/history?testId=${id}`, { cache: "no-store" }).then((r) => r.json()).catch(() => null);
       if (h?.ok) setHistory(h.results);
     } catch { /* ignore */ }
   }, [id]);
@@ -176,7 +177,9 @@ export default function TestTakePage() {
       const res = await fetch(`/api/tests/${id}/submit`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ answers }),
+        // `questionIds` вЂ” test topshiruvchiga ko'rsatilgan savollar (cheklov/random
+        // hisobga olingan). Server ballni faqat shu savollar asosida hisoblaydi.
+        body: JSON.stringify({ answers, questionIds: (test?.questions ?? []).map((q: any) => q.id) }),
       });
       const data = await res.json();
       if (!res.ok || !data.ok) {
@@ -187,7 +190,7 @@ export default function TestTakePage() {
       setSubmitted(true);
       setTimeLeft(null);
       await loadHistory();
-      // Natijani majburiy ko'rsatish — test tugaganda darhol review ochiladi
+      // Natijani majburiy ko'rsatish вЂ” test tugaganda darhol review ochiladi
       setTimeout(() => { void openReview(data.result?.id); }, 450);
       if (data.result?.passed) {
         try {
@@ -197,20 +200,20 @@ export default function TestTakePage() {
       }
       showToast("ok", "Natija tarixga yozildi");
     } catch {
-      showToast("err", "Tarmoq xatosi — qayta urinib ko'ring");
+      showToast("err", "Tarmoq xatosi вЂ” qayta urinib ko'ring");
     } finally {
       setSaving(false);
       submittingRef.current = false;
     }
   }, [test, answers, total, id, loadHistory, showToast]);
 
-  // Countdown timer — vaqt tugasa avtomatik topshirish
+  // Countdown timer вЂ” vaqt tugasa avtomatik topshirish
   useEffect(() => {
     if (timeLeft === null || submitted || !test) return;
     if (timeLeft <= 0) {
       if (!autoSubmittedRef.current) {
         autoSubmittedRef.current = true;
-        showToast("err", "Vaqt tugadi — javoblar avtomatik topshirildi");
+        showToast("err", "Vaqt tugadi вЂ” javoblar avtomatik topshirildi");
         void doSubmit(true);
       }
       return;
@@ -304,7 +307,7 @@ export default function TestTakePage() {
             {history.length > 0 && (
               <div className="mt-6 text-left">
                 <h3 className="flex items-center gap-2 text-sm font-bold"><History className="h-4 w-4" /> Sizning tarixingiz</h3>
-                <p className="mt-1 text-xs text-neutral-500">Natijani bosing — barcha savollar, tanlangan va to'g'ri javoblar ko'rinadi</p>
+                <p className="mt-1 text-xs text-neutral-500">Natijani bosing вЂ” barcha savollar, tanlangan va to'g'ri javoblar ko'rinadi</p>
                 <div className="mt-3 max-h-72 space-y-2 overflow-y-auto pr-1" data-testid="history-list">
                   {history.map((r: any) => (
                     <button
@@ -316,7 +319,7 @@ export default function TestTakePage() {
                     >
                       <span className={`grid h-8 w-8 place-items-center rounded-full text-xs font-bold text-white ${r.passed ? "bg-indigo-500" : "bg-rose-500"}`}>{r.score ?? 0}%</span>
                       <span className="text-xs text-neutral-600">
-                        {new Date(r.completedAt || r.createdAt).toLocaleString()} — {r.passed ? "O'tdi" : "Yiqildi"}
+                        {new Date(r.completedAt || r.createdAt).toLocaleString()} вЂ” {r.passed ? "O'tdi" : "Yiqildi"}
                       </span>
                       <span className="ml-auto rounded-lg bg-neutral-100 px-2 py-1 text-[11px] font-bold text-neutral-700">Ko'rish</span>
                     </button>
@@ -339,7 +342,7 @@ export default function TestTakePage() {
           </div>
         </div>
 
-        {/* Review modal — blocked ekranda ham majburiy */}
+        {/* Review modal вЂ” blocked ekranda ham majburiy */}
         <AnimatePresence>
           {reviewOpen && (
             <motion.div
@@ -365,7 +368,7 @@ export default function TestTakePage() {
                     </h2>
                     {review?.result && (
                       <p className="mt-0.5 text-xs text-neutral-500" data-testid="review-meta">
-                        Ball: {review.result.score ?? 0}% · {review.result.completedAt ? new Date(review.result.completedAt).toLocaleString() : ""} · to'g'ri javoblar ochiq
+                        Ball: {review.result.score ?? 0}% В· {review.result.completedAt ? new Date(review.result.completedAt).toLocaleString() : ""} В· to'g'ri javoblar ochiq
                       </p>
                     )}
                   </div>
@@ -375,33 +378,7 @@ export default function TestTakePage() {
                   {reviewLoading && <div className="grid place-items-center py-12" data-testid="review-loading"><Loader2 className="h-8 w-8 animate-spin text-violet-600" /></div>}
                   {reviewError && <p className="rounded-xl bg-rose-50 px-4 py-3 text-sm font-semibold text-rose-700" data-testid="review-error">{reviewError}</p>}
                   {review && !reviewLoading && (
-                    <div className="space-y-4" data-testid="review-questions">
-                      {review.questions.map((q: any, qi: number) => {
-                        const selected = q.selected;
-                        const selectedArr = Array.isArray(selected) ? selected : selected != null && selected !== "" ? [selected] : [];
-                        return (
-                          <div key={q.id} data-testid="review-question" className="rounded-2xl border border-neutral-200 bg-white p-4 ring-1 ring-neutral-100">
-                            <div className="mb-3 flex items-start gap-2.5"><span className="mt-0.5 grid h-7 w-7 shrink-0 place-items-center rounded-full bg-violet-600 text-xs font-bold text-white">{qi + 1}</span><p className="text-sm font-bold leading-snug text-neutral-900 sm:text-base">{q.text}</p></div>
-                            {q.type === "written" ? (
-                              <div className="space-y-2"><div className="rounded-xl bg-neutral-50 p-3"><p className="text-[11px] font-bold uppercase tracking-wide text-neutral-400">Sizning javobingiz</p><p className="mt-1 whitespace-pre-wrap text-sm text-neutral-800" data-testid="review-written-answer">{typeof selected === "string" && selected ? selected : "—"}</p></div>{q.correctAnswer && <div className="rounded-xl bg-emerald-50 p-3 ring-1 ring-emerald-200"><p className="text-[11px] font-bold uppercase tracking-wide text-emerald-600">To'g'ri javob</p><p className="mt-1 whitespace-pre-wrap text-sm text-emerald-900">{q.correctAnswer}</p></div>}</div>
-                            ) : (
-                              <div className="space-y-2">
-                                {q.choices.map((c: any) => {
-                                  const isSelected = selectedArr.some((s: string) => s === c.id || s === c.text || String(s) === String(c.order) || String(s) === String.fromCharCode(65 + (c.order ?? 0)));
-                                  const isCorrect = !!c.isCorrect;
-                                  let tone = "border-neutral-200 bg-white text-neutral-800";
-                                  if (isCorrect && isSelected) tone = "border-emerald-500 bg-emerald-100 text-emerald-900 ring-2 ring-emerald-500";
-                                  else if (isCorrect) tone = "border-emerald-500 bg-emerald-50 text-emerald-900 ring-1 ring-emerald-400";
-                                  else if (isSelected) tone = "border-rose-500 bg-rose-100 text-rose-900 ring-2 ring-rose-500";
-                                  return <div key={c.id} data-testid="review-choice" data-selected={isSelected ? "1" : "0"} data-correct={isCorrect ? "1" : "0"} className={`flex items-start gap-2.5 rounded-xl border p-3 text-sm ${tone}`}><span className="mt-0.5 grid h-6 w-6 shrink-0 place-items-center rounded-full border border-current/30 text-[11px] font-black opacity-80">{c.order !== undefined ? String.fromCharCode(65 + c.order) : "•"}</span><span className="flex-1 font-medium">{c.text}</span>{isSelected && <span className={`shrink-0 rounded-md px-1.5 py-0.5 text-[10px] font-black uppercase ${isCorrect ? "bg-emerald-600 text-white" : "bg-rose-600 text-white"}`} data-testid="badge-selected">Siz</span>}{isCorrect && <span className="shrink-0 rounded-md bg-emerald-600 px-1.5 py-0.5 text-[10px] font-black uppercase text-white" data-testid="badge-correct">To'g'ri</span>}</div>;
-                                })}
-                              </div>
-                            )}
-                            {q.explanation && <p className="mt-3 rounded-xl bg-indigo-50 px-3 py-2 text-xs leading-relaxed text-indigo-900">{q.explanation}</p>}
-                          </div>
-                        );
-                      })}
-                    </div>
+                    <TestReviewList review={review} />
                   )}
                 </div>
               </motion.div>
@@ -416,7 +393,9 @@ export default function TestTakePage() {
 
   const attemptsUsed = history.length;
   const maxAttempts = test.maxAttempts ?? 0;
-  const canRetake = maxAttempts === 0 || attemptsUsed < maxAttempts;
+  // Admin qayta topshirish bergan bo'lsa (retakePending) вЂ” qo'shimcha urinish ochiq
+  const retakePending = (test as any).retakePending === true;
+  const canRetake = maxAttempts === 0 || attemptsUsed < maxAttempts || retakePending;
   const timerDanger = timeLeft !== null && timeLeft <= 60;
   const timerWarn = timeLeft !== null && timeLeft <= 300;
 
@@ -454,11 +433,15 @@ export default function TestTakePage() {
                 {formatTime(timeLeft)}
               </div>
             )}
+            {/* Doimiy topshirish: hammasiga javob berilgach — qaysi savolda bo'lishdan qat'i nazar */}
+            {!submitted && (test as any)?.questions?.length > 0 && answered >= (test as any).questions.length && (
+              <button type='button' onClick={() => setConfirmOpen(true)} data-testid='finish-btn-top' className='shrink-0 rounded-xl bg-gradient-to-r from-violet-600 to-fuchsia-600 px-4 py-2 text-sm font-black text-white shadow-lg shadow-violet-600/30 transition hover:brightness-110'>Topshirish ({answered}/{(test as any).questions.length})</button>
+            )}
           </div>
         </div>
       )}
 
-      {/* Toast — nav bor/yo'qqa qarab balandlik */}
+      {/* Toast вЂ” nav bor/yo'qqa qarab balandlik */}
       <AnimatePresence>
         {toast && (
           <motion.div
@@ -478,7 +461,12 @@ export default function TestTakePage() {
       {!submitted ? (
         /* Fullscreen shell: savol ekran markazida, scroll shart emas */
         <div className="flex min-h-0 flex-1 flex-col" data-testid="quiz-shell">
-          <div className="mx-auto flex w-full max-w-3xl flex-1 min-h-0 flex-col items-center justify-center gap-4 overflow-y-auto px-4 py-4 sm:px-6">
+          {/* Scroll + markazlash: `m-auto` wrapper — bo'sh joy bor markazlaydi,
+              kontent ekrandan baland bo'lsa margin 0 ga tushib SCROLL ishlaydi
+              (eski `justify-center` da baland kartaning tepasi kliplanib,
+              tugalardagi Topshirish/Tasdiqlash tugmalari ekrandan chiqar edi). */}
+          <div className="mx-auto flex w-full max-w-3xl flex-1 min-h-0 flex-col items-center overflow-y-auto px-4 py-4 sm:px-6">
+            <div className="m-auto flex w-full flex-col items-center gap-4">
             {/* Step indicator: faqat bitta savol ko'rinadi */}
             <div className="flex w-full items-center justify-between gap-2 text-sm font-semibold text-neutral-500" data-testid="step-indicator">
               <span data-testid="step-label" className="text-base font-bold text-neutral-800">Savol {currentQIdx + 1} / {total}</span>
@@ -510,7 +498,7 @@ export default function TestTakePage() {
               })}
             </div>
 
-            {/* Joriy savol — markazda, katta shrift */}
+            {/* Joriy savol вЂ” markazda, katta shrift */}
             {(() => {
               const q = test.questions[currentQIdx];
               if (!q) return null;
@@ -523,7 +511,7 @@ export default function TestTakePage() {
                   key={q.id}
                   id={`q-${qi + 1}`}
                   data-testid="current-question"
-                  className="glass-card w-full max-w-2xl rounded-3xl p-6 ring-1 transition ring-violet-100 sm:p-8"
+                  className="glass-card w-full max-w-2xl shrink-0 rounded-3xl p-6 ring-1 transition ring-violet-100 sm:p-8"
                 >
                   <div className="mb-4 flex items-start gap-3">
                     <span className="mt-0.5 grid h-9 w-9 shrink-0 place-items-center rounded-full bg-violet-600 text-sm font-bold text-white">
@@ -531,7 +519,7 @@ export default function TestTakePage() {
                     </span>
                     <p className="text-lg font-bold leading-snug text-neutral-900 sm:text-xl md:text-2xl">{q.text}</p>
                     <span className={`ml-auto shrink-0 self-start text-xs font-bold uppercase ${isAnswered ? "text-emerald-600" : "text-neutral-400"}`}>
-                      {isAnswered ? "✓" : "—"}
+                      {isAnswered ? "вњ“" : "вЂ”"}
                     </span>
                   </div>
                   {q.type === "written" ? (
@@ -545,7 +533,7 @@ export default function TestTakePage() {
                         placeholder="Javobingizni yozing..."
                         className="w-full resize-none rounded-2xl border-2 border-neutral-200 px-5 py-4 text-base transition-colors focus:border-violet-400 focus:outline-none"
                       />
-                      <p className="mt-1 text-sm text-neutral-400">Yozma javob — nazoratchi tomonidan tekshiriladi</p>
+                      <p className="mt-1 text-sm text-neutral-400">Yozma javob вЂ” nazoratchi tomonidan tekshiriladi</p>
                     </div>
                   ) : (
                     <div className="space-y-3">
@@ -561,7 +549,7 @@ export default function TestTakePage() {
                             }`}
                           >
                             <span className={`grid h-8 w-8 shrink-0 place-items-center rounded-full border text-sm font-bold ${selected ? "border-white bg-white text-violet-700" : "border-neutral-200 bg-neutral-100 text-neutral-600"}`}>
-                              {c.order !== undefined ? String.fromCharCode(65 + c.order) : "•"}
+                              {c.order !== undefined ? String.fromCharCode(65 + c.order) : "вЂў"}
                             </span>
                             <span className="flex-1 font-medium">{c.text}</span>
                             {selected && <CheckCircle2 className="h-5 w-5" />}
@@ -582,16 +570,9 @@ export default function TestTakePage() {
                     >
                       <ChevronLeft className="h-5 w-5" /> Oldingi
                     </button>
-                    {!isLast ? (
-                      <button
-                        type="button"
-                        onClick={() => goToQuestion(qi + 2)}
-                        data-testid="next-btn"
-                        className="flex items-center gap-1.5 rounded-2xl bg-violet-600 px-6 py-3 text-base font-bold text-white hover:bg-violet-700"
-                      >
-                        Keyingi <ChevronRight className="h-5 w-5" />
-                      </button>
-                    ) : answered >= total ? (
+                    {/* Barcha savollar javoblangan bo'lsa вЂ” qaysi savolda bo'lishidan
+                        qat'i nazar topshirish tugmasi chiqadi. Aks holda Keyingi. */}
+                    {answered >= total ? (
                       <button
                         type="button"
                         onClick={() => setConfirmOpen(true)}
@@ -602,6 +583,15 @@ export default function TestTakePage() {
                         {saving && <Loader2 className="h-4 w-4 animate-spin" />}
                         Topshirish
                       </button>
+                    ) : !isLast ? (
+                      <button
+                        type="button"
+                        onClick={() => goToQuestion(qi + 2)}
+                        data-testid="next-btn"
+                        className="flex items-center gap-1.5 rounded-2xl bg-violet-600 px-6 py-3 text-base font-bold text-white hover:bg-violet-700"
+                      >
+                        Keyingi <ChevronRight className="h-5 w-5" />
+                      </button>
                     ) : (
                       <span data-testid="last-question-badge" className="rounded-2xl bg-emerald-50 px-4 py-3 text-sm font-bold text-emerald-700">
                         Oxirgi savol
@@ -609,8 +599,9 @@ export default function TestTakePage() {
                     )}
                   </div>
 
-                  {/* Barcha javoblar tayyor — markazda topshirish */}
-                  {answered >= total && isLast && (
+                  {/* Barcha javoblar tayyor вЂ” qaysi savolda bo'lishidan qat'i nazar
+                      markazda ham topshirish tugmasi ko'rinadi */}
+                  {answered >= total && (
                     <button
                       type="button"
                       onClick={() => setConfirmOpen(true)}
@@ -625,6 +616,7 @@ export default function TestTakePage() {
                 </div>
               );
             })()}
+            </div>
           </div>
 
           {/* Confirm modal */}
@@ -634,7 +626,7 @@ export default function TestTakePage() {
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
-                className="fixed inset-0 z-50 grid place-items-center bg-black/40 px-4"
+                className="fixed inset-0 z-50 grid place-items-center overflow-y-auto bg-black/40 px-4 py-6"
                 onClick={() => setConfirmOpen(false)}
                 data-testid="confirm-modal"
               >
@@ -685,7 +677,7 @@ export default function TestTakePage() {
               {result?.score ?? 0}%
             </div>
             <h2 className="mt-3 text-xl font-black text-neutral-900">
-              {result?.passed ? "Tabriklaymiz! O'tdingiz 🎉" : "Afsus, qayta urinib ko'ring"}
+              {result?.passed ? "Tabriklaymiz! O'tdingiz рџЋ‰" : "Afsus, qayta urinib ko'ring"}
             </h2>
             <p className="mt-1 text-sm text-neutral-600">
               Natija tarixda saqlandi.{" "}
@@ -711,7 +703,7 @@ export default function TestTakePage() {
                   Urinishlar tugadi ({maxAttempts}/{maxAttempts})
                 </span>
               )}
-              {/* Topshirilgan testni har doim ko'rish mumkin — urinish bor-yo'qligidan qat'i nazar */}
+              {/* Topshirilgan testni har doim ko'rish mumkin вЂ” urinish bor-yo'qligidan qat'i nazar */}
               <button
                 type="button"
                 data-testid="open-review-from-result"
@@ -755,7 +747,7 @@ export default function TestTakePage() {
         </div>
       )}
 
-      {/* Oldingi urinish review — scroll panel (savollar + tanlangan + to'g'ri javob) */}
+      {/* Oldingi urinish review вЂ” scroll panel (savollar + tanlangan + to'g'ri javob) */}
       <AnimatePresence>
         {reviewOpen && (
           <motion.div
@@ -781,8 +773,8 @@ export default function TestTakePage() {
                   </h2>
                   {review?.result && (
                     <p className="mt-0.5 text-xs text-neutral-500" data-testid="review-meta">
-                      Ball: {review.result.score ?? 0}% · {new Date(review.result.completedAt).toLocaleString()}
-                      {review.revealCorrect ? " · to'g'ri javoblar ochiq" : " · to'g'ri javoblar yashirin (urinishlar bor)"}
+                      Ball: {review.result.score ?? 0}% В· {new Date(review.result.completedAt).toLocaleString()}
+                      {review.revealCorrect ? " В· to'g'ri javoblar ochiq" : " В· to'g'ri javoblar yashirin (urinishlar bor)"}
                     </p>
                   )}
                 </div>
@@ -812,87 +804,7 @@ export default function TestTakePage() {
                   </p>
                 )}
                 {review && !reviewLoading && (
-                  <div className="space-y-4" data-testid="review-questions">
-                    {review.questions.map((q: any, qi: number) => {
-                      const selected = q.selected;
-                      const selectedArr = Array.isArray(selected) ? selected : selected != null && selected !== "" ? [selected] : [];
-                      return (
-                        <div
-                          key={q.id}
-                          data-testid="review-question"
-                          className="rounded-2xl border border-neutral-200 bg-white p-4 ring-1 ring-neutral-100"
-                        >
-                          <div className="mb-3 flex items-start gap-2.5">
-                            <span className="mt-0.5 grid h-7 w-7 shrink-0 place-items-center rounded-full bg-violet-600 text-xs font-bold text-white">
-                              {qi + 1}
-                            </span>
-                            <p className="text-sm font-bold leading-snug text-neutral-900 sm:text-base">{q.text}</p>
-                          </div>
-
-                          {q.type === "written" ? (
-                            <div className="space-y-2">
-                              <div className="rounded-xl bg-neutral-50 p-3">
-                                <p className="text-[11px] font-bold uppercase tracking-wide text-neutral-400">Sizning javobingiz</p>
-                                <p className="mt-1 whitespace-pre-wrap text-sm text-neutral-800" data-testid="review-written-answer">
-                                  {typeof selected === "string" && selected ? selected : "—"}
-                                </p>
-                              </div>
-                              {review.revealCorrect && q.correctAnswer && (
-                                <div className="rounded-xl bg-emerald-50 p-3 ring-1 ring-emerald-200">
-                                  <p className="text-[11px] font-bold uppercase tracking-wide text-emerald-600">To'g'ri javob</p>
-                                  <p className="mt-1 whitespace-pre-wrap text-sm text-emerald-900">{q.correctAnswer}</p>
-                                </div>
-                              )}
-                            </div>
-                          ) : (
-                            <div className="space-y-2">
-                              {q.choices.map((c: any) => {
-                                const isSelected = selectedArr.some((s: string) => s === c.id || s === c.text || String(s) === String(c.order) || String(s) === String.fromCharCode(65 + (c.order ?? 0)));
-                                const isCorrect = !!c.isCorrect;
-                                let tone = "border-neutral-200 bg-white text-neutral-800";
-                                if (isCorrect && isSelected) tone = "border-emerald-500 bg-emerald-100 text-emerald-900 ring-2 ring-emerald-500";
-                                else if (isCorrect) tone = "border-emerald-500 bg-emerald-50 text-emerald-900 ring-1 ring-emerald-400";
-                                else if (isSelected) tone = "border-rose-500 bg-rose-100 text-rose-900 ring-2 ring-rose-500";
-                                return (
-                                  <div
-                                    key={c.id}
-                                    data-testid="review-choice"
-                                    data-selected={isSelected ? "1" : "0"}
-                                    data-correct={isCorrect ? "1" : "0"}
-                                    className={`flex items-start gap-2.5 rounded-xl border p-3 text-sm ${tone}`}
-                                  >
-                                    <span className="mt-0.5 grid h-6 w-6 shrink-0 place-items-center rounded-full border border-current/30 text-[11px] font-black opacity-80">
-                                      {c.order !== undefined ? String.fromCharCode(65 + c.order) : "•"}
-                                    </span>
-                                    <span className="flex-1 font-medium">{c.text}</span>
-                                    {isSelected && (
-                                      <span
-                                        className={`shrink-0 rounded-md px-1.5 py-0.5 text-[10px] font-black uppercase ${isCorrect ? "bg-emerald-600 text-white" : "bg-rose-600 text-white"}`}
-                                        data-testid="badge-selected"
-                                      >
-                                        Siz
-                                      </span>
-                                    )}
-                                    {isCorrect && (
-                                      <span className="shrink-0 rounded-md bg-emerald-600 px-1.5 py-0.5 text-[10px] font-black uppercase text-white" data-testid="badge-correct">
-                                        To'g'ri
-                                      </span>
-                                    )}
-                                  </div>
-                                );
-                              })}
-                            </div>
-                          )}
-
-                          {review.revealCorrect && q.explanation && (
-                            <p className="mt-3 rounded-xl bg-indigo-50 px-3 py-2 text-xs leading-relaxed text-indigo-900">
-                              {q.explanation}
-                            </p>
-                          )}
-                        </div>
-                      );
-                    })}
-                  </div>
+                  <TestReviewList review={review} />
                 )}
               </div>
             </motion.div>
@@ -902,3 +814,4 @@ export default function TestTakePage() {
     </main>
   );
 }
+

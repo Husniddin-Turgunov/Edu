@@ -1,0 +1,49 @@
+{
+  "base": "https://edu.akelagroup.uz",
+  "checks": {
+    "list_shows_limit": false,
+    "limit_less_than_bank": false,
+    "detail_only_limited": false,
+    "detail_reports_bank": false,
+    "random_set_differs": true
+  },
+  "list": [
+    {
+      "id": "cmudoc4hm0000jt04jdroy06m",
+      "title": "продукт менежер",
+      "shown": 30,
+      "bank": 58,
+      "limited": true
+    }
+  ],
+  "loggedIn": true,
+  "user": "SvRvS@gmail.com",
+  "totalTests": 1,
+  "target": {
+    "id": "cmudoc4hm0000jt04jdroy06m",
+    "title": "продукт менежер"
+  },
+  "detail": {
+    "statusA": 200,
+    "statusB": 200,
+    "countA": 30,
+    "countB": 30,
+    "errorA": null,
+    "returnedBankSize": 58
+  },
+  "sampleIdsA": [
+    "cmudynfv70011kx04oyyfx6w4",
+    "cmudyofe40037kx04ooz11oix",
+    "cmudyp912005dkx04qd2dtjqr",
+    "cmudypf6p005vkx04h2zonxzb",
+    "cmudyovqm004dkx04999tf7v1"
+  ],
+  "sampleIdsB": [
+    "cmudyn2k10001kx04mtx58xvx",
+    "cmudypf6p005vkx04h2zonxzb",
+    "cmudyppty006pkx04ys9wvnsq",
+    "cmudyozdj004pkx04rj6rf00v",
+    "cmudynqh4001vkx04qo9kbdhe"
+  ]
+}
+FAILED: list_shows_limit, limit_less_than_bank, detail_only_limited, detail_reports_bank

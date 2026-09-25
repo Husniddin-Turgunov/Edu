@@ -58,7 +58,7 @@ export function Hero({
                   transition: { duration: 0.8, ease: [0.22, 1, 0.36, 1] },
                 },
               }}
-              className="mt-5 font-[var(--font-display)] text-5xl font-extrabold leading-[1.05] tracking-tight text-[color:var(--emerald-deep)] sm:text-6xl lg:text-7xl"
+              className="mt-5 font-[var(--font-display)] text-5xl font-extrabold leading-[1.3] tracking-tight text-[color:var(--emerald-deep)] sm:text-6xl lg:text-7xl"
             >
               {strings.hero_title_1}{" "}
               <span className="gold-text">{strings.hero_title_2}</span>
@@ -91,7 +91,7 @@ export function Hero({
             >
               <button
                 onClick={onStart}
-                className="group relative inline-flex items-center gap-2 overflow-hidden rounded-2xl bg-gradient-to-br from-emerald-700 to-emerald-600 px-6 py-3.5 text-sm font-semibold text-white shadow-xl shadow-emerald-900/25 transition-transform hover:scale-[1.03] active:scale-95"
+                className="group relative inline-flex items-center gap-2 overflow-hidden rounded-2xl bg-gradient-to-br from-indigo-700 to-indigo-600 px-6 py-3.5 text-sm font-semibold text-white shadow-xl shadow-indigo-900/25 transition-transform hover:scale-[1.03] active:scale-95"
               >
                 <span className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/25 to-transparent transition-transform duration-700 group-hover:translate-x-full" />
                 <GraduationCap className="h-4 w-4" />
@@ -117,12 +117,12 @@ export function Hero({
                   transition: { duration: 0.7, delay: 0.35 },
                 },
               }}
-              className="mt-10 grid grid-cols-2 gap-3 sm:grid-cols-4"
+              className="mt-8 grid grid-cols-2 gap-2 sm:grid-cols-4"
             >
               <Stat icon={<Users className="h-4 w-4" />} value="60+" label={strings.stats_employees} />
               <Stat icon={<Building2 className="h-4 w-4" />} value="21" label={strings.stats_departments} />
-              <Stat icon={<CalendarDays className="h-4 w-4" />} value="10+" label={strings.stats_years} />
-              <Stat icon={<ListChecks className="h-4 w-4" />} value="5" label={strings.stats_onboarding_steps} />
+              <Stat icon={<CalendarDays className="h-4 w-4" />} value="20+" label={strings.stats_years} />
+              <Stat icon={<ListChecks className="h-4 w-4" />} value="7" label={strings.stats_onboarding_steps} />
             </motion.div>
           </motion.div>
 
@@ -133,7 +133,7 @@ export function Hero({
             transition={{ duration: 0.9, delay: 0.2, ease: [0.22, 1, 0.36, 1] }}
             className="relative hidden lg:block"
           >
-            <HeroShowcase />
+            <HeroShowcase strings={strings} />
           </motion.div>
         </div>
       </div>
@@ -170,21 +170,32 @@ function Stat({
   label: string;
 }) {
   return (
-    <div className="glass-card rounded-2xl p-4">
-      <div className="mb-2 grid h-8 w-8 place-items-center rounded-lg bg-gradient-to-br from-emerald-700 to-emerald-600 text-white">
+    <div className="glass-card rounded-xl px-3 py-2.5 flex items-center gap-3">
+      <div className="grid h-7 w-7 shrink-0 place-items-center rounded-lg bg-gradient-to-br from-indigo-700 to-indigo-600 text-white">
         {icon}
       </div>
-      <div className="text-2xl font-extrabold text-[color:var(--emerald-deep)]">
-        {value}
-      </div>
-      <div className="text-[11px] uppercase tracking-wider text-[color:var(--ink-soft)]">
-        {label}
+      <div>
+        <div className="text-lg font-extrabold leading-tight text-[color:var(--emerald-deep)]">
+          {value}
+        </div>
+        <div className="text-[10px] uppercase tracking-wider text-[color:var(--ink-soft)]">
+          {label}
+        </div>
       </div>
     </div>
   );
 }
 
-function HeroShowcase() {
+function HeroShowcase({ strings }: { strings: UiStrings }) {
+  const showcaseSteps = [
+    { i: 1, t: strings.hero_showcase_step_welcome, c: "from-amber-400 to-amber-500" },
+    { i: 2, t: strings.hero_showcase_step_history, c: "from-indigo-500 to-indigo-600" },
+    { i: 3, t: strings.hero_showcase_step_about, c: "from-teal-400 to-teal-500" },
+    { i: 4, t: strings.hero_showcase_step_structure, c: "from-indigo-600 to-indigo-700" },
+    { i: 5, t: strings.hero_showcase_step_leadership, c: "from-purple-500 to-purple-600" },
+    { i: 6, t: strings.hero_showcase_step_timeline, c: "from-teal-400 to-amber-500" },
+    { i: 7, t: strings.hero_showcase_step_rules, c: "from-amber-500 to-amber-600" },
+  ];
   return (
     <div className="relative mx-auto aspect-[5/6] w-full max-w-md">
       {/* Main glass card */}
@@ -192,36 +203,30 @@ function HeroShowcase() {
         {/* Card header */}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <div className="grid h-10 w-10 place-items-center rounded-xl bg-gradient-to-br from-emerald-700 to-amber-500">
+            <div className="grid h-10 w-10 place-items-center rounded-xl bg-white shadow-sm ring-1 ring-black/[0.06]">
               <img
-                src="/akela/logo-white.png"
-                alt=""
-                className="h-6 w-6 object-contain"
+                src="/akela/logo.png"
+                alt="AKELA"
+                className="h-7 w-7 object-contain"
               />
             </div>
             <div>
               <div className="text-sm font-bold text-[color:var(--emerald-deep)]">
-                Onboarding Map
+                {strings.hero_showcase_title}
               </div>
               <div className="text-[10px] uppercase tracking-wider text-[color:var(--ink-soft)]">
-                5-step journey
+                {strings.hero_showcase_subtitle}
               </div>
             </div>
           </div>
           <div className="glass-pill text-[10px] text-[color:var(--emerald-deep)]">
-            Live
+            {strings.hero_showcase_live}
           </div>
         </div>
 
         {/* Steps preview */}
         <div className="mt-6 space-y-2.5">
-          {[
-            { i: 1, t: "Welcome", c: "from-amber-400 to-amber-500" },
-            { i: 2, t: "History", c: "from-emerald-500 to-emerald-600" },
-            { i: 3, t: "About", c: "from-teal-400 to-teal-500" },
-            { i: 4, t: "Structure", c: "from-emerald-600 to-emerald-700" },
-            { i: 5, t: "Rules", c: "from-amber-500 to-amber-600" },
-          ].map((s, idx) => (
+          {showcaseSteps.map((s, idx) => (
             <motion.div
               key={s.i}
               initial={{ opacity: 0, x: 20 }}
@@ -243,7 +248,7 @@ function HeroShowcase() {
                     initial={{ width: 0 }}
                     animate={{ width: `${20 + idx * 18}%` }}
                     transition={{ delay: 1 + idx * 0.1, duration: 0.7 }}
-                    className="h-full rounded-full bg-gradient-to-r from-amber-500 to-emerald-600"
+                    className="h-full rounded-full bg-gradient-to-r from-amber-500 to-indigo-600"
                   />
                 </div>
               </div>
@@ -252,12 +257,12 @@ function HeroShowcase() {
         </div>
 
         {/* Footer chip */}
-        <div className="mt-5 flex items-center justify-between rounded-2xl bg-emerald-900/10 px-3 py-2">
+        <div className="mt-5 flex items-center justify-between rounded-2xl bg-indigo-900/10 px-3 py-2">
           <div className="text-[10px] uppercase tracking-wider text-[color:var(--ink-soft)]">
-            Progress
+            {strings.hero_showcase_progress}
           </div>
           <div className="text-sm font-bold text-[color:var(--emerald-deep)]">
-            0 / 5
+            0 / 7
           </div>
         </div>
       </div>
@@ -266,16 +271,14 @@ function HeroShowcase() {
       <motion.div
         animate={{ y: [0, -10, 0] }}
         transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
-        className="glass absolute -left-8 top-1/3 rounded-2xl px-3 py-2 shadow-xl"
+        className="glass absolute -left-8 top-1/3 rounded-2xl px-4 py-2.5 shadow-xl"
       >
         <div className="flex items-center gap-2">
-          <div className="grid h-7 w-7 place-items-center rounded-lg bg-amber-500 text-white">
-            <GraduationCap className="h-4 w-4" />
+            <div className="grid h-8 w-8 place-items-center rounded-lg bg-amber-500 text-white">
+            <GraduationCap className="h-5 w-5" />
           </div>
-          <div className="text-[10px] font-semibold text-[color:var(--emerald-deep)]">
-            New hire
-            <br />
-            ready
+            <div className="whitespace-pre-line text-[11px] font-semibold leading-tight text-[color:var(--emerald-deep)]">
+            {strings.hero_showcase_new_hire}
           </div>
         </div>
       </motion.div>
@@ -283,16 +286,14 @@ function HeroShowcase() {
       <motion.div
         animate={{ y: [0, 12, 0] }}
         transition={{ duration: 5, repeat: Infinity, ease: "easeInOut", delay: 0.5 }}
-        className="glass absolute -right-6 bottom-12 rounded-2xl px-3 py-2 shadow-xl"
+        className="glass absolute -right-6 bottom-12 rounded-2xl px-4 py-2.5 shadow-xl"
       >
         <div className="flex items-center gap-2">
-          <div className="grid h-7 w-7 place-items-center rounded-lg bg-emerald-600 text-white">
-            <Users className="h-4 w-4" />
+            <div className="grid h-8 w-8 place-items-center rounded-lg bg-indigo-600 text-white">
+              <Users className="h-5 w-5" />
           </div>
-          <div className="text-[10px] font-semibold text-[color:var(--emerald-deep)]">
-            Team
-            <br />
-            waiting
+            <div className="whitespace-pre-line text-[11px] font-semibold leading-tight text-[color:var(--emerald-deep)]">
+            {strings.hero_showcase_team}
           </div>
         </div>
       </motion.div>

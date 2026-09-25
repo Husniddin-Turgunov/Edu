@@ -1,0 +1,39 @@
+- generic [active] [ref=f17e1]:
+  - main [ref=f17e2]:
+    - complementary [ref=f17e3]:
+      - link "AKELA AKELA Admin Panel" [ref=f17e5] [cursor=pointer]:
+        - /url: /dashboard
+        - img "AKELA" [ref=f17e6]
+        - generic [ref=f17e7]:
+          - generic [ref=f17e8]: AKELA
+          - generic [ref=f17e9]: Admin Panel
+      - link "Asosiy sahifa" [ref=f17e11] [cursor=pointer]:
+        - /url: /dashboard
+      - navigation [ref=f17e16]:
+        - link "Kurslar" [ref=f17e17] [cursor=pointer]:
+          - /url: /admin/lms
+        - link "Kasbiy kurslar" [ref=f17e21] [cursor=pointer]:
+          - /url: /admin/jobs
+        - link "Tanishtiruv" [ref=f17e26] [cursor=pointer]:
+          - /url: /admin/onboarding
+        - link "Testlar" [ref=f17e31] [cursor=pointer]:
+          - /url: /admin/lms/tests
+        - link "Videolar" [ref=f17e36] [cursor=pointer]:
+          - /url: /admin/videos
+        - link "O'quvchilar" [ref=f17e43] [cursor=pointer]:
+          - /url: /admin/students
+        - link "Foydalanuvchilar" [ref=f17e49] [cursor=pointer]:
+          - /url: /admin/users
+        - link "Statistika" [ref=f17e56] [cursor=pointer]:
+          - /url: /admin/lms/statistics
+      - generic [ref=f17e61]:
+        - generic [ref=f17e62]: A
+        - generic [ref=f17e63]:
+          - generic [ref=f17e64]: System Admin
+          - generic [ref=f17e65]: Akela Group
+        - button "Chiqish" [ref=f17e66]
+    - main [ref=f17e70]
+  - region "Notifications (F8)":
+    - list
+  - button "Open Next.js Dev Tools" [ref=f17e78] [cursor=pointer]
+  - alert [ref=f17e82]

@@ -1,0 +1,216 @@
+- generic [active] [ref=f15e1]:
+  - main [ref=f15e2]:
+    - navigation [ref=f15e4]:
+      - button [ref=f15e5]:
+        - img "AKELA" [ref=f15e7]
+      - generic [ref=f15e8]:
+        - button "Bosh sahifa" [ref=f15e9]
+        - button "Tanishtirish" [ref=f15e11]
+        - button "Tuzilma" [ref=f15e12]
+        - button "Intizom" [ref=f15e13]
+        - button "Yo'riqlar" [ref=f15e14]
+        - button "Bog'lanish" [ref=f15e15]
+        - link "Darslar" [ref=f15e16] [cursor=pointer]:
+          - /url: /courses
+      - generic [ref=f15e17]:
+        - generic [ref=f15e18]:
+          - button "O'z" [ref=f15e19]
+          - button "Ru" [ref=f15e20]
+          - button "En" [ref=f15e21]
+        - link "Dashboard" [ref=f15e22] [cursor=pointer]:
+          - /url: /dashboard
+        - link "Admin" [ref=f15e28] [cursor=pointer]:
+          - /url: /admin
+        - button "Tanishtirishni boshlash" [ref=f15e31]
+        - button "Chiqish" [ref=f15e36]
+    - generic [ref=f15e40]:
+      - generic [ref=f15e42]:
+        - link "Dashboard" [ref=f15e43] [cursor=pointer]:
+          - /url: /dashboard
+        - generic [ref=f15e55]:
+          - heading "Yo'riqlar" [level=1] [ref=f15e56]
+          - paragraph [ref=f15e57]: Bitrix24 darsliklari — uz/ru/en sayt ichida
+      - generic [ref=f15e58]:
+        - generic [ref=f15e59]:
+          - generic [ref=f15e60]:
+            - img "Boshlash" [ref=f15e61]
+            - generic [ref=f15e63]:
+              - heading "Boshlash" [level=2] [ref=f15e64]
+              - paragraph [ref=f15e65]: Birinchi qadamlar Bitrix24 da
+          - list [ref=f15e66]:
+            - listitem [ref=f15e67]:
+              - link "Bitrix24 bilan tanishish Portalga kirish, birinchi sozlamalar va jamoani taklif qilish." [ref=f15e68] [cursor=pointer]:
+                - /url: /guides/161724
+                - generic [ref=f15e70]:
+                  - generic [ref=f15e71]: Bitrix24 bilan tanishish
+                  - generic [ref=f15e72]: Portalga kirish, birinchi sozlamalar va jamoani taklif qilish.
+            - listitem [ref=f15e73]:
+              - 'link "Katalog tovarlarini yaratish va sozlash CRM va internet-do''kon uchun yagona katalog: bo''limlar, xususiyatlar, mahsulot." [ref=f15e74] [cursor=pointer]':
+                - /url: /guides/20922462
+                - generic [ref=f15e76]:
+                  - generic [ref=f15e77]: Katalog tovarlarini yaratish va sozlash
+                  - generic [ref=f15e78]: "CRM va internet-do'kon uchun yagona katalog: bo'limlar, xususiyatlar, mahsulot."
+            - listitem [ref=f15e79]:
+              - link "Bitrix24 yordam markazi Rasmiy yordam, chat va integrator yordami." [ref=f15e80] [cursor=pointer]:
+                - /url: /guides/148408
+                - generic [ref=f15e82]:
+                  - generic [ref=f15e83]: Bitrix24 yordam markazi
+                  - generic [ref=f15e84]: Rasmiy yordam, chat va integrator yordami.
+        - generic [ref=f15e85]:
+          - generic [ref=f15e86]:
+            - img "Hamkorlik" [ref=f15e87]
+            - generic [ref=f15e89]:
+              - heading "Hamkorlik" [level=2] [ref=f15e90]
+              - paragraph [ref=f15e91]: Interfeys, imkoniyatlar, sozlamalar
+          - list [ref=f15e92]:
+            - listitem [ref=f15e93]:
+              - link "Messenger Chatlar, kanallar va jamoaviy muloqot." [ref=f15e94] [cursor=pointer]:
+                - /url: /guides/161730
+                - generic [ref=f15e96]:
+                  - generic [ref=f15e97]: Messenger
+                  - generic [ref=f15e98]: Chatlar, kanallar va jamoaviy muloqot.
+            - listitem [ref=f15e99]:
+              - link "Kalendar Uchrashuvlar, sinxronizatsiya va jadvallar." [ref=f15e100] [cursor=pointer]:
+                - /url: /guides/45919
+                - generic [ref=f15e102]:
+                  - generic [ref=f15e103]: Kalendar
+                  - generic [ref=f15e104]: Uchrashuvlar, sinxronizatsiya va jadvallar.
+            - listitem [ref=f15e105]:
+              - link "Disk va fayllar Umumiy disk, papkalar va hujjatlar ustida hamkorlik." [ref=f15e106] [cursor=pointer]:
+                - /url: /guides/45920
+                - generic [ref=f15e108]:
+                  - generic [ref=f15e109]: Disk va fayllar
+                  - generic [ref=f15e110]: Umumiy disk, papkalar va hujjatlar ustida hamkorlik.
+            - listitem [ref=f15e111]:
+              - link "Pochta Korporativ pochtani ulash va boshqarish." [ref=f15e112] [cursor=pointer]:
+                - /url: /guides/55667
+                - generic [ref=f15e114]:
+                  - generic [ref=f15e115]: Pochta
+                  - generic [ref=f15e116]: Korporativ pochtani ulash va boshqarish.
+        - generic [ref=f15e117]:
+          - generic [ref=f15e118]:
+            - img "Vazifalar" [ref=f15e119]
+            - generic [ref=f15e121]:
+              - heading "Vazifalar" [level=2] [ref=f15e122]
+              - paragraph [ref=f15e123]: Vositalar va ish rejimlari
+          - list [ref=f15e124]:
+            - listitem [ref=f15e125]:
+              - link "Vazifalar bilan ishlashni boshlash Vazifa yaratish, deadline va ijrochilar." [ref=f15e126] [cursor=pointer]:
+                - /url: /guides/48933
+                - generic [ref=f15e128]:
+                  - generic [ref=f15e129]: Vazifalar bilan ishlashni boshlash
+                  - generic [ref=f15e130]: Vazifa yaratish, deadline va ijrochilar.
+            - listitem [ref=f15e131]:
+              - link "Vazifalardagi vositalar Checklist, fayllar, timer va kommentariyalar." [ref=f15e132] [cursor=pointer]:
+                - /url: /guides/48595
+                - generic [ref=f15e134]:
+                  - generic [ref=f15e135]: Vazifalardagi vositalar
+                  - generic [ref=f15e136]: Checklist, fayllar, timer va kommentariyalar.
+            - listitem [ref=f15e137]:
+              - link "Oqimlar (Потоки) Avtomatik vazifalar oqimini sozlash." [ref=f15e138] [cursor=pointer]:
+                - /url: /guides/95435
+                - generic [ref=f15e140]:
+                  - generic [ref=f15e141]: Oqimlar (Потоки)
+                  - generic [ref=f15e142]: Avtomatik vazifalar oqimini sozlash.
+        - generic [ref=f15e143]:
+          - generic [ref=f15e144]:
+            - img "CRM" [ref=f15e145]
+            - generic [ref=f15e147]:
+              - heading "CRM" [level=2] [ref=f15e148]
+              - paragraph [ref=f15e149]: Ulash, sozlash va CRM bilan ishlash
+          - list [ref=f15e150]:
+            - listitem [ref=f15e151]:
+              - link "CRM da ishni boshlash Lead, savdo va kontaktlar bilan ishlash asoslari." [ref=f15e152] [cursor=pointer]:
+                - /url: /guides/161866
+                - generic [ref=f15e154]:
+                  - generic [ref=f15e155]: CRM da ishni boshlash
+                  - generic [ref=f15e156]: Lead, savdo va kontaktlar bilan ishlash asoslari.
+            - listitem [ref=f15e157]:
+              - link "Leadlar bilan ishlash Yangi lead yaratish, saralash va savdoga aylantirish." [ref=f15e158] [cursor=pointer]:
+                - /url: /guides/47411
+                - generic [ref=f15e160]:
+                  - generic [ref=f15e161]: Leadlar bilan ishlash
+                  - generic [ref=f15e162]: Yangi lead yaratish, saralash va savdoga aylantirish.
+            - listitem [ref=f15e163]:
+              - link "Savdolar (Сделки) Savdo voronkalari, bosqichlar va yopish." [ref=f15e164] [cursor=pointer]:
+                - /url: /guides/47598
+                - generic [ref=f15e166]:
+                  - generic [ref=f15e167]: Savdolar (Сделки)
+                  - generic [ref=f15e168]: Savdo voronkalari, bosqichlar va yopish.
+            - listitem [ref=f15e169]:
+              - link "Kontaktlar Mijoz kontaktlarini boshqarish va qidirish." [ref=f15e170] [cursor=pointer]:
+                - /url: /guides/47596
+                - generic [ref=f15e172]:
+                  - generic [ref=f15e173]: Kontaktlar
+                  - generic [ref=f15e174]: Mijoz kontaktlarini boshqarish va qidirish.
+            - listitem [ref=f15e175]:
+              - link "Hisob-fakturalar Hisob yaratish va mijozga yuborish." [ref=f15e176] [cursor=pointer]:
+                - /url: /guides/47599
+                - generic [ref=f15e178]:
+                  - generic [ref=f15e179]: Hisob-fakturalar
+                  - generic [ref=f15e180]: Hisob yaratish va mijozga yuborish.
+        - generic [ref=f15e181]:
+          - generic [ref=f15e182]:
+            - img "Ish jarayonlari" [ref=f15e183]
+            - generic [ref=f15e185]:
+              - heading "Ish jarayonlari" [level=2] [ref=f15e186]
+              - paragraph [ref=f15e187]: Avtomatlashtirish va tuzilma
+          - list [ref=f15e188]:
+            - listitem [ref=f15e189]:
+              - link "Ombor hisobi Qoldiq, hujjatlar va CRM bilan integratsiya." [ref=f15e190] [cursor=pointer]:
+                - /url: /guides/143886
+                - generic [ref=f15e192]:
+                  - generic [ref=f15e193]: Ombor hisobi
+                  - generic [ref=f15e194]: Qoldiq, hujjatlar va CRM bilan integratsiya.
+            - listitem [ref=f15e195]:
+              - link "Avtomatlashtirish Robotlar, triggerlar va RPA sozlash." [ref=f15e196] [cursor=pointer]:
+                - /url: /guides/151376
+                - generic [ref=f15e198]:
+                  - generic [ref=f15e199]: Avtomatlashtirish
+                  - generic [ref=f15e200]: Robotlar, triggerlar va RPA sozlash.
+            - listitem [ref=f15e201]:
+              - link "Xodimlar va tuzilma Departament jadvali, vaqt hisobi va hisobotlar." [ref=f15e202] [cursor=pointer]:
+                - /url: /guides/161762
+                - generic [ref=f15e204]:
+                  - generic [ref=f15e205]: Xodimlar va tuzilma
+                  - generic [ref=f15e206]: Departament jadvali, vaqt hisobi va hisobotlar.
+            - listitem [ref=f15e207]:
+              - link "Marketing va рассылка Email/SMS tarqatmalar va kampaniyalar." [ref=f15e208] [cursor=pointer]:
+                - /url: /guides/161614
+                - generic [ref=f15e210]:
+                  - generic [ref=f15e211]: Marketing va рассылка
+                  - generic [ref=f15e212]: Email/SMS tarqatmalar va kampaniyalar.
+            - listitem [ref=f15e213]:
+              - link "Sozlamalar Portal sozlamalari, ruxsatlar va integratsiyalar." [ref=f15e214] [cursor=pointer]:
+                - /url: /guides/45992
+                - generic [ref=f15e216]:
+                  - generic [ref=f15e217]: Sozlamalar
+                  - generic [ref=f15e218]: Portal sozlamalari, ruxsatlar va integratsiyalar.
+            - listitem [ref=f15e219]:
+              - link "Telefoniya Raqam ijarasi, ATS va qo'ng'iroqlar tarixi." [ref=f15e220] [cursor=pointer]:
+                - /url: /guides/161796
+                - generic [ref=f15e222]:
+                  - generic [ref=f15e223]: Telefoniya
+                  - generic [ref=f15e224]: Raqam ijarasi, ATS va qo'ng'iroqlar tarixi.
+      - generic [ref=f15e225]:
+        - link "Darslik Bitrix24 bilan tanishish Portalga kirish, birinchi sozlamalar va jamoani taklif qilish." [ref=f15e226] [cursor=pointer]:
+          - /url: /guides/161724
+          - generic [ref=f15e227]: Darslik
+          - generic [ref=f15e231]:
+            - paragraph [ref=f15e232]: Bitrix24 bilan tanishish
+            - paragraph [ref=f15e233]: Portalga kirish, birinchi sozlamalar va jamoani taklif qilish.
+        - 'link "Darslik Katalog tovarlarini yaratish va sozlash CRM va internet-do''kon uchun yagona katalog: bo''limlar, xususiyatlar, mahsulot." [ref=f15e234] [cursor=pointer]':
+          - /url: /guides/20922462
+          - generic [ref=f15e235]: Darslik
+          - generic [ref=f15e239]:
+            - paragraph [ref=f15e240]: Katalog tovarlarini yaratish va sozlash
+            - paragraph [ref=f15e241]: "CRM va internet-do'kon uchun yagona katalog: bo'limlar, xususiyatlar, mahsulot."
+        - link "Darslik Bitrix24 yordam markazi Rasmiy yordam, chat va integrator yordami." [ref=f15e242] [cursor=pointer]:
+          - /url: /guides/148408
+          - generic [ref=f15e243]: Darslik
+          - generic [ref=f15e247]:
+            - paragraph [ref=f15e248]: Bitrix24 yordam markazi
+            - paragraph [ref=f15e249]: Rasmiy yordam, chat va integrator yordami.
+  - region "Notifications (F8)":
+    - list
+  - alert [ref=f15e250]

@@ -1,0 +1,403 @@
+- generic [active] [ref=f11e1]:
+  - main [ref=f11e2]:
+    - navigation [ref=f11e4]:
+      - button [ref=f11e5]:
+        - img "AKELA" [ref=f11e7]
+      - generic [ref=f11e8]:
+        - button "Bosh sahifa" [ref=f11e9]
+        - button "Tanishtirish" [ref=f11e11]
+        - button "Tuzilma" [ref=f11e12]
+        - button "Intizom" [ref=f11e13]
+        - button "Yo'riqlar" [ref=f11e14]
+        - button "Bog'lanish" [ref=f11e15]
+        - link "Darslar" [ref=f11e16] [cursor=pointer]:
+          - /url: /courses
+      - generic [ref=f11e17]:
+        - generic [ref=f11e18]:
+          - button "O'z" [ref=f11e19]
+          - button "Ru" [ref=f11e20]
+          - button "En" [ref=f11e21]
+        - link "Kirish" [ref=f11e22] [cursor=pointer]:
+          - /url: /login
+        - link "Ro'yxatdan o'tish" [ref=f11e26] [cursor=pointer]:
+          - /url: /register
+        - button "Tanishtirishni boshlash" [ref=f11e27]
+    - generic [ref=f11e31]:
+      - generic [ref=f11e32]:
+        - generic [ref=f11e33]:
+          - link "Dashboard" [ref=f11e34] [cursor=pointer]:
+            - /url: /dashboard
+          - generic [ref=f11e46]:
+            - heading "Qo'llanmalar" [level=1] [ref=f11e47]
+            - paragraph [ref=f11e48]: Bitrix24 yordam markazi maqolalari
+        - link "helpdesk.bitrix24.ru" [ref=f11e49] [cursor=pointer]:
+          - /url: https://helpdesk.bitrix24.ru/
+      - generic [ref=f11e54]:
+        - generic [ref=f11e55]:
+          - heading "Boshlash" [level=2] [ref=f11e56]
+          - list [ref=f11e57]:
+            - listitem [ref=f11e58]:
+              - link "Bitrix24 bilan tanishish Portalga kirish, birinchi sozlamalar va jamoani taklif qilish." [ref=f11e59] [cursor=pointer]:
+                - /url: https://helpdesk.bitrix24.ru/open/161724
+                - generic [ref=f11e64]:
+                  - generic [ref=f11e65]: Bitrix24 bilan tanishish
+                  - generic [ref=f11e66]: Portalga kirish, birinchi sozlamalar va jamoani taklif qilish.
+            - listitem [ref=f11e67]:
+              - 'link "Katalog tovarlarini yaratish va sozlash CRM va internet-do''kon uchun yagona katalog: bo''limlar, xususiyatlar, mahsulot." [ref=f11e68] [cursor=pointer]':
+                - /url: https://helpdesk.bitrix24.ru/open/20922462
+                - generic [ref=f11e73]:
+                  - generic [ref=f11e74]: Katalog tovarlarini yaratish va sozlash
+                  - generic [ref=f11e75]: "CRM va internet-do'kon uchun yagona katalog: bo'limlar, xususiyatlar, mahsulot."
+            - listitem [ref=f11e76]:
+              - link "Bitrix24 yordam markazi Rasmiy yordam, chat va integrator yordami." [ref=f11e77] [cursor=pointer]:
+                - /url: https://helpdesk.bitrix24.ru/open/148408
+                - generic [ref=f11e82]:
+                  - generic [ref=f11e83]: Bitrix24 yordam markazi
+                  - generic [ref=f11e84]: Rasmiy yordam, chat va integrator yordami.
+        - generic [ref=f11e85]:
+          - heading "CRM" [level=2] [ref=f11e86]
+          - list [ref=f11e87]:
+            - listitem [ref=f11e88]:
+              - link "CRM da ishni boshlash Lead, savdo va kontaktlar bilan ishlash asoslari." [ref=f11e89] [cursor=pointer]:
+                - /url: https://helpdesk.bitrix24.ru/open/161866
+                - generic [ref=f11e94]:
+                  - generic [ref=f11e95]: CRM da ishni boshlash
+                  - generic [ref=f11e96]: Lead, savdo va kontaktlar bilan ishlash asoslari.
+            - listitem [ref=f11e97]:
+              - link "Leadlar bilan ishlash Yangi lead yaratish, saralash va savdoga aylantirish." [ref=f11e98] [cursor=pointer]:
+                - /url: https://helpdesk.bitrix24.ru/open/47411
+                - generic [ref=f11e103]:
+                  - generic [ref=f11e104]: Leadlar bilan ishlash
+                  - generic [ref=f11e105]: Yangi lead yaratish, saralash va savdoga aylantirish.
+            - listitem [ref=f11e106]:
+              - link "Savdolar (Сделки) Savdo voronkalari, bosqichlar va yopish." [ref=f11e107] [cursor=pointer]:
+                - /url: https://helpdesk.bitrix24.ru/open/47598
+                - generic [ref=f11e112]:
+                  - generic [ref=f11e113]: Savdolar (Сделки)
+                  - generic [ref=f11e114]: Savdo voronkalari, bosqichlar va yopish.
+            - listitem [ref=f11e115]:
+              - link "Kontaktlar Mijoz kontaktlarini boshqarish va qidirish." [ref=f11e116] [cursor=pointer]:
+                - /url: https://helpdesk.bitrix24.ru/open/47596
+                - generic [ref=f11e121]:
+                  - generic [ref=f11e122]: Kontaktlar
+                  - generic [ref=f11e123]: Mijoz kontaktlarini boshqarish va qidirish.
+            - listitem [ref=f11e124]:
+              - link "Hisob-fakturalar Hisob yaratish va mijozga yuborish." [ref=f11e125] [cursor=pointer]:
+                - /url: https://helpdesk.bitrix24.ru/open/47599
+                - generic [ref=f11e130]:
+                  - generic [ref=f11e131]: Hisob-fakturalar
+                  - generic [ref=f11e132]: Hisob yaratish va mijozga yuborish.
+        - generic [ref=f11e133]:
+          - heading "Vazifalar" [level=2] [ref=f11e134]
+          - list [ref=f11e135]:
+            - listitem [ref=f11e136]:
+              - link "Vazifalar bilan ishlashni boshlash Vazifa yaratish, deadline va ijrochilar." [ref=f11e137] [cursor=pointer]:
+                - /url: https://helpdesk.bitrix24.ru/open/48933
+                - generic [ref=f11e142]:
+                  - generic [ref=f11e143]: Vazifalar bilan ishlashni boshlash
+                  - generic [ref=f11e144]: Vazifa yaratish, deadline va ijrochilar.
+            - listitem [ref=f11e145]:
+              - link "Vazifalardagi vositalar Checklist, fayllar, timer va kommentariyalar." [ref=f11e146] [cursor=pointer]:
+                - /url: https://helpdesk.bitrix24.ru/open/48595
+                - generic [ref=f11e151]:
+                  - generic [ref=f11e152]: Vazifalardagi vositalar
+                  - generic [ref=f11e153]: Checklist, fayllar, timer va kommentariyalar.
+            - listitem [ref=f11e154]:
+              - link "Oqimlar (Потоки) Avtomatik vazifalar oqimini sozlash." [ref=f11e155] [cursor=pointer]:
+                - /url: https://helpdesk.bitrix24.ru/open/95435
+                - generic [ref=f11e160]:
+                  - generic [ref=f11e161]: Oqimlar (Потоки)
+                  - generic [ref=f11e162]: Avtomatik vazifalar oqimini sozlash.
+        - generic [ref=f11e163]:
+          - heading "Hamkorlik" [level=2] [ref=f11e164]
+          - list [ref=f11e165]:
+            - listitem [ref=f11e166]:
+              - link "Messenger Chatlar, kanallar va jamoaviy muloqot." [ref=f11e167] [cursor=pointer]:
+                - /url: https://helpdesk.bitrix24.ru/open/161730
+                - generic [ref=f11e172]:
+                  - generic [ref=f11e173]: Messenger
+                  - generic [ref=f11e174]: Chatlar, kanallar va jamoaviy muloqot.
+            - listitem [ref=f11e175]:
+              - link "Kalendar Uchrashuvlar, sinxronizatsiya va jadvallar." [ref=f11e176] [cursor=pointer]:
+                - /url: https://helpdesk.bitrix24.ru/open/45919
+                - generic [ref=f11e181]:
+                  - generic [ref=f11e182]: Kalendar
+                  - generic [ref=f11e183]: Uchrashuvlar, sinxronizatsiya va jadvallar.
+            - listitem [ref=f11e184]:
+              - link "Disk va fayllar Umumiy disk, papkalar va hujjatlar ustida hamkorlik." [ref=f11e185] [cursor=pointer]:
+                - /url: https://helpdesk.bitrix24.ru/open/45920
+                - generic [ref=f11e190]:
+                  - generic [ref=f11e191]: Disk va fayllar
+                  - generic [ref=f11e192]: Umumiy disk, papkalar va hujjatlar ustida hamkorlik.
+            - listitem [ref=f11e193]:
+              - link "Pochta Korporativ pochtani ulash va boshqarish." [ref=f11e194] [cursor=pointer]:
+                - /url: https://helpdesk.bitrix24.ru/open/55667
+                - generic [ref=f11e199]:
+                  - generic [ref=f11e200]: Pochta
+                  - generic [ref=f11e201]: Korporativ pochtani ulash va boshqarish.
+        - generic [ref=f11e202]:
+          - heading "Ish jarayonlari" [level=2] [ref=f11e203]
+          - list [ref=f11e204]:
+            - listitem [ref=f11e205]:
+              - link "Ombor hisobi Qoldiq, hujjatlar va CRM bilan integratsiya." [ref=f11e206] [cursor=pointer]:
+                - /url: https://helpdesk.bitrix24.ru/open/143886
+                - generic [ref=f11e211]:
+                  - generic [ref=f11e212]: Ombor hisobi
+                  - generic [ref=f11e213]: Qoldiq, hujjatlar va CRM bilan integratsiya.
+            - listitem [ref=f11e214]:
+              - link "Avtomatlashtirish Robotlar, triggerlar va RPA sozlash." [ref=f11e215] [cursor=pointer]:
+                - /url: https://helpdesk.bitrix24.ru/open/151376
+                - generic [ref=f11e220]:
+                  - generic [ref=f11e221]: Avtomatlashtirish
+                  - generic [ref=f11e222]: Robotlar, triggerlar va RPA sozlash.
+            - listitem [ref=f11e223]:
+              - link "Xodimlar va tuzilma Departament jadvali, vaqt hisobi va hisobotlar." [ref=f11e224] [cursor=pointer]:
+                - /url: https://helpdesk.bitrix24.ru/open/161762
+                - generic [ref=f11e229]:
+                  - generic [ref=f11e230]: Xodimlar va tuzilma
+                  - generic [ref=f11e231]: Departament jadvali, vaqt hisobi va hisobotlar.
+            - listitem [ref=f11e232]:
+              - link "Marketing va рассылка Email/SMS tarqatmalar va kampaniyalar." [ref=f11e233] [cursor=pointer]:
+                - /url: https://helpdesk.bitrix24.ru/open/161614
+                - generic [ref=f11e238]:
+                  - generic [ref=f11e239]: Marketing va рассылка
+                  - generic [ref=f11e240]: Email/SMS tarqatmalar va kampaniyalar.
+            - listitem [ref=f11e241]:
+              - link "Sozlamalar Portal sozlamalari, ruxsatlar va integratsiyalar." [ref=f11e242] [cursor=pointer]:
+                - /url: https://helpdesk.bitrix24.ru/open/45992
+                - generic [ref=f11e247]:
+                  - generic [ref=f11e248]: Sozlamalar
+                  - generic [ref=f11e249]: Portal sozlamalari, ruxsatlar va integratsiyalar.
+            - listitem [ref=f11e250]:
+              - link "Telefoniya Raqam ijarasi, ATS va qo'ng'iroqlar tarixi." [ref=f11e251] [cursor=pointer]:
+                - /url: https://helpdesk.bitrix24.ru/open/161796
+                - generic [ref=f11e256]:
+                  - generic [ref=f11e257]: Telefoniya
+                  - generic [ref=f11e258]: Raqam ijarasi, ATS va qo'ng'iroqlar tarixi.
+      - region [ref=f11e259]:
+        - generic [ref=f11e260]:
+          - generic [ref=f11e269]:
+            - heading "Bitrix 24 bilan ishlash yo'riqlari" [level=2] [ref=f11e270]
+            - paragraph [ref=f11e271]: Darsliklar — ochiq havola orqali, uz/ru/en tarjima bilan
+          - link "Barcha yo'riqlar →" [ref=f11e272] [cursor=pointer]:
+            - /url: /guides
+        - generic [ref=f11e273]:
+          - article [ref=f11e274]:
+            - generic [ref=f11e282]:
+              - generic [ref=f11e283]:
+                - heading "Boshlash" [level=3] [ref=f11e284]
+                - generic [ref=f11e285]: 3 ta darslik
+              - paragraph [ref=f11e286]: Portalga kirish, birinchi sozlamalar va jamoani taklif qilish.
+            - list [ref=f11e287]:
+              - listitem [ref=f11e288]:
+                - link "Bitrix24 bilan tanishish Portalga kirish, birinchi sozlamalar va jamoani taklif qilish." [ref=f11e289] [cursor=pointer]:
+                  - /url: https://helpdesk.bitrix24.ru/open/161724
+                  - generic [ref=f11e294]:
+                    - text: Bitrix24 bilan tanishish
+                    - generic [ref=f11e295]: Portalga kirish, birinchi sozlamalar va jamoani taklif qilish.
+              - listitem [ref=f11e296]:
+                - 'link "Katalog tovarlarini yaratish va sozlash CRM va internet-do''kon uchun yagona katalog: bo''limlar, xususiyatlar, mahsulot." [ref=f11e297] [cursor=pointer]':
+                  - /url: https://helpdesk.bitrix24.ru/open/20922462
+                  - generic [ref=f11e302]:
+                    - text: Katalog tovarlarini yaratish va sozlash
+                    - generic [ref=f11e303]: "CRM va internet-do'kon uchun yagona katalog: bo'limlar, xususiyatlar, mahsulot."
+              - listitem [ref=f11e304]:
+                - link "Bitrix24 yordam markazi Rasmiy yordam, chat va integrator yordami." [ref=f11e305] [cursor=pointer]:
+                  - /url: https://helpdesk.bitrix24.ru/open/148408
+                  - generic [ref=f11e310]:
+                    - text: Bitrix24 yordam markazi
+                    - generic [ref=f11e311]: Rasmiy yordam, chat va integrator yordami.
+          - article [ref=f11e312]:
+            - generic [ref=f11e320]:
+              - generic [ref=f11e321]:
+                - heading "CRM" [level=3] [ref=f11e322]
+                - generic [ref=f11e323]: 5 ta darslik
+              - paragraph [ref=f11e324]: Lead, savdo va kontaktlar bilan ishlash asoslari.
+            - list [ref=f11e325]:
+              - listitem [ref=f11e326]:
+                - link "CRM da ishni boshlash Lead, savdo va kontaktlar bilan ishlash asoslari." [ref=f11e327] [cursor=pointer]:
+                  - /url: https://helpdesk.bitrix24.ru/open/161866
+                  - generic [ref=f11e332]:
+                    - text: CRM da ishni boshlash
+                    - generic [ref=f11e333]: Lead, savdo va kontaktlar bilan ishlash asoslari.
+              - listitem [ref=f11e334]:
+                - link "Leadlar bilan ishlash Yangi lead yaratish, saralash va savdoga aylantirish." [ref=f11e335] [cursor=pointer]:
+                  - /url: https://helpdesk.bitrix24.ru/open/47411
+                  - generic [ref=f11e340]:
+                    - text: Leadlar bilan ishlash
+                    - generic [ref=f11e341]: Yangi lead yaratish, saralash va savdoga aylantirish.
+              - listitem [ref=f11e342]:
+                - link "Savdolar (Сделки) Savdo voronkalari, bosqichlar va yopish." [ref=f11e343] [cursor=pointer]:
+                  - /url: https://helpdesk.bitrix24.ru/open/47598
+                  - generic [ref=f11e348]:
+                    - text: Savdolar (Сделки)
+                    - generic [ref=f11e349]: Savdo voronkalari, bosqichlar va yopish.
+              - listitem [ref=f11e350]:
+                - link "Kontaktlar Mijoz kontaktlarini boshqarish va qidirish." [ref=f11e351] [cursor=pointer]:
+                  - /url: https://helpdesk.bitrix24.ru/open/47596
+                  - generic [ref=f11e356]:
+                    - text: Kontaktlar
+                    - generic [ref=f11e357]: Mijoz kontaktlarini boshqarish va qidirish.
+              - listitem [ref=f11e358]:
+                - link "Hisob-fakturalar Hisob yaratish va mijozga yuborish." [ref=f11e359] [cursor=pointer]:
+                  - /url: https://helpdesk.bitrix24.ru/open/47599
+                  - generic [ref=f11e364]:
+                    - text: Hisob-fakturalar
+                    - generic [ref=f11e365]: Hisob yaratish va mijozga yuborish.
+          - article [ref=f11e366]:
+            - generic [ref=f11e372]:
+              - generic [ref=f11e373]:
+                - heading "Vazifalar" [level=3] [ref=f11e374]
+                - generic [ref=f11e375]: 3 ta darslik
+              - paragraph [ref=f11e376]: Vazifa yaratish, deadline va ijrochilar.
+            - list [ref=f11e377]:
+              - listitem [ref=f11e378]:
+                - link "Vazifalar bilan ishlashni boshlash Vazifa yaratish, deadline va ijrochilar." [ref=f11e379] [cursor=pointer]:
+                  - /url: https://helpdesk.bitrix24.ru/open/48933
+                  - generic [ref=f11e384]:
+                    - text: Vazifalar bilan ishlashni boshlash
+                    - generic [ref=f11e385]: Vazifa yaratish, deadline va ijrochilar.
+              - listitem [ref=f11e386]:
+                - link "Vazifalardagi vositalar Checklist, fayllar, timer va kommentariyalar." [ref=f11e387] [cursor=pointer]:
+                  - /url: https://helpdesk.bitrix24.ru/open/48595
+                  - generic [ref=f11e392]:
+                    - text: Vazifalardagi vositalar
+                    - generic [ref=f11e393]: Checklist, fayllar, timer va kommentariyalar.
+              - listitem [ref=f11e394]:
+                - link "Oqimlar (Потоки) Avtomatik vazifalar oqimini sozlash." [ref=f11e395] [cursor=pointer]:
+                  - /url: https://helpdesk.bitrix24.ru/open/95435
+                  - generic [ref=f11e400]:
+                    - text: Oqimlar (Потоки)
+                    - generic [ref=f11e401]: Avtomatik vazifalar oqimini sozlash.
+          - article [ref=f11e402]:
+            - generic [ref=f11e407]:
+              - generic [ref=f11e408]:
+                - heading "Hamkorlik" [level=3] [ref=f11e409]
+                - generic [ref=f11e410]: 4 ta darslik
+              - paragraph [ref=f11e411]: Chatlar, kanallar va jamoaviy muloqot.
+            - list [ref=f11e412]:
+              - listitem [ref=f11e413]:
+                - link "Messenger Chatlar, kanallar va jamoaviy muloqot." [ref=f11e414] [cursor=pointer]:
+                  - /url: https://helpdesk.bitrix24.ru/open/161730
+                  - generic [ref=f11e419]:
+                    - text: Messenger
+                    - generic [ref=f11e420]: Chatlar, kanallar va jamoaviy muloqot.
+              - listitem [ref=f11e421]:
+                - link "Kalendar Uchrashuvlar, sinxronizatsiya va jadvallar." [ref=f11e422] [cursor=pointer]:
+                  - /url: https://helpdesk.bitrix24.ru/open/45919
+                  - generic [ref=f11e427]:
+                    - text: Kalendar
+                    - generic [ref=f11e428]: Uchrashuvlar, sinxronizatsiya va jadvallar.
+              - listitem [ref=f11e429]:
+                - link "Disk va fayllar Umumiy disk, papkalar va hujjatlar ustida hamkorlik." [ref=f11e430] [cursor=pointer]:
+                  - /url: https://helpdesk.bitrix24.ru/open/45920
+                  - generic [ref=f11e435]:
+                    - text: Disk va fayllar
+                    - generic [ref=f11e436]: Umumiy disk, papkalar va hujjatlar ustida hamkorlik.
+              - listitem [ref=f11e437]:
+                - link "Pochta Korporativ pochtani ulash va boshqarish." [ref=f11e438] [cursor=pointer]:
+                  - /url: https://helpdesk.bitrix24.ru/open/55667
+                  - generic [ref=f11e443]:
+                    - text: Pochta
+                    - generic [ref=f11e444]: Korporativ pochtani ulash va boshqarish.
+          - article [ref=f11e445]:
+            - generic [ref=f11e452]:
+              - generic [ref=f11e453]:
+                - heading "Ish jarayonlari" [level=3] [ref=f11e454]
+                - generic [ref=f11e455]: 6 ta darslik
+              - paragraph [ref=f11e456]: Qoldiq, hujjatlar va CRM bilan integratsiya.
+            - list [ref=f11e457]:
+              - listitem [ref=f11e458]:
+                - link "Ombor hisobi Qoldiq, hujjatlar va CRM bilan integratsiya." [ref=f11e459] [cursor=pointer]:
+                  - /url: https://helpdesk.bitrix24.ru/open/143886
+                  - generic [ref=f11e464]:
+                    - text: Ombor hisobi
+                    - generic [ref=f11e465]: Qoldiq, hujjatlar va CRM bilan integratsiya.
+              - listitem [ref=f11e466]:
+                - link "Avtomatlashtirish Robotlar, triggerlar va RPA sozlash." [ref=f11e467] [cursor=pointer]:
+                  - /url: https://helpdesk.bitrix24.ru/open/151376
+                  - generic [ref=f11e472]:
+                    - text: Avtomatlashtirish
+                    - generic [ref=f11e473]: Robotlar, triggerlar va RPA sozlash.
+              - listitem [ref=f11e474]:
+                - link "Xodimlar va tuzilma Departament jadvali, vaqt hisobi va hisobotlar." [ref=f11e475] [cursor=pointer]:
+                  - /url: https://helpdesk.bitrix24.ru/open/161762
+                  - generic [ref=f11e480]:
+                    - text: Xodimlar va tuzilma
+                    - generic [ref=f11e481]: Departament jadvali, vaqt hisobi va hisobotlar.
+              - listitem [ref=f11e482]:
+                - link "Marketing va рассылка Email/SMS tarqatmalar va kampaniyalar." [ref=f11e483] [cursor=pointer]:
+                  - /url: https://helpdesk.bitrix24.ru/open/161614
+                  - generic [ref=f11e488]:
+                    - text: Marketing va рассылка
+                    - generic [ref=f11e489]: Email/SMS tarqatmalar va kampaniyalar.
+              - listitem [ref=f11e490]:
+                - link "Sozlamalar Portal sozlamalari, ruxsatlar va integratsiyalar." [ref=f11e491] [cursor=pointer]:
+                  - /url: https://helpdesk.bitrix24.ru/open/45992
+                  - generic [ref=f11e496]:
+                    - text: Sozlamalar
+                    - generic [ref=f11e497]: Portal sozlamalari, ruxsatlar va integratsiyalar.
+              - listitem [ref=f11e498]:
+                - link "Telefoniya Raqam ijarasi, ATS va qo'ng'iroqlar tarixi." [ref=f11e499] [cursor=pointer]:
+                  - /url: https://helpdesk.bitrix24.ru/open/161796
+                  - generic [ref=f11e504]:
+                    - text: Telefoniya
+                    - generic [ref=f11e505]: Raqam ijarasi, ATS va qo'ng'iroqlar tarixi.
+        - generic [ref=f11e506]:
+          - link "Darslik Bitrix24 bilan tanishish Portalga kirish, birinchi sozlamalar va jamoani taklif qilish." [ref=f11e507] [cursor=pointer]:
+            - /url: https://helpdesk.bitrix24.ru/open/161724
+            - generic [ref=f11e508]: Darslik
+            - generic [ref=f11e514]:
+              - paragraph [ref=f11e515]: Bitrix24 bilan tanishish
+              - paragraph [ref=f11e516]: Portalga kirish, birinchi sozlamalar va jamoani taklif qilish.
+          - 'link "Darslik Katalog tovarlarini yaratish va sozlash CRM va internet-do''kon uchun yagona katalog: bo''limlar, xususiyatlar, mahsulot." [ref=f11e517] [cursor=pointer]':
+            - /url: https://helpdesk.bitrix24.ru/open/20922462
+            - generic [ref=f11e518]: Darslik
+            - generic [ref=f11e524]:
+              - paragraph [ref=f11e525]: Katalog tovarlarini yaratish va sozlash
+              - paragraph [ref=f11e526]: "CRM va internet-do'kon uchun yagona katalog: bo'limlar, xususiyatlar, mahsulot."
+          - link "Darslik Bitrix24 yordam markazi Rasmiy yordam, chat va integrator yordami." [ref=f11e527] [cursor=pointer]:
+            - /url: https://helpdesk.bitrix24.ru/open/148408
+            - generic [ref=f11e528]: Darslik
+            - generic [ref=f11e534]:
+              - paragraph [ref=f11e535]: Bitrix24 yordam markazi
+              - paragraph [ref=f11e536]: Rasmiy yordam, chat va integrator yordami.
+          - link "Darslik CRM da ishni boshlash Lead, savdo va kontaktlar bilan ishlash asoslari." [ref=f11e537] [cursor=pointer]:
+            - /url: https://helpdesk.bitrix24.ru/open/161866
+            - generic [ref=f11e538]: Darslik
+            - generic [ref=f11e544]:
+              - paragraph [ref=f11e545]: CRM da ishni boshlash
+              - paragraph [ref=f11e546]: Lead, savdo va kontaktlar bilan ishlash asoslari.
+          - link "Darslik Leadlar bilan ishlash Yangi lead yaratish, saralash va savdoga aylantirish." [ref=f11e547] [cursor=pointer]:
+            - /url: https://helpdesk.bitrix24.ru/open/47411
+            - generic [ref=f11e548]: Darslik
+            - generic [ref=f11e554]:
+              - paragraph [ref=f11e555]: Leadlar bilan ishlash
+              - paragraph [ref=f11e556]: Yangi lead yaratish, saralash va savdoga aylantirish.
+          - link "Darslik Savdolar (Сделки) Savdo voronkalari, bosqichlar va yopish." [ref=f11e557] [cursor=pointer]:
+            - /url: https://helpdesk.bitrix24.ru/open/47598
+            - generic [ref=f11e558]: Darslik
+            - generic [ref=f11e564]:
+              - paragraph [ref=f11e565]: Savdolar (Сделки)
+              - paragraph [ref=f11e566]: Savdo voronkalari, bosqichlar va yopish.
+          - link "Darslik Kontaktlar Mijoz kontaktlarini boshqarish va qidirish." [ref=f11e567] [cursor=pointer]:
+            - /url: https://helpdesk.bitrix24.ru/open/47596
+            - generic [ref=f11e568]: Darslik
+            - generic [ref=f11e574]:
+              - paragraph [ref=f11e575]: Kontaktlar
+              - paragraph [ref=f11e576]: Mijoz kontaktlarini boshqarish va qidirish.
+          - link "Darslik Hisob-fakturalar Hisob yaratish va mijozga yuborish." [ref=f11e577] [cursor=pointer]:
+            - /url: https://helpdesk.bitrix24.ru/open/47599
+            - generic [ref=f11e578]: Darslik
+            - generic [ref=f11e584]:
+              - paragraph [ref=f11e585]: Hisob-fakturalar
+              - paragraph [ref=f11e586]: Hisob yaratish va mijozga yuborish.
+          - link "Darslik Vazifalar bilan ishlashni boshlash Vazifa yaratish, deadline va ijrochilar." [ref=f11e587] [cursor=pointer]:
+            - /url: https://helpdesk.bitrix24.ru/open/48933
+            - generic [ref=f11e588]: Darslik
+            - generic [ref=f11e594]:
+              - paragraph [ref=f11e595]: Vazifalar bilan ishlashni boshlash
+              - paragraph [ref=f11e596]: Vazifa yaratish, deadline va ijrochilar.
+  - region "Notifications (F8)":
+    - list
+  - alert [ref=f11e597]

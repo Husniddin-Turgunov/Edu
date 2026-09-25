@@ -1,0 +1,6 @@
+- generic [active] [ref=f3e1]:
+  - main [ref=f3e2]:
+    - paragraph [ref=f3e6]: Test yuklanmoqda...
+  - region "Notifications (F8)":
+    - list
+  - alert [ref=f3e7]

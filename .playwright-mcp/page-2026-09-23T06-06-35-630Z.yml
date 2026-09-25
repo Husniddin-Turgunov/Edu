@@ -1,0 +1,26 @@
+- generic [active] [ref=e1]:
+  - main [ref=e2]:
+    - generic [ref=e3]:
+      - link "Bosh sahifa" [ref=e4] [cursor=pointer]:
+        - /url: /
+      - generic [ref=e7]:
+        - img "AKELA" [ref=e8]
+        - generic [ref=e9]:
+          - heading "AKELA GROUP" [level=1] [ref=e10]
+          - paragraph [ref=e11]: Tizimga kirish
+      - generic [ref=e12]:
+        - generic [ref=e13]:
+          - generic [ref=e14]: Email
+          - textbox "email@akela.uz" [ref=e19]
+        - generic [ref=e20]:
+          - generic [ref=e21]: Parol
+          - generic [ref=e22]:
+            - textbox "••••••••" [ref=e26]
+            - button "Parolni ko'rsatish" [ref=e27]
+        - button "Kirish" [ref=e31]
+      - link "Yangi akkaunt ochish" [ref=e36] [cursor=pointer]:
+        - /url: /register
+  - region "Notifications (F8)":
+    - list
+  - button "Open Next.js Dev Tools" [ref=e45] [cursor=pointer]
+  - alert [ref=e49]

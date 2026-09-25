@@ -1,0 +1,77 @@
+{
+  "base": "https://edu.akelagroup.uz",
+  "checks": {
+    "login": false,
+    "pages_ok": true,
+    "no_overflow": false,
+    "no_console_errors": false
+  },
+  "pages": {
+    "home": {
+      "status": 200,
+      "overflow": 0,
+      "items": [],
+      "text": 80
+    },
+    "dashboard": {
+      "status": 200,
+      "overflow": 0,
+      "items": [],
+      "text": 80
+    },
+    "courses": {
+      "status": 200,
+      "overflow": 0,
+      "items": [],
+      "text": 80
+    },
+    "admin": {
+      "status": 200,
+      "overflow": 0,
+      "items": [],
+      "text": 80
+    },
+    "admin-students": {
+      "status": 200,
+      "overflow": 0,
+      "items": [],
+      "text": 80
+    },
+    "admin-tests": {
+      "status": 200,
+      "overflow": 0,
+      "items": [],
+      "text": 80
+    },
+    "admin-jobs": {
+      "status": 200,
+      "overflow": 0,
+      "items": [],
+      "text": 80
+    },
+    "guides": {
+      "status": 200,
+      "overflow": 1,
+      "items": [
+        {
+          "text": "Ro'yxatdan o'tish",
+          "cls": "hidden h-8 items-center rounded-full bg-gradient-to-br from-indigo-700 to-indigo-600 px-3.5 text-[13px] font-m",
+          "vOver": 5,
+          "hOver": 0,
+          "box": "93x32",
+          "overflow": "visible/visible",
+          "fontSize": "13px",
+          "lineHeight": "20.8px"
+        }
+      ],
+      "text": 4200
+    }
+  },
+  "errors": [
+    "Failed to load resource: the server responded with a status of 401 ()"
+  ],
+  "user": null,
+  "role": null,
+  "totalOverflow": 1,
+  "badStatus": []
+}

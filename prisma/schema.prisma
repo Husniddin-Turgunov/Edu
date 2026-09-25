@@ -1,32 +1,426 @@
 // This is your Prisma schema file,
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client-js"
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "mysql"
   url      = env("DATABASE_URL")
 }
 
+model Department {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  description String?
+  color       String   @default("#6366f1")
+  icon        String?
+  order       Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  positions   Position[]
+
+  @@index([order])
+}
+
+model Position {
+  id             String   @id @default(cuid())
+  departmentId   String
+  name           String
+  description    String?
+  normativeUrl   String?
+  normativeDesc  String?
+  order          Int      @default(0)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  department     Department @relation(fields: [departmentId], references: [id], onDelete: Cascade)
+
+  @@index([departmentId])
+  @@index([order])
+}
+
 model User {
+  id            String   @id @default(cuid())
+  email         String   @unique
+  name          String?
+  surname       String?
+  phone         String?
+  department    String?
+  position      String?
+  passwordHash  String
+  role          String   @default("user") // user | admin | grader
+  status        String   @default("pending") // pending | approved | rejected
+  isActive      Boolean  @default(true) // ish faoliyatida / emas (tasdiqlangan xodimlar uchun)
+  approvedAt    DateTime?
+  resetToken    String?  @unique
+  resetExpires  DateTime?
+  telegramId    String?  @unique // Telegram bot foydalanuvchi ID si
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  enrollments     Enrollment[]
+  jobEnrollments  JobEnrollment[]
+  jobDayProgress  JobDayProgress[]
+  testResults     TestResult[]
+  jobTestResults  JobTestResult[]
+}
+
+// ====== Telegram bot obunachilari ======
+// Botga /start bosgan HAR BIR odam shu jadvalga yoziladi (saytda akkaunti
+// bo'lishi shart emas). Bildirishnomalar (yangi ro'yxatdan o'tish, test
+// natijasi va h.k.) shu jadvaldagi BARCHA obunachilarga bir xil yuboriladi.
+// Botda "admin" tushunchasi yo'q — hamma teng.
+model BotSubscriber {
   id        String   @id @default(cuid())
-  email     String   @unique
+  chatId    String   @unique
   name      String?
+  username  String?
+  isActive  Boolean  @default(true)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  @@index([isActive])
 }
 
 model Post {
   id        String   @id @default(cuid())
-  title     String
-  content   String?
+  title     String   @db.Text
+  content   String?  @db.Text
   published Boolean  @default(false)
   authorId  String
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+// ====== Akela-style LMS: Course -> Module -> Lesson + Test ======
+
+model Course {
+  id          String   @id @default(cuid())
+  title       String   @db.Text
+  description String?  @db.Text
+  language    String   @default("uz") // uz | ru | en
+  coverColor  String   @default("from-emerald-900 to-teal-950")
+  status      String   @default("draft") // draft | active | archived
+  isPublic    Boolean  @default(false)
+  authorId    String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  modules     Module[]
+  enrollments Enrollment[]
+  folders     CourseFolder[]
+
+  @@index([authorId])
+  @@index([status])
+}
+
+model CourseFolder {
+  id        String   @id @default(cuid())
+  name      String
+  color     String   @default("#ef4444") // red
+  authorId  String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  courses   Course[]
+}
+
+model Module {
+  id          String   @id @default(cuid())
+  courseId    String
+  title       String   @db.Text
+  description String?  @db.Text
+  order       Int      @default(0)
+  viewOrder   String   @default("open") // open | closed | scheduled | limited
+  isClosed    Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  course      Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  lessons     Lesson[]
+  tests       Test[]
+
+  @@index([courseId])
+  @@index([order])
+}
+
+model Lesson {
+  id          String   @id @default(cuid())
+  moduleId    String
+  title       String   @db.Text
+  content     String   @db.LongText // MDX/markdown body
+  videoUrl    String?  @db.Text
+  pdfUrl      String?  @db.Text
+  duration    Int      @default(0) // minutes
+  order       Int      @default(0)
+  status      String   @default("draft") // draft | active | archived
+  language    String   @default("uz")
+  isClosed    Boolean  @default(false)
+  isHomework  Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  module      Module   @relation(fields: [moduleId], references: [id], onDelete: Cascade)
+  progress    LessonProgress[]
+
+  @@index([moduleId])
+  @@index([order])
+}
+
+model Test {
+  id                String   @id @default(cuid())
+  moduleId          String?
+  courseId          String?
+  title             String   @db.Text
+  description       String?  @db.Text
+  language          String   @default("uz")
+  timeLimit         Int      @default(0) // 0 = unlimited, otherwise minutes
+  passScore         Int      @default(60) // percent
+  status            String   @default("draft") // draft | active | archived
+  order             Int      @default(0)
+  maxAttempts       Int      @default(1) // 0 = unlimited, 1 = once, N = N times
+  questionCount     Int      @default(10) // testda nechta savol bo'lishi kerak
+  shuffleQuestions  Boolean  @default(true)
+  shuffleChoices    Boolean  @default(true)
+  visibility        String   @default("all") // all | selected
+  assignedUserIds   String   @default("[]") @db.Text // JSON array string
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  module      Module?  @relation(fields: [moduleId], references: [id], onDelete: SetNull)
+  questions   Question[]
+  results     TestResult[]
+
+  @@index([moduleId])
+  @@index([courseId])
+}
+
+model Question {
+  id            String   @id @default(cuid())
+  testId        String
+  text          String   @db.Text
+  type          String   @default("single") // single | multiple | truefalse | written
+  points        Int      @default(1)
+  order         Int      @default(0)
+  explanation   String?  @db.Text
+  correctAnswer String?  @db.Text // yozma javob uchun to'g'ri javob matni
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  test          Test     @relation(fields: [testId], references: [id], onDelete: Cascade)
+  choices       Choice[]
+
+  @@index([testId])
+  @@index([order])
+}
+
+model Choice {
+  id          String   @id @default(cuid())
+  questionId  String
+  text        String   @db.Text
+  isCorrect   Boolean  @default(false)
+  order       Int      @default(0)
+
+  question    Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
+
+  @@index([questionId])
+}
+
+model Enrollment {
+  id          String   @id @default(cuid())
+  userId      String
+  courseId    String
+  enrolledAt  DateTime @default(now())
+  completedAt DateTime?
+  progress    Int      @default(0) // percent
+
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  course      Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, courseId])
+  @@index([userId])
+  @@index([courseId])
+}
+
+model LessonProgress {
+  id          String   @id @default(cuid())
+  userId      String
+  lessonId    String
+  completed   Boolean  @default(false)
+  completedAt DateTime?
+  timeSpent   Int      @default(0) // seconds
+
+  lesson      Lesson   @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, lessonId])
+  @@index([userId])
+  @@index([lessonId])
+}
+
+model TestResult {
+  id              String   @id @default(cuid())
+  userId          String
+  testId          String
+  score           Int      @default(0) // percent
+  passed          Boolean  @default(false)
+  answers         String   @default("{}") @db.Text // JSON: {"qId": "choiceId"} yoki {"qId": "textAnswer"}
+  gradingStatus   String   @default("auto") // auto | pending | graded
+  graderId        String?  // kim tekshirdi
+  gradedAt        DateTime?
+  startedAt       DateTime @default(now())
+  completedAt     DateTime?
+
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  test            Test     @relation(fields: [testId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([testId])
+  @@index([gradingStatus])
+}
+
+// ====== Video darslar kutubxonasi ======
+// Yangi video qo'shilsa — ro'yxatda va bosh sahifada eng birinchi (eng yangi) chiqadi.
+
+model Video {
+  id          String   @id @default(cuid())
+  title       String   @db.Text
+  description String   @default("") @db.Text
+  category    String   @default("Tizim")
+  duration    String   @default("")
+  size        String   @default("")
+  url         String   @db.Text
+  poster      String?  @db.Text
+  order       Int      @default(0)
+  // Joylashtirish (placement): saytning istalgan bo'limida ko'rinishi
+  isActive    Boolean  @default(true) // kutubxonada ko'rinadimi
+  showOnHome  Boolean  @default(false) // bosh sahifada
+  homeOrder   Int      @default(0) // bosh sahifa tartibi (0 = featured)
+  showOnCourses Boolean @default(false) // kurslar sahifasida (video polosa)
+  coursesOrder Int     @default(0)
+  showOnDashboard Boolean @default(false) // dashboardda (tavsiya karta)
+  dashboardOrder Int   @default(0)
+  showInLessons Boolean @default(false) // dars oynalari oxirida (tegishli videolar)
+  lessonsOrder Int     @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([createdAt])
+  @@index([order])
+  @@index([showOnHome])
+}
+
+// ====== Kasbiy kurslar (Job) - ticket uchun DB persistence ======
+model JobCourse {
+  id             String   @id @default(cuid())
+  jobId          String   @unique // original id like "1"
+  folder         String   @default("")
+  title          String   @db.Text
+  slug           String   @unique
+  hasNormative   Boolean  @default(false)
+  order          Int      @default(0)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  parts          JobPart[]
+  testResults    JobTestResult[]
+  enrollments    JobEnrollment[]
+
+  @@index([order])
+  @@index([slug])
+}
+
+model JobTestResult {
+  id          String   @id @default(cuid())
+  userId      String
+  jobId       String
+  partIdx     Int      @default(0)
+  dayIdx      Int      @default(0)
+  jobDayId    String?
+  score       Int      @default(0)
+  passed      Boolean  @default(false)
+  answers     String   @default("{}") @db.Text // JSON
+  attempt     Int      @default(1)
+  createdAt   DateTime @default(now())
+  completedAt DateTime?
+
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  job         JobCourse @relation(fields: [jobId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([jobId])
+  @@index([jobDayId])
+}
+
+model JobPart {
+  id        String   @id @default(cuid())
+  jobId     String
+  title     String   @db.Text
+  type      String   @default("5day") // 5day | 30day
+  order     Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  job       JobCourse @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  days      JobDay[]
+
+  @@index([jobId])
+  @@index([order])
+}
+
+model JobDay {
+  id        String   @id @default(cuid())
+  partId    String
+  title     String   @db.Text
+  num       Int      @default(1)
+  kind      String   @default("kun") // kun | dars | hafta
+  content   String   @default("") @db.LongText
+  videoUrl  String   @default("") @db.Text // YouTube/Vimeo/mp4 video havolasi
+  order     Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  part      JobPart  @relation(fields: [partId], references: [id], onDelete: Cascade)
+  progress  JobDayProgress[]
+
+  @@index([partId])
+  @@index([order])
+}
+
+// ====== Dars biriktirish (assignment) va o'zlashtirish ======
+// Enrollment (mavjud): onboarding Course -> User
+// JobEnrollment (yangi): kasbiy JobCourse -> User
+// Biriktirilmagan foydalanuvchi hech qanday darsni ko'rmaydi.
+
+model JobEnrollment {
+  id          String   @id @default(cuid())
+  userId      String
+  jobId       String // JobCourse.id
+  enrolledAt  DateTime @default(now())
+  completedAt DateTime?
+
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  job         JobCourse @relation(fields: [jobId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, jobId])
+  @@index([userId])
+  @@index([jobId])
+}
+
+model JobDayProgress {
+  id          String    @id @default(cuid())
+  userId      String
+  jobDayId    String
+  completed   Boolean   @default(false)
+  completedAt DateTime?
+  timeSpent   Int       @default(0) // seconds
+
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  jobDay      JobDay    @relation(fields: [jobDayId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, jobDayId])
+  @@index([userId])
+  @@index([jobDayId])
 }

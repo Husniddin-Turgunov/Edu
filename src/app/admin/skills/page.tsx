@@ -317,23 +317,32 @@ function DashboardView({ overview, testAnalytics, userLevels, dailyResults, leve
                 <PieChart className="w-4 h-4 text-violet-600" />
                 Bilim darajalari taqsimoti
               </h3>
-              <ResponsiveContainer width="100%" height={250}>
+              <ResponsiveContainer width="100%" height={300}>
                 <RePieChart>
                   <Pie
                     data={levelDistribution.filter((l: any) => l.value > 0)}
                     cx="50%"
-                    cy="50%"
-                    innerRadius={60}
-                    outerRadius={100}
+                    cy="45%"
+                    innerRadius={55}
+                    outerRadius={95}
                     paddingAngle={4}
                     dataKey="value"
-                    label={({ name, value }) => `${name}: ${value}`}
+                    label={({ percent }) => `${Math.round((percent || 0) * 100)}%`}
+                    labelLine={false}
                   >
                     {levelDistribution.filter((l: any) => l.value > 0).map((_: any, i: number) => (
                       <Cell key={i} fill={PIE_COLORS[i % PIE_COLORS.length]} />
                     ))}
                   </Pie>
                   <Tooltip />
+                  <Legend
+                    verticalAlign="bottom"
+                    height={46}
+                    formatter={(value: string, entry: any) => {
+                      const color = entry?.color || "#111";
+                      return <span style={{ color, fontSize: 12, fontWeight: 700 }}>{value}</span>;
+                    }}
+                  />
                 </RePieChart>
               </ResponsiveContainer>
             </div>

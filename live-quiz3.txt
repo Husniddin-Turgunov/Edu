@@ -1,0 +1,51 @@
+{
+  "base": "https://edu.akelagroup.uz",
+  "checks": {
+    "list_shows_limit": true,
+    "limit_less_than_bank": true,
+    "detail_only_limited": true,
+    "detail_reports_bank": true,
+    "random_set_differs": true
+  },
+  "list": [
+    {
+      "id": "cmudoc4hm0000jt04jdroy06m",
+      "title": "продукт менежер",
+      "shown": 30,
+      "bank": 58,
+      "limited": true
+    }
+  ],
+  "loggedIn": true,
+  "user": "SvRvS@gmail.com",
+  "totalTests": 1,
+  "target": {
+    "id": "cmudoc4hm0000jt04jdroy06m",
+    "title": "продукт менежер",
+    "shown": 30,
+    "bank": 58
+  },
+  "detail": {
+    "statusA": 200,
+    "statusB": 200,
+    "countA": 30,
+    "countB": 30,
+    "errorA": null,
+    "returnedBankSize": 58
+  },
+  "sampleIdsA": [
+    "cmudyn5100007kx04q5rhzxq0",
+    "cmudyqcu0008dkx046z6to4sn",
+    "cmudynm57001jkx04f8xg2grq",
+    "cmudyplis006dkx04jvqxu7f2",
+    "cmudypavl005jkx04xnlwpkli"
+  ],
+  "sampleIdsB": [
+    "cmudyocu10031kx04d6fuq8jd",
+    "cmudyozdj004pkx04rj6rf00v",
+    "cmudyn8lj000jkx04p4rk5qt1",
+    "cmudyq7la0081kx04kbgbs8qc",
+    "cmudyor9k0041kx04qml7hzob"
+  ]
+}
+ALL CHECKS PASS

@@ -1,0 +1,15 @@
+{
+  "base": "https://edu.akelagroup.uz",
+  "checks": {
+    "list_shows_limit": false,
+    "limit_less_than_bank": false,
+    "detail_only_limited": null,
+    "detail_reports_bank": null,
+    "random_set_differs": null
+  },
+  "list": [],
+  "loggedIn": false,
+  "user": null,
+  "totalTests": 0
+}
+FAILED: list_shows_limit, limit_less_than_bank

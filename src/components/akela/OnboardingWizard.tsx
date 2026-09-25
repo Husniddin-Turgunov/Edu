@@ -8,6 +8,8 @@ import {
   Building2,
   Network,
   ShieldCheck,
+  Users,
+  Calendar,
   Check,
   ArrowRight,
   ArrowLeft,
@@ -22,6 +24,8 @@ const ICONS: Record<string, LucideIcon> = {
   Building2,
   Network,
   ShieldCheck,
+  Users,
+  Calendar,
 };
 
 export function OnboardingWizard({
@@ -102,7 +106,7 @@ export function OnboardingWizard({
                 <div
                   className={`grid h-9 w-9 place-items-center rounded-xl text-sm font-bold transition-all ${
                     done
-                      ? "bg-gradient-to-br from-emerald-600 to-emerald-700 text-white"
+                      ? "bg-gradient-to-br from-indigo-600 to-indigo-700 text-white"
                       : active
                         ? "bg-gradient-to-br from-amber-400 to-amber-500 text-white"
                         : "bg-black/5 text-[color:var(--ink-soft)]"
@@ -195,8 +199,8 @@ export function OnboardingWizard({
                         />
                         <defs>
                           <linearGradient id="ring-grad" x1="0" y1="0" x2="1" y2="1">
-                            <stop offset="0%" stopColor="oklch(0.78 0.13 80)" />
-                            <stop offset="100%" stopColor="oklch(0.42 0.08 165)" />
+                            <stop offset="0%" stopColor="oklch(0.78 0.13 70)" />
+                            <stop offset="100%" stopColor="oklch(0.42 0.08 258)" />
                           </linearGradient>
                         </defs>
                       </svg>
@@ -217,22 +221,25 @@ export function OnboardingWizard({
                       {strings.onboarding_key_points}
                     </div>
                     <div className="mt-4 grid gap-3 sm:grid-cols-2">
-                      {step.points.map((p, idx) => (
+                      {step.points.map((p, idx) => {
+                        const isLastOdd = step.points.length % 2 === 1 && idx === step.points.length - 1;
+                        return (
                         <motion.div
                           key={idx}
                           initial={{ opacity: 0, y: 12 }}
                           animate={{ opacity: 1, y: 0 }}
                           transition={{ delay: 0.15 + idx * 0.1, duration: 0.5 }}
-                          className="flex items-start gap-3 rounded-2xl bg-white/50 p-4 backdrop-blur-sm"
+                          className={`flex items-start gap-3 rounded-2xl bg-white/50 p-4 backdrop-blur-sm ${isLastOdd ? "sm:col-span-2 sm:mx-auto sm:w-full sm:max-w-[calc(50%-6px)]" : ""}`}
                         >
-                          <div className="mt-0.5 grid h-6 w-6 shrink-0 place-items-center rounded-lg bg-gradient-to-br from-emerald-600 to-emerald-700 text-[10px] font-bold text-white">
+                          <div className="mt-0.5 grid h-6 w-6 shrink-0 place-items-center rounded-lg bg-gradient-to-br from-indigo-600 to-indigo-700 text-[10px] font-bold text-white">
                             {idx + 1}
                           </div>
                           <p className="text-sm leading-relaxed text-[color:var(--ink)]">
                             {p}
                           </p>
                         </motion.div>
-                      ))}
+                        );
+                      })}
                     </div>
                   </div>
 
@@ -254,7 +261,7 @@ export function OnboardingWizard({
 
                     <button
                       onClick={next}
-                      className="group inline-flex items-center gap-2 rounded-2xl bg-gradient-to-br from-emerald-700 to-emerald-600 px-5 py-3 text-sm font-semibold text-white shadow-xl shadow-emerald-900/25 transition-transform hover:scale-[1.03] active:scale-95"
+                      className="group inline-flex items-center gap-2 rounded-2xl bg-gradient-to-br from-indigo-700 to-indigo-600 px-5 py-3 text-sm font-semibold text-white shadow-xl shadow-indigo-900/25 transition-transform hover:scale-[1.03] active:scale-95"
                     >
                       {isLast ? strings.onboarding_finish : strings.onboarding_next}
                       <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
@@ -275,7 +282,7 @@ export function OnboardingWizard({
                   initial={{ scale: 0 }}
                   animate={{ scale: 1 }}
                   transition={{ delay: 0.15, type: "spring", stiffness: 200 }}
-                  className="mx-auto grid h-20 w-20 place-items-center rounded-full bg-gradient-to-br from-emerald-600 to-amber-500 text-white shadow-2xl"
+                  className="mx-auto grid h-20 w-20 place-items-center rounded-full bg-gradient-to-br from-indigo-600 to-amber-500 text-white shadow-2xl"
                 >
                   <CheckCircle2 className="h-10 w-10" />
                 </motion.div>
@@ -287,11 +294,11 @@ export function OnboardingWizard({
                       : "Congratulations!"}
                 </h3>
                 <p className="mx-auto mt-3 max-w-xl text-base text-[color:var(--ink-soft)]">
-                  {locale === "uz"
-                    ? "Siz barcha besh tanishtirish qadamini muvaffaqiyatli yakunladingiz. Endi siz AKELA GROUP jamoasining to'liq a'zosisiz."
-                    : locale === "ru"
-                      ? "Вы успешно прошли все пять шагов знакомства. Теперь вы полноправный член команды AKELA GROUP."
-                      : "You have successfully completed all five onboarding steps. You are now a full member of the AKELA GROUP team."}
+                   {locale === "uz"
+                     ? `Siz barcha ${total} ta tanishtirish qadamini muvaffaqiyatli yakunladingiz. Endi siz AKELA GROUP jamoasining to'liq a'zosisiz.`
+                     : locale === "ru"
+                       ? `Вы успешно прошли все ${total} шага знакомства. Теперь вы полноправный член команды AKELA GROUP.`
+                       : `You have successfully completed all ${total} onboarding steps. You are now a full member of the AKELA GROUP team.`}
                 </p>
                 <div className="mt-8 flex flex-wrap justify-center gap-3">
                   <button
@@ -308,7 +315,7 @@ export function OnboardingWizard({
                         window.scrollTo({ top, behavior: "smooth" });
                       }
                     }}
-                    className="inline-flex items-center gap-2 rounded-2xl bg-gradient-to-br from-emerald-700 to-emerald-600 px-5 py-3 text-sm font-semibold text-white shadow-lg hover:scale-[1.03]"
+                    className="inline-flex items-center gap-2 rounded-2xl bg-gradient-to-br from-indigo-700 to-indigo-600 px-5 py-3 text-sm font-semibold text-white shadow-lg hover:scale-[1.03]"
                   >
                     {strings.nav_structure}
                     <ArrowRight className="h-4 w-4" />

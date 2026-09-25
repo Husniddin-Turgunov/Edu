@@ -1,0 +1,212 @@
+{
+  "module-1": {
+    "title": "«AKELA GROUP MACHINERY» tarixi bo'yicha test",
+    "questions": [
+      {
+        "question": "AKELA GROUP brendi qaysi yilda tashkil etilgan?",
+        "options": ["2002", "2004", "2006", "2010"],
+        "correctIndex": 1
+      },
+      {
+        "question": "AKELA GROUP MACHINERY MCHJ davlat ro'yxatidan qaysi yilda o'tkazilgan?",
+        "options": ["2010", "2012", "2015", "2018"],
+        "correctIndex": 2
+      },
+      {
+        "question": "Kompaniya direktori kim?",
+        "options": [
+          "Rajabova Sug'diyona",
+          "Akbar Abdumanapovich Kadirov",
+          "Husniddin Turg'unov",
+          "Gulnora Jakudayeva"
+        ],
+        "correctIndex": 1
+      },
+      {
+        "question": "Kompaniya qaysi sohalar uchun uskunalar yetkazib beradi?",
+        "options": [
+          "Faqat poligrafiya",
+          "Faqat oziq-ovqat",
+          "Poligrafiya, qadoqlash, metall, yog'och, oziq-ovqat, farmatsevtika va boshqa sohalar",
+          "Faqat metallga ishlov berish"
+        ],
+        "correctIndex": 2
+      },
+      {
+        "question": "Kompaniya missiyasi nima?",
+        "options": [
+          "Faqat uskunalar sotish",
+          "Korxonalarni zamonaviy, ishonchli va sifatli sanoat uskunalari bilan ta'minlash, kompleks xizmatlarni ko'rsatish",
+          "Faqat servis xizmati ko'rsatish",
+          "Faqat eksport qilish"
+        ],
+        "correctIndex": 1
+      }
+    ]
+  },
+  "module-2": {
+    "title": "Odob-axloq qoidalari bo'yicha test",
+    "questions": [
+      {
+        "question": "Korxona xodimlari o'z kasbiy faoliyatini qaysi prinsiplar asosida amalga oshirishi shart?",
+        "options": [
+          "Faqat qonuniylik",
+          "Faqat adolatlilik",
+          "Qonuniylik, sadoqat, fuqarolar huquqlarining ustuvorligi, halollik va boshqa prinsiplar",
+          "Faqat vijdonlilik"
+        ],
+        "correctIndex": 2
+      },
+      {
+        "question": "Korxona xodimlari qaysi holatlarda manfaatlar to'qnashuvi haqida rahbarini xabardor qilishi shart?",
+        "options": [
+          "Hech qachon",
+          "Faqat yil oxirida",
+          "Manfaatlar to'qnashuvi yuzaga kelgan taqdirda darhol",
+          "Faqat yozma ravishda"
+        ],
+        "correctIndex": 2
+      },
+      {
+        "question": "Korxona xodimlarining tashqi ko'rinishi qanday bo'lishi kerak?",
+        "options": [
+          "Istalgan kiyimda kelish mumkin",
+          "Mehnat sharoitlari va xizmat turiga qarab, rasmiylik, xolislik, kamtarlik va intizomni namoyon etishi lozim",
+          "Faqat sport kiyimida",
+          "Faqat klassik kostyumda"
+        ],
+        "correctIndex": 1
+      },
+      {
+        "question": "Odob-axloq qoidalariga rioya etmaganlik uchun qanday choralar qo'llaniladi?",
+        "options": [
+          "Faqat ogohlantirish",
+          "Faqat uzr so'rash",
+          "Ogohlantirish, uzr so'rash, tanbeh berish, intizomiy javobgarlik",
+          "Hech qanday chora ko'rilmaydi"
+        ],
+        "correctIndex": 2
+      },
+      {
+        "question": "Korxona xodimlari odob-axloq qoidalariga rioya etilishi ustidan nazorat kim tomonidan amalga oshiriladi?",
+        "options": [
+          "Faqat direktor",
+          "Kadrlar bilan ishlash departamenti va Odob-axloq komissiyalari",
+          "Faqat xodimlar o'zlari",
+          "Faqat tashqi audit"
+        ],
+        "correctIndex": 1
+      }
+    ]
+  },
+  "module-3": {
+    "title": "Korporativ madaniyati bo'yicha test",
+    "questions": [
+      {
+        "question": "Akela Group Machinery MChJ da masalalar qaysi iyerarxiya bo'yicha hal qilinadi?",
+        "options": [
+          "Xodim → Bosh direktor",
+          "Xodim → Bo'lim boshlig'i o'rinbosari → Bo'lim boshlig'i → Departament boshlig'i → Bosh direktor",
+          "Faqat Bo'lim boshlig'i orqali",
+          "Istalgan tartibda"
+        ],
+        "correctIndex": 1
+      },
+      {
+        "question": "Suhbatdan o'tgan nomzod qancha muddatga sinov muddatiga qabul qilinadi?",
+        "options": [
+          "1 kunlik",
+          "5 kunlik (bepul)",
+          "1 oylik",
+          "6 oylik"
+        ],
+        "correctIndex": 1
+      },
+      {
+        "question": "Ish haqi qaysi sanalarda to'lanadi?",
+        "options": [
+          "Har oyning 5 va 20 sanalarida",
+          "Har oyning 10 va 25 sanalarida",
+          "Har oyning 15 va 30 sanalarida",
+          "Faqat oy oxirida"
+        ],
+        "correctIndex": 1
+      },
+      {
+        "question": "Kompaniya ofisiga xodimlar qanday kiyimda kelishlari shart?",
+        "options": [
+          "Sport kiyimida",
+          "Shortik va futbolkada",
+          "Klassik ofis kiyimida yoki biznes kasual",
+          "Istalgan kiyimda"
+        ],
+        "correctIndex": 2
+      },
+      {
+        "question": "Kompaniya resurslaridan shaxsiy maqsadlarda foydalanish qanday baholanadi?",
+        "options": [
+          "Ruxsat etilgan",
+          "Qat'iyan man etilgan",
+          "Faqat rahbar ruxsati bilan",
+          "Faqat dam olish kunlari"
+        ],
+        "correctIndex": 1
+      }
+    ]
+  },
+  "module-4": {
+    "title": "Tijorat sirlari bo'yicha test",
+    "questions": [
+      {
+        "question": "Tijorat sirini tashkil etuvchi ma'lumotlarning amal qilish muddati qancha?",
+        "options": [
+          "1 yil",
+          "5 yil",
+          "Yaratilgan kundan boshlab 10 yil",
+          "Muddatsiz"
+        ],
+        "correctIndex": 2
+      },
+      {
+        "question": "Quyidagilardan qaysi biri tijorat siriga kirmaydi?",
+        "options": [
+          "Kompaniyaning rivojlanish rejalari",
+          "Yuridik shaxsning ta'sis hujjatlari",
+          "Tijorat g'oyalari",
+          "Investitsion rejalar"
+        ],
+        "correctIndex": 1
+      },
+      {
+        "question": "Bozor tadqiqotining original usullari qaysi toifaga kiradi?",
+        "options": [
+          "Ommaviy ma'lumot",
+          "Tijorat siri",
+          "Davlat siri",
+          "Umumiy ma'lumot"
+        ],
+        "correctIndex": 1
+      },
+      {
+        "question": "Kompaniya xodimlari o'rtasida ma'lumot almashish usullari qaysi bo'limga kiradi?",
+        "options": [
+          "BOSHQARUV",
+          "TEXNOLOGIYA",
+          "BOZOR",
+          "REJALAR"
+        ],
+        "correctIndex": 1
+      },
+      {
+        "question": "Xodimlar ishlab chiqarish sirini saqlash majburiyati qaysi qonunga asoslangan?",
+        "options": [
+          "Mehnat kodeksi",
+          "\"Tijorat siri to'g'risida\"gi O'RQ-374-son Qonun",
+          "Fuqarolik kodeksi",
+          "Jinoiy kodeks"
+        ],
+        "correctIndex": 1
+      }
+    ]
+  }
+}

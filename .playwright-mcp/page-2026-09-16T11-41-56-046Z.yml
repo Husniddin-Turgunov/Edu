@@ -1,0 +1,141 @@
+- generic [ref=f7e1]:
+  - generic [ref=f7e2]:
+    - complementary [ref=f7e15]:
+      - link "AKELA AKELA Admin Panel" [ref=f7e17] [cursor=pointer]:
+        - /url: /dashboard
+        - img "AKELA" [ref=f7e18]
+        - generic [ref=f7e19]:
+          - generic [ref=f7e20]: AKELA
+          - generic [ref=f7e21]: Admin Panel
+      - link "Asosiy sahifa" [ref=f7e23] [cursor=pointer]:
+        - /url: /dashboard
+      - navigation [ref=f7e28]:
+        - link "Kurslar" [ref=f7e29] [cursor=pointer]:
+          - /url: /admin/lms
+        - link "Kasbiy kurslar" [ref=f7e33] [cursor=pointer]:
+          - /url: /admin/jobs
+        - link "Tanishtiruv" [ref=f7e38] [cursor=pointer]:
+          - /url: /admin/onboarding
+        - link "Testlar" [ref=f7e43] [cursor=pointer]:
+          - /url: /admin/lms/tests
+        - link "Nazoratchi bahosi" [ref=f7e51] [cursor=pointer]:
+          - /url: /admin/lms/grading
+        - link "Videolar" [ref=f7e55] [cursor=pointer]:
+          - /url: /admin/videos
+        - link "O'quvchilar" [ref=f7e62] [cursor=pointer]:
+          - /url: /admin/students
+        - link "Foydalanuvchilar" [ref=f7e68] [cursor=pointer]:
+          - /url: /admin/users
+        - link "Statistika" [ref=f7e75] [cursor=pointer]:
+          - /url: /admin/lms/statistics
+      - generic [ref=f7e80]:
+        - generic [ref=f7e81]: T
+        - generic [ref=f7e82]:
+          - generic [ref=f7e83]: System Admin
+          - generic [ref=f7e84]: Akela Group
+        - button "Chiqish" [ref=f7e85]
+    - main [ref=f7e89]:
+      - generic [ref=f7e90]:
+        - generic [ref=f7e91]:
+          - heading "Testlar" [level=1] [ref=f7e92]
+          - paragraph [ref=f7e93]: Barcha testlar — kimga ko'rinishi, necha urinish, randomizer va tarix bilan
+        - button "Test yaratish" [ref=f7e94]
+      - generic [ref=f7e96]:
+        - generic [ref=f7e97]:
+          - textbox "Qidirish" [ref=f7e102]
+          - generic [ref=f7e103]:
+            - button "Barchasi" [ref=f7e104]
+            - button "UZB" [ref=f7e105]
+            - button "RUS" [ref=f7e106]
+            - button "ENG" [ref=f7e107]
+        - generic [ref=f7e108]:
+          - generic [ref=f7e109]: Har urinishda savollar & variantlar random
+          - generic [ref=f7e116]: Natija tarixda saqlanadi
+          - generic [ref=f7e121]: Ko'rinish tanlanadi
+        - generic [ref=f7e128]:
+          - generic [ref=f7e129]:
+            - generic [ref=f7e130]: QORALAMA
+            - generic [ref=f7e132]:
+              - generic [ref=f7e133]: Q
+              - generic [ref=f7e140]: V
+          - generic [ref=f7e141]:
+            - heading "Atestatsiya" [level=3] [ref=f7e142]
+            - paragraph [ref=f7e143]: bor bilimni ishga soling
+            - generic [ref=f7e144]:
+              - generic [ref=f7e145]:
+                - generic [ref=f7e146]: TILI
+                - generic [ref=f7e150]: UZB
+              - generic [ref=f7e151]:
+                - generic [ref=f7e152]: SAVOL
+                - generic [ref=f7e156]: "1"
+              - generic [ref=f7e157]:
+                - generic [ref=f7e158]: VAQT
+                - generic [ref=f7e162]: 30m
+              - generic [ref=f7e163]:
+                - generic [ref=f7e164]: BALL
+                - generic [ref=f7e169]: 90%
+            - generic [ref=f7e170]:
+              - generic [ref=f7e171]:
+                - generic [ref=f7e172]: Urinish
+                - generic [ref=f7e173]: 1x
+              - generic [ref=f7e174]:
+                - generic [ref=f7e175]: Ko'rinish
+                - generic [ref=f7e176]: Hammaga
+              - generic [ref=f7e177]:
+                - generic [ref=f7e178]: Random
+                - generic [ref=f7e179]: Ha
+            - generic [ref=f7e180]:
+              - button "Savol" [active] [ref=f7e181]
+              - button "Tarix" [ref=f7e183]
+              - button [ref=f7e188]
+              - button [ref=f7e192]
+    - generic [ref=f7e197]:
+      - generic [ref=f7e198]:
+        - generic [ref=f7e199]:
+          - heading "Savol qo'shish" [level=2] [ref=f7e200]
+          - paragraph [ref=f7e201]: Yangi savol matni va variantlarini kiriting — yoki Excel shablon bilan avto
+        - button [ref=f7e202]
+      - generic [ref=f7e206]:
+        - generic [ref=f7e207]:
+          - generic [ref=f7e208]:
+            - button "Shablonni yuklab olish" [ref=f7e209]
+            - button "Excel dan import" [ref=f7e213]
+          - paragraph [ref=f7e217]: Shablonda To'g'ri javob ga A/B/C/D yozing (bitta joyda bo'lsa yetarli) — sayt avtomatik taniydi va variantlarni random aralashtiradi.
+          - generic [ref=f7e218]:
+            - generic [ref=f7e219]: Savol matni
+            - 'textbox "Masalan: HTML nima?" [ref=f7e221]'
+          - generic [ref=f7e222]:
+            - generic [ref=f7e223]: Savol turi
+            - generic [ref=f7e225]:
+              - button "Variantlar (tanlash)" [ref=f7e226]
+              - button "Yozma javob" [ref=f7e227]
+          - generic [ref=f7e228]:
+            - generic [ref=f7e229]: Variantlar
+            - generic [ref=f7e231]:
+              - generic [ref=f7e232]:
+                - button [ref=f7e233]
+                - textbox "Variant 1" [ref=f7e237]
+                - button [ref=f7e238]
+              - generic [ref=f7e242]:
+                - button [ref=f7e243]
+                - textbox "Variant 2" [ref=f7e244]
+                - button [ref=f7e245]
+              - generic [ref=f7e249]:
+                - button [ref=f7e250]
+                - textbox "Variant 3" [ref=f7e251]
+                - button [ref=f7e252]
+              - generic [ref=f7e256]:
+                - button [ref=f7e257]
+                - textbox "Variant 4" [ref=f7e258]
+                - button [ref=f7e259]
+              - button "Variant qo'shish" [ref=f7e263]
+          - generic [ref=f7e265]:
+            - generic [ref=f7e266]: Ball
+            - spinbutton [ref=f7e268]: "1"
+        - generic [ref=f7e269]:
+          - button "Tugatish" [ref=f7e270]
+          - button "Savol qo'shish" [ref=f7e271]
+  - region "Notifications (F8)":
+    - list
+  - button "Open Next.js Dev Tools" [ref=f7e10] [cursor=pointer]
+  - alert [ref=f7e14]

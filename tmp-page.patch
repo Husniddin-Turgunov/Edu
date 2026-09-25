@@ -1,0 +1,377 @@
+﻿commit a8e29190e6a336de7e684a0e67a3cddd03e915d0
+Author: Grill Agent <agent@akela.uz>
+Date:   Wed Sep 23 14:17:37 2026 +0500
+
+    fix(review): tepadagi yozuv olib tashlandi тАФ faqat qizil Siz / yashil Togri
+    
+    - sariq/javob berilmagan header olib tashlandi (har ikkala modal)
+    - isSelected endi id || text || order || harf bilan qidiriladi тАФ tanlangan qizil har doim korinadi
+    - yashil togri avvalgidek qoladi, noto'g'ri tanlangan qizil ring-2 bg-rose-100
+    - tsc EXIT=0, e2e 14/14
+
+diff --git a/src/app/tests/[id]/page.tsx b/src/app/tests/[id]/page.tsx
+index 4f67b0c..3f4e0b5 100644
+--- a/src/app/tests/[id]/page.tsx
++++ b/src/app/tests/[id]/page.tsx
+@@ -386,23 +386,8 @@ export default function TestTakePage() {
+                               <div className="space-y-2"><div className="rounded-xl bg-neutral-50 p-3"><p className="text-[11px] font-bold uppercase tracking-wide text-neutral-400">Sizning javobingiz</p><p className="mt-1 whitespace-pre-wrap text-sm text-neutral-800" data-testid="review-written-answer">{typeof selected === "string" && selected ? selected : "тАФ"}</p></div>{q.correctAnswer && <div className="rounded-xl bg-emerald-50 p-3 ring-1 ring-emerald-200"><p className="text-[11px] font-bold uppercase tracking-wide text-emerald-600">To'g'ri javob</p><p className="mt-1 whitespace-pre-wrap text-sm text-emerald-900">{q.correctAnswer}</p></div>}</div>
+                             ) : (
+                               <div className="space-y-2">
+-                                {(() => {
+-                                  const isAnswered = selectedArr.length > 0;
+-                                  const selectedTexts = selectedArr.map((sid: string) => q.choices.find((x: any) => x.id === sid)?.text).filter(Boolean) as string[];
+-                                  const correctTexts = q.choices.filter((x: any) => x.isCorrect).map((x: any) => x.text) as string[];
+-                                  const isCorrectSelected = isAnswered && selectedArr.some((sid: string) => q.choices.find((x: any) => x.id === sid)?.isCorrect);
+-                                  return isAnswered ? (
+-                                    isCorrectSelected ? (
+-                                      <p className="rounded-lg bg-emerald-100 px-3 py-2 text-xs font-bold text-emerald-800">тЬЕ To'g'ri тАФ Siz: {selectedTexts.join(", ")}</p>
+-                                    ) : (
+-                                      <p className="rounded-lg bg-rose-100 px-3 py-2 text-xs font-bold text-rose-800">тЭМ Noto'g'ri тАФ Siz: {selectedTexts.join(", ") || String(selected)} ┬╖ To'g'ri: {correctTexts.join(", ") || "тАФ"}</p>
+-                                    )
+-                                  ) : (
+-                                    <p className="rounded-lg bg-amber-50 px-3 py-2 text-xs font-bold text-amber-800">тЪая╕П Javob berilmagan ┬╖ To'g'ri: {correctTexts.join(", ")}</p>
+-                                  );
+-                                })()}
+                                 {q.choices.map((c: any) => {
+-                                  const isSelected = selectedArr.includes(c.id);
++                                  const isSelected = selectedArr.some((s: string) => s === c.id || s === c.text || String(s) === String(c.order) || String(s) === String.fromCharCode(65 + (c.order ?? 0)));
+                                   const isCorrect = !!c.isCorrect;
+                                   let tone = "border-neutral-200 bg-white text-neutral-800";
+                                   if (isCorrect && isSelected) tone = "border-emerald-500 bg-emerald-100 text-emerald-900 ring-2 ring-emerald-500";
+@@ -861,23 +846,8 @@ export default function TestTakePage() {
+                             </div>
+                           ) : (
+                             <div className="space-y-2">
+-                              {(() => {
+-                                const isAnswered = selectedArr.length > 0;
+-                                const selectedTexts = selectedArr.map((sid: string) => q.choices.find((x: any) => x.id === sid)?.text).filter(Boolean) as string[];
+-                                const correctTexts = q.choices.filter((x: any) => x.isCorrect).map((x: any) => x.text) as string[];
+-                                const isCorrectSelected = isAnswered && selectedArr.some((sid: string) => q.choices.find((x: any) => x.id === sid)?.isCorrect);
+-                                return isAnswered ? (
+-                                  isCorrectSelected ? (
+-                                    <p className="rounded-lg bg-emerald-100 px-3 py-2 text-xs font-bold text-emerald-800">тЬЕ To'g'ri тАФ Siz: {selectedTexts.join(", ")}</p>
+-                                  ) : (
+-                                    <p className="rounded-lg bg-rose-100 px-3 py-2 text-xs font-bold text-rose-800">тЭМ Noto'g'ri тАФ Siz: {selectedTexts.join(", ") || String(selected)} ┬╖ To'g'ri: {correctTexts.join(", ") || "тАФ"}</p>
+-                                  )
+-                                ) : (
+-                                  <p className="rounded-lg bg-amber-50 px-3 py-2 text-xs font-bold text-amber-800">тЪая╕П Javob berilmagan ┬╖ To'g'ri: {correctTexts.join(", ")}</p>
+-                                );
+-                              })()}
+                               {q.choices.map((c: any) => {
+-                                const isSelected = selectedArr.includes(c.id);
++                                const isSelected = selectedArr.some((s: string) => s === c.id || s === c.text || String(s) === String(c.order) || String(s) === String.fromCharCode(65 + (c.order ?? 0)));
+                                 const isCorrect = !!c.isCorrect;
+                                 let tone = "border-neutral-200 bg-white text-neutral-800";
+                                 if (isCorrect && isSelected) tone = "border-emerald-500 bg-emerald-100 text-emerald-900 ring-2 ring-emerald-500";
+
+commit aebd1cff74df94034c02aa0f7d571894999cabe7
+Author: Grill Agent <agent@akela.uz>
+Date:   Wed Sep 23 14:08:41 2026 +0500
+
+    feat(admin/tests): eski testlarni korish + ichiga kirish + ko'rish joyi
+    
+    - /admin/lms/tests da holat filtri (Hammasi/Faol/Yashirin/Eski-Arxiv) + counts
+    - karta sarlavhasi va Ichiga kirish -> /admin/lms/tests/[id] (savollar scroll, tahrir)
+    - Ko'rish (Eye) -> /tests/[id] student preview yangi tab
+    - yangi detail sahifa: savollar ro'yxati (tanlangan qizil, togri yashil header), tarix, status toggle, edit modal, Talaba ko'rishi linki
+    - tanlangan vs togri header yaxshilandi (Siz: X ┬╖ Togri: Y) har ikkala modalda
+
+diff --git a/src/app/tests/[id]/page.tsx b/src/app/tests/[id]/page.tsx
+index d166db4..4f67b0c 100644
+--- a/src/app/tests/[id]/page.tsx
++++ b/src/app/tests/[id]/page.tsx
+@@ -386,14 +386,29 @@ export default function TestTakePage() {
+                               <div className="space-y-2"><div className="rounded-xl bg-neutral-50 p-3"><p className="text-[11px] font-bold uppercase tracking-wide text-neutral-400">Sizning javobingiz</p><p className="mt-1 whitespace-pre-wrap text-sm text-neutral-800" data-testid="review-written-answer">{typeof selected === "string" && selected ? selected : "тАФ"}</p></div>{q.correctAnswer && <div className="rounded-xl bg-emerald-50 p-3 ring-1 ring-emerald-200"><p className="text-[11px] font-bold uppercase tracking-wide text-emerald-600">To'g'ri javob</p><p className="mt-1 whitespace-pre-wrap text-sm text-emerald-900">{q.correctAnswer}</p></div>}</div>
+                             ) : (
+                               <div className="space-y-2">
++                                {(() => {
++                                  const isAnswered = selectedArr.length > 0;
++                                  const selectedTexts = selectedArr.map((sid: string) => q.choices.find((x: any) => x.id === sid)?.text).filter(Boolean) as string[];
++                                  const correctTexts = q.choices.filter((x: any) => x.isCorrect).map((x: any) => x.text) as string[];
++                                  const isCorrectSelected = isAnswered && selectedArr.some((sid: string) => q.choices.find((x: any) => x.id === sid)?.isCorrect);
++                                  return isAnswered ? (
++                                    isCorrectSelected ? (
++                                      <p className="rounded-lg bg-emerald-100 px-3 py-2 text-xs font-bold text-emerald-800">тЬЕ To'g'ri тАФ Siz: {selectedTexts.join(", ")}</p>
++                                    ) : (
++                                      <p className="rounded-lg bg-rose-100 px-3 py-2 text-xs font-bold text-rose-800">тЭМ Noto'g'ri тАФ Siz: {selectedTexts.join(", ") || String(selected)} ┬╖ To'g'ri: {correctTexts.join(", ") || "тАФ"}</p>
++                                    )
++                                  ) : (
++                                    <p className="rounded-lg bg-amber-50 px-3 py-2 text-xs font-bold text-amber-800">тЪая╕П Javob berilmagan ┬╖ To'g'ri: {correctTexts.join(", ")}</p>
++                                  );
++                                })()}
+                                 {q.choices.map((c: any) => {
+                                   const isSelected = selectedArr.includes(c.id);
+                                   const isCorrect = !!c.isCorrect;
+                                   let tone = "border-neutral-200 bg-white text-neutral-800";
+-                                  if (isCorrect && isSelected) tone = "border-emerald-500 bg-emerald-50 text-emerald-900 ring-1 ring-emerald-400";
+-                                  else if (isCorrect) tone = "border-emerald-400 bg-emerald-50 text-emerald-900";
+-                                  else if (isSelected) tone = "border-rose-400 bg-rose-50 text-rose-900 ring-1 ring-rose-300";
+-                                  return <div key={c.id} data-testid="review-choice" data-selected={isSelected ? "1" : "0"} data-correct={isCorrect ? "1" : "0"} className={`flex items-start gap-2.5 rounded-xl border p-3 text-sm ${tone}`}><span className="mt-0.5 grid h-6 w-6 shrink-0 place-items-center rounded-full border border-current/30 text-[11px] font-black opacity-80">{c.order !== undefined ? String.fromCharCode(65 + c.order) : "тАв"}</span><span className="flex-1 font-medium">{c.text}</span>{isSelected && <span className="shrink-0 rounded-md bg-white/80 px-1.5 py-0.5 text-[10px] font-black uppercase" data-testid="badge-selected">Siz</span>}{isCorrect && <span className="shrink-0 rounded-md bg-emerald-600 px-1.5 py-0.5 text-[10px] font-black uppercase text-white" data-testid="badge-correct">To'g'ri</span>}</div>;
++                                  if (isCorrect && isSelected) tone = "border-emerald-500 bg-emerald-100 text-emerald-900 ring-2 ring-emerald-500";
++                                  else if (isCorrect) tone = "border-emerald-500 bg-emerald-50 text-emerald-900 ring-1 ring-emerald-400";
++                                  else if (isSelected) tone = "border-rose-500 bg-rose-100 text-rose-900 ring-2 ring-rose-500";
++                                  return <div key={c.id} data-testid="review-choice" data-selected={isSelected ? "1" : "0"} data-correct={isCorrect ? "1" : "0"} className={`flex items-start gap-2.5 rounded-xl border p-3 text-sm ${tone}`}><span className="mt-0.5 grid h-6 w-6 shrink-0 place-items-center rounded-full border border-current/30 text-[11px] font-black opacity-80">{c.order !== undefined ? String.fromCharCode(65 + c.order) : "тАв"}</span><span className="flex-1 font-medium">{c.text}</span>{isSelected && <span className={`shrink-0 rounded-md px-1.5 py-0.5 text-[10px] font-black uppercase ${isCorrect ? "bg-emerald-600 text-white" : "bg-rose-600 text-white"}`} data-testid="badge-selected">Siz</span>}{isCorrect && <span className="shrink-0 rounded-md bg-emerald-600 px-1.5 py-0.5 text-[10px] font-black uppercase text-white" data-testid="badge-correct">To'g'ri</span>}</div>;
+                                 })}
+                               </div>
+                             )}
+@@ -846,13 +861,28 @@ export default function TestTakePage() {
+                             </div>
+                           ) : (
+                             <div className="space-y-2">
++                              {(() => {
++                                const isAnswered = selectedArr.length > 0;
++                                const selectedTexts = selectedArr.map((sid: string) => q.choices.find((x: any) => x.id === sid)?.text).filter(Boolean) as string[];
++                                const correctTexts = q.choices.filter((x: any) => x.isCorrect).map((x: any) => x.text) as string[];
++                                const isCorrectSelected = isAnswered && selectedArr.some((sid: string) => q.choices.find((x: any) => x.id === sid)?.isCorrect);
++                                return isAnswered ? (
++                                  isCorrectSelected ? (
++                                    <p className="rounded-lg bg-emerald-100 px-3 py-2 text-xs font-bold text-emerald-800">тЬЕ To'g'ri тАФ Siz: {selectedTexts.join(", ")}</p>
++                                  ) : (
++                                    <p className="rounded-lg bg-rose-100 px-3 py-2 text-xs font-bold text-rose-800">тЭМ Noto'g'ri тАФ Siz: {selectedTexts.join(", ") || String(selected)} ┬╖ To'g'ri: {correctTexts.join(", ") || "тАФ"}</p>
++                                  )
++                                ) : (
++                                  <p className="rounded-lg bg-amber-50 px-3 py-2 text-xs font-bold text-amber-800">тЪая╕П Javob berilmagan ┬╖ To'g'ri: {correctTexts.join(", ")}</p>
++                                );
++                              })()}
+                               {q.choices.map((c: any) => {
+                                 const isSelected = selectedArr.includes(c.id);
+-                                const isCorrect = review.revealCorrect && c.isCorrect;
++                                const isCorrect = !!c.isCorrect;
+                                 let tone = "border-neutral-200 bg-white text-neutral-800";
+-                                if (isCorrect && isSelected) tone = "border-emerald-500 bg-emerald-50 text-emerald-900 ring-1 ring-emerald-400";
+-                                else if (isCorrect) tone = "border-emerald-400 bg-emerald-50 text-emerald-900";
+-                                else if (isSelected) tone = "border-rose-400 bg-rose-50 text-rose-900 ring-1 ring-rose-300";
++                                if (isCorrect && isSelected) tone = "border-emerald-500 bg-emerald-100 text-emerald-900 ring-2 ring-emerald-500";
++                                else if (isCorrect) tone = "border-emerald-500 bg-emerald-50 text-emerald-900 ring-1 ring-emerald-400";
++                                else if (isSelected) tone = "border-rose-500 bg-rose-100 text-rose-900 ring-2 ring-rose-500";
+                                 return (
+                                   <div
+                                     key={c.id}
+@@ -866,7 +896,10 @@ export default function TestTakePage() {
+                                     </span>
+                                     <span className="flex-1 font-medium">{c.text}</span>
+                                     {isSelected && (
+-                                      <span className="shrink-0 rounded-md bg-white/80 px-1.5 py-0.5 text-[10px] font-black uppercase" data-testid="badge-selected">
++                                      <span
++                                        className={`shrink-0 rounded-md px-1.5 py-0.5 text-[10px] font-black uppercase ${isCorrect ? "bg-emerald-600 text-white" : "bg-rose-600 text-white"}`}
++                                        data-testid="badge-selected"
++                                      >
+                                         Siz
+                                       </span>
+                                     )}
+@@ -878,11 +911,6 @@ export default function TestTakePage() {
+                                   </div>
+                                 );
+                               })}
+-                              {!review.revealCorrect && (
+-                                <p className="text-[11px] font-semibold text-neutral-400">
+-                                  To'g'ri javoblar urinishlar tugagach ochiladi
+-                                </p>
+-                              )}
+                             </div>
+                           )}
+ 
+
+commit 3610338c6572a7186c2fe65f1750531677333404
+Author: Grill Agent <agent@akela.uz>
+Date:   Wed Sep 23 13:04:17 2026 +0500
+
+    fix(tests/cmudoc): blocked early-return review modal + auto-open after submit + always reveal
+    
+    - blocked (error && !test) da review AnimatePresence yoq edi тАФ endi duplicate modal bilan Ko'rish har doim ochiladi (e2e 14/14 PASS)
+    - submit dan keyin setTimeout openReview(data.result.id) тАФ natija majburiy ko'rsatiladi
+    - lms-storage revealCorrect=true har doim
+    - e2e scroll check overflow-y auto
+
+diff --git a/src/app/tests/[id]/page.tsx b/src/app/tests/[id]/page.tsx
+index c599757..d166db4 100644
+--- a/src/app/tests/[id]/page.tsx
++++ b/src/app/tests/[id]/page.tsx
+@@ -79,12 +79,11 @@ export default function TestTakePage() {
+     setReview(null);
+     try {
+       const qs = resultId ? `?resultId=${encodeURIComponent(resultId)}` : "";
+-      const res = await fetch(`/api/tests/${id}/review${qs}`, { cache: "no-store" });
++      const res = await fetch(`/api/tests/${id}/review${qs}`, { cache: "no-store", credentials: "include" });
+       const text = await res.text();
+       let data: any = null;
+       try { data = JSON.parse(text); } catch { data = null; }
+       if (!res.ok || !data?.ok) {
+-        // 401 -> sessiya eskirgan
+         if (res.status === 401) {
+           setReviewError("Sessiya eskirgan тАФ qayta kiring");
+         } else if (text && text.trim().startsWith("<")) {
+@@ -188,6 +187,8 @@ export default function TestTakePage() {
+       setSubmitted(true);
+       setTimeLeft(null);
+       await loadHistory();
++      // Natijani majburiy ko'rsatish тАФ test tugaganda darhol review ochiladi
++      setTimeout(() => { void openReview(data.result?.id); }, 450);
+       if (data.result?.passed) {
+         try {
+           const confetti = (await import("canvas-confetti")).default;
+@@ -337,6 +338,76 @@ export default function TestTakePage() {
+             </div>
+           </div>
+         </div>
++
++        {/* Review modal тАФ blocked ekranda ham majburiy */}
++        <AnimatePresence>
++          {reviewOpen && (
++            <motion.div
++              initial={{ opacity: 0 }}
++              animate={{ opacity: 1 }}
++              exit={{ opacity: 0 }}
++              className="fixed inset-0 z-50 bg-black/50 px-4 py-8 backdrop-blur-sm"
++              onClick={() => setReviewOpen(false)}
++              data-testid="review-overlay"
++            >
++              <motion.div
++                initial={{ scale: 0.96, y: 16 }}
++                animate={{ scale: 1, y: 0 }}
++                exit={{ scale: 0.96, y: 16 }}
++                onClick={(e) => e.stopPropagation()}
++                className="mx-auto flex max-h-[calc(100dvh-4rem)] w-full max-w-3xl flex-col overflow-hidden rounded-3xl bg-white shadow-2xl"
++                data-testid="review-panel"
++              >
++                <div className="flex shrink-0 items-start gap-3 border-b border-neutral-100 px-5 py-4 sm:px-6">
++                  <div className="min-w-0 flex-1">
++                    <h2 className="truncate text-base font-black text-neutral-900 sm:text-lg">
++                      {review?.test?.title || "Natijani ko'rish"}
++                    </h2>
++                    {review?.result && (
++                      <p className="mt-0.5 text-xs text-neutral-500" data-testid="review-meta">
++                        Ball: {review.result.score ?? 0}% ┬╖ {review.result.completedAt ? new Date(review.result.completedAt).toLocaleString() : ""} ┬╖ to'g'ri javoblar ochiq
++                      </p>
++                    )}
++                  </div>
++                  <button type="button" data-testid="review-close" onClick={() => setReviewOpen(false)} className="shrink-0 rounded-xl border bg-white px-3 py-1.5 text-sm font-bold text-neutral-700 hover:bg-neutral-50">Yopish</button>
++                </div>
++                <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-5 py-4 sm:px-6" data-testid="review-scroll" style={{ maxHeight: "calc(100dvh - 10rem)" }}>
++                  {reviewLoading && <div className="grid place-items-center py-12" data-testid="review-loading"><Loader2 className="h-8 w-8 animate-spin text-violet-600" /></div>}
++                  {reviewError && <p className="rounded-xl bg-rose-50 px-4 py-3 text-sm font-semibold text-rose-700" data-testid="review-error">{reviewError}</p>}
++                  {review && !reviewLoading && (
++                    <div className="space-y-4" data-testid="review-questions">
++                      {review.questions.map((q: any, qi: number) => {
++                        const selected = q.selected;
++                        const selectedArr = Array.isArray(selected) ? selected : selected != null && selected !== "" ? [selected] : [];
++                        return (
++                          <div key={q.id} data-testid="review-question" className="rounded-2xl border border-neutral-200 bg-white p-4 ring-1 ring-neutral-100">
++                            <div className="mb-3 flex items-start gap-2.5"><span className="mt-0.5 grid h-7 w-7 shrink-0 place-items-center rounded-full bg-violet-600 text-xs font-bold text-white">{qi + 1}</span><p className="text-sm font-bold leading-snug text-neutral-900 sm:text-base">{q.text}</p></div>
++                            {q.type === "written" ? (
++                              <div className="space-y-2"><div className="rounded-xl bg-neutral-50 p-3"><p className="text-[11px] font-bold uppercase tracking-wide text-neutral-400">Sizning javobingiz</p><p className="mt-1 whitespace-pre-wrap text-sm text-neutral-800" data-testid="review-written-answer">{typeof selected === "string" && selected ? selected : "тАФ"}</p></div>{q.correctAnswer && <div className="rounded-xl bg-emerald-50 p-3 ring-1 ring-emerald-200"><p className="text-[11px] font-bold uppercase tracking-wide text-emerald-600">To'g'ri javob</p><p className="mt-1 whitespace-pre-wrap text-sm text-emerald-900">{q.correctAnswer}</p></div>}</div>
++                            ) : (
++                              <div className="space-y-2">
++                                {q.choices.map((c: any) => {
++                                  const isSelected = selectedArr.includes(c.id);
++                                  const isCorrect = !!c.isCorrect;
++                                  let tone = "border-neutral-200 bg-white text-neutral-800";
++                                  if (isCorrect && isSelected) tone = "border-emerald-500 bg-emerald-50 text-emerald-900 ring-1 ring-emerald-400";
++                                  else if (isCorrect) tone = "border-emerald-400 bg-emerald-50 text-emerald-900";
++                                  else if (isSelected) tone = "border-rose-400 bg-rose-50 text-rose-900 ring-1 ring-rose-300";
++                                  return <div key={c.id} data-testid="review-choice" data-selected={isSelected ? "1" : "0"} data-correct={isCorrect ? "1" : "0"} className={`flex items-start gap-2.5 rounded-xl border p-3 text-sm ${tone}`}><span className="mt-0.5 grid h-6 w-6 shrink-0 place-items-center rounded-full border border-current/30 text-[11px] font-black opacity-80">{c.order !== undefined ? String.fromCharCode(65 + c.order) : "тАв"}</span><span className="flex-1 font-medium">{c.text}</span>{isSelected && <span className="shrink-0 rounded-md bg-white/80 px-1.5 py-0.5 text-[10px] font-black uppercase" data-testid="badge-selected">Siz</span>}{isCorrect && <span className="shrink-0 rounded-md bg-emerald-600 px-1.5 py-0.5 text-[10px] font-black uppercase text-white" data-testid="badge-correct">To'g'ri</span>}</div>;
++                                })}
++                              </div>
++                            )}
++                            {q.explanation && <p className="mt-3 rounded-xl bg-indigo-50 px-3 py-2 text-xs leading-relaxed text-indigo-900">{q.explanation}</p>}
++                          </div>
++                        );
++                      })}
++                    </div>
++                  )}
++                </div>
++              </motion.div>
++            </motion.div>
++          )}
++        </AnimatePresence>
+       </main>
+     );
+   }
+
+commit 31bfea1aeeef07a87581a5a6a8990775d0d6b2d0
+Author: Grill Agent <agent@akela.uz>
+Date:   Wed Sep 23 12:55:42 2026 +0500
+
+    fix(tests/review): har doim topshirilgan natijani korish
+    
+    - revealCorrect doim true тАФ topshirilgan urinishni har doim togri javob bilan korish
+    - Javoblarni korish tugmasi canRetake dan qatiy nazar har doim korinadi (result.id || history[0].id fallback)
+    - openReview 401/HTML redirect ni toliq handle qiladi, tsc EXIT=0
+
+diff --git a/src/app/tests/[id]/page.tsx b/src/app/tests/[id]/page.tsx
+index cd31baa..c599757 100644
+--- a/src/app/tests/[id]/page.tsx
++++ b/src/app/tests/[id]/page.tsx
+@@ -68,20 +68,35 @@ export default function TestTakePage() {
+   }, []);
+ 
+   const openReview = useCallback(async (resultId?: string) => {
++    if (!id) {
++      setReviewError("Test ID topilmadi");
++      setReviewOpen(true);
++      return;
++    }
+     setReviewOpen(true);
+     setReviewLoading(true);
+     setReviewError(null);
+     setReview(null);
+     try {
+       const qs = resultId ? `?resultId=${encodeURIComponent(resultId)}` : "";
+-      const data = await fetch(`/api/tests/${id}/review${qs}`, { cache: "no-store" }).then((r) => r.json());
+-      if (!data.ok) {
+-        setReviewError(data.error || "Natijani yuklab bo'lmadi");
++      const res = await fetch(`/api/tests/${id}/review${qs}`, { cache: "no-store" });
++      const text = await res.text();
++      let data: any = null;
++      try { data = JSON.parse(text); } catch { data = null; }
++      if (!res.ok || !data?.ok) {
++        // 401 -> sessiya eskirgan
++        if (res.status === 401) {
++          setReviewError("Sessiya eskirgan тАФ qayta kiring");
++        } else if (text && text.trim().startsWith("<")) {
++          setReviewError("Server javobi noto'g'ri тАФ qayta urinib ko'ring");
++        } else {
++          setReviewError(data?.error || `Xato ${res.status}: Natijani yuklab bo'lmadi`);
++        }
+       } else {
+         setReview(data.review);
+       }
+     } catch {
+-      setReviewError("Tarmoq xatosi");
++      setReviewError("Tarmoq xatosi тАФ qayta urinib ko'ring");
+     } finally {
+       setReviewLoading(false);
+     }
+@@ -621,20 +636,19 @@ export default function TestTakePage() {
+                   <RotateCcw className="h-4 w-4" /> Qayta topshirish (random)
+                 </button>
+               ) : (
+-                <>
+-                  <span data-testid="retake-blocked" className="rounded-xl bg-neutral-100 px-5 py-2.5 text-sm font-bold text-neutral-500">
+-                    Urinishlar tugadi ({maxAttempts}/{maxAttempts})
+-                  </span>
+-                  <button
+-                    type="button"
+-                    data-testid="open-review-from-result"
+-                    onClick={() => void openReview(result?.id)}
+-                    className="flex items-center gap-2 rounded-xl bg-neutral-900 px-5 py-2.5 text-sm font-bold text-white hover:bg-black"
+-                  >
+-                    <ListChecks className="h-4 w-4" /> Javoblarni ko'rish
+-                  </button>
+-                </>
++                <span data-testid="retake-blocked" className="rounded-xl bg-neutral-100 px-5 py-2.5 text-sm font-bold text-neutral-500">
++                  Urinishlar tugadi ({maxAttempts}/{maxAttempts})
++                </span>
+               )}
++              {/* Topshirilgan testni har doim ko'rish mumkin тАФ urinish bor-yo'qligidan qat'i nazar */}
++              <button
++                type="button"
++                data-testid="open-review-from-result"
++                onClick={() => void openReview(result?.id || history[0]?.id)}
++                className="flex items-center gap-2 rounded-xl bg-neutral-900 px-5 py-2.5 text-sm font-bold text-white hover:bg-black"
++              >
++                <ListChecks className="h-4 w-4" /> {result?.id || history[0]?.id ? "Javoblarni ko'rish" : "Natijani yuklash..."}
++              </button>
+               <Link href="/courses" className="flex items-center gap-2 rounded-xl bg-neutral-900 px-5 py-2.5 text-sm font-bold text-white">
+                 Kurslarga qaytish <Trophy className="h-4 w-4" />
+               </Link>

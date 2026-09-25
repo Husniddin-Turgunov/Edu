@@ -27,11 +27,17 @@ import {
   Download,
   Upload,
   ExternalLink,
+  Check,
+  ChevronDown,
+  ChevronUp,
 } from "lucide-react";
 import { AdminSidebar } from "@/components/admin/AdminSidebar";
+import { HistorySection } from "./HistorySection";
 
 type Choice = { id: string; text: string; isCorrect: boolean; order: number };
 type Question = { id: string; text: string; type: string; points: number; order: number; explanation?: string; correctAnswer?: string; choices: Choice[] };
+type EditableChoice = { id?: string; text: string; isCorrect: boolean };
+type EditableQuestion = { text: string; type: string; points: number; explanation: string; correctAnswer: string; choices: EditableChoice[] };
 type Test = any;
 
 export default function AdminTestDetailPage() {
@@ -47,6 +53,16 @@ export default function AdminTestDetailPage() {
   const [editForm, setEditForm] = useState<any>({});
   const [saving, setSaving] = useState(false);
   const [toggling, setToggling] = useState(false);
+  const [selectedQuestionIds, setSelectedQuestionIds] = useState<string[]>([]);
+  const [expandedQuestionIds, setExpandedQuestionIds] = useState<string[]>([]);
+  const [selectedHistoryIds, setSelectedHistoryIds] = useState<string[]>([]);
+  const [expandedHistoryIds, setExpandedHistoryIds] = useState<string[]>([]);
+  const [historyReviews, setHistoryReviews] = useState<Record<string, any>>({});
+  const [historyLoadingIds, setHistoryLoadingIds] = useState<string[]>([]);
+  const [historyErrorIds, setHistoryErrorIds] = useState<string[]>([]);
+  const [editingQuestionId, setEditingQuestionId] = useState<string | null>(null);
+  const [questionDraft, setQuestionDraft] = useState<EditableQuestion | null>(null);
+  const [savingQuestionId, setSavingQuestionId] = useState<string | null>(null);
   const [toast, setToast] = useState<{ kind: "ok" | "err"; msg: string } | null>(null);
 
   const showToast = (k: "ok" | "err", msg: string) => { setToast({ kind: k, msg }); setTimeout(() => setToast(null), 3000); };
@@ -66,7 +82,7 @@ export default function AdminTestDetailPage() {
       else setTest(data.test);
       // history
       try {
-        const h = await fetch(`/api/tests/history?testId=${id}&all=1`).then(r => r.json());
+        const h = await fetch(`/api/tests/history?testId=${id}&all=1`, { cache: "no-store" }).then(r => r.json());
         if (h?.ok) setHistory(h.results || []);
       } catch {}
     } catch { setErr("Yuklashda xato"); }
@@ -108,8 +124,118 @@ export default function AdminTestDetailPage() {
 
   const deleteQuestion = async (qid: string) => {
     if (!confirm("Savolni o'chirish?")) return;
-    await fetch(`/api/admin/questions/${qid}`, { method: "DELETE" });
+    const res = await fetch(`/api/admin/questions/${qid}`, { method: "DELETE" });
+    if (!res.ok) { showToast("err", "Savolni o'chirib bo'lmadi"); return; }
+    setSelectedQuestionIds((current) => current.filter((id) => id !== qid));
+    setExpandedQuestionIds((current) => current.filter((id) => id !== qid));
     load();
+    showToast("ok", "Savol o'chirildi");
+  };
+
+  const toggleQuestionSelection = (qid: string) => {
+    setSelectedQuestionIds((current) => current.includes(qid) ? current.filter((id) => id !== qid) : [...current, qid]);
+  };
+
+  const toggleQuestionExpanded = (qid: string) => {
+    setExpandedQuestionIds((current) => current.includes(qid) ? current.filter((id) => id !== qid) : [...current, qid]);
+  };
+
+  const startQuestionEdit = (q: Question) => {
+    setEditingQuestionId(q.id);
+    setExpandedQuestionIds((current) => current.includes(q.id) ? current : [...current, q.id]);
+    setQuestionDraft({
+      text: q.text,
+      type: q.type,
+      points: q.points,
+      explanation: q.explanation || "",
+      correctAnswer: q.correctAnswer || "",
+      choices: (q.choices || []).map((choice) => ({ id: choice.id, text: choice.text, isCorrect: choice.isCorrect })),
+    });
+  };
+
+  const saveQuestion = async (qid: string) => {
+    if (!questionDraft) return;
+    setSavingQuestionId(qid);
+    const res = await fetch(`/api/admin/questions/${qid}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(questionDraft),
+    });
+    const data = await res.json();
+    if (data.ok) {
+      setEditingQuestionId(null);
+      setQuestionDraft(null);
+      await load();
+      showToast("ok", "Savol va variantlar saqlandi");
+    } else {
+      showToast("err", data.error || "Saqlab bo'lmadi");
+    }
+    setSavingQuestionId(null);
+  };
+
+  const updateDraftChoice = (index: number, patch: Partial<EditableChoice>) => {
+    setQuestionDraft((current) => current ? { ...current, choices: current.choices.map((choice, i) => i === index ? { ...choice, ...patch } : choice) } : current);
+  };
+
+  const toggleHistorySelection = (resultId: string) => {
+    setSelectedHistoryIds((current) => current.includes(resultId)
+      ? current.filter((item) => item !== resultId)
+      : [...current, resultId]);
+  };
+
+  const loadHistoryReview = async (result: any) => {
+    if (historyReviews[result.id] || historyLoadingIds.includes(result.id)) return;
+    setHistoryLoadingIds((current) => [...current, result.id]);
+    setHistoryErrorIds((current) => current.filter((item) => item !== result.id));
+    try {
+      const res = await fetch(`/api/admin/skills?action=review&userId=${encodeURIComponent(result.userId)}&testId=${encodeURIComponent(id)}&resultId=${encodeURIComponent(result.id)}`, { cache: "no-store" });
+      const data = await res.json();
+      if (!res.ok || !data.ok) throw new Error(data.error || "Natija yuklanmadi");
+      setHistoryReviews((current) => ({ ...current, [result.id]: data.review }));
+    } catch {
+      setHistoryErrorIds((current) => [...current, result.id]);
+    } finally {
+      setHistoryLoadingIds((current) => current.filter((item) => item !== result.id));
+    }
+  };
+
+  const toggleHistoryExpanded = async (result: any) => {
+    const opening = !expandedHistoryIds.includes(result.id);
+    setExpandedHistoryIds((current) => opening ? [...current, result.id] : current.filter((item) => item !== result.id));
+    if (opening) await loadHistoryReview(result);
+  };
+
+  const openSelectedHistory = async () => {
+    const selected = history.filter((result) => selectedHistoryIds.includes(result.id));
+    setExpandedHistoryIds((current) => Array.from(new Set([...current, ...selectedHistoryIds])));
+    await Promise.all(selected.map(loadHistoryReview));
+  };
+
+  // Tanlangan natijalarni o'chirish (bir tugma bilan)
+  const [deletingHistory, setDeletingHistory] = useState(false);
+  const deleteSelectedHistory = async () => {
+    if (!selectedHistoryIds.length || deletingHistory) return;
+    const n = selectedHistoryIds.length;
+    if (!confirm(`${n} ta natijani butunlay o'chirishni xohlaysizmi? Bu amalni qaytarib bo'lmaydi.`)) return;
+    setDeletingHistory(true);
+    try {
+      const res = await fetch("/api/tests/history", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ids: selectedHistoryIds }),
+      });
+      const data = await res.json().catch(() => ({} as any));
+      if (!res.ok || !data.ok) throw new Error(data?.error || "O'chirishda xato");
+      const removed = new Set(selectedHistoryIds);
+      setHistory((current) => current.filter((item: any) => !removed.has(item.id)));
+      setExpandedHistoryIds((current) => current.filter((hid) => !removed.has(hid)));
+      setSelectedHistoryIds([]);
+      showToast("ok", `${data.deleted ?? n} ta natija o'chirildi`);
+    } catch (e: any) {
+      showToast("err", e?.message || "O'chirishda xato");
+    } finally {
+      setDeletingHistory(false);
+    }
   };
 
   if (status !== "authenticated" || loading) return <div className="min-h-screen grid place-items-center"><Loader2 className="h-6 w-6 animate-spin text-neutral-400" /></div>;
@@ -154,62 +280,74 @@ export default function AdminTestDetailPage() {
 
           {/* Savollar — ko'rish joyi */}
           <div className="rounded-2xl border bg-white">
-            <div className="flex items-center justify-between border-b px-5 py-3">
-              <h2 className="flex items-center gap-2 text-sm font-black"><ListChecks className="h-4 w-4 text-violet-600" /> Savollar — ko'rish joyi ({qCount} ta)</h2>
-              <Link href="/admin/lms/tests" className="text-xs font-bold text-neutral-600 hover:text-neutral-900">← Ro'yxatga qaytish</Link>
+            <div className="flex flex-wrap items-center justify-between gap-3 border-b px-5 py-3">
+              <h2 className="flex items-center gap-2 text-sm font-black"><ListChecks className="h-4 w-4 text-violet-600" /> Savollar ({qCount} ta)</h2>
+              <div className="flex flex-wrap items-center gap-2">
+                <label className="flex cursor-pointer items-center gap-2 text-xs font-bold text-neutral-600"><input type="checkbox" checked={!!test.questions?.length && selectedQuestionIds.length === test.questions.length} onChange={(e) => setSelectedQuestionIds(e.target.checked ? test.questions.map((q: Question) => q.id) : [])} className="h-4 w-4 accent-violet-600" /> Hammasini tanlash</label>
+                <button disabled={!selectedQuestionIds.length} onClick={() => setExpandedQuestionIds(Array.from(new Set([...expandedQuestionIds, ...selectedQuestionIds])))} className="rounded-lg border border-violet-200 bg-violet-50 px-3 py-1.5 text-xs font-bold text-violet-700 disabled:opacity-40">Tanlanganlarni ochish ({selectedQuestionIds.length})</button>
+                <button disabled={!expandedQuestionIds.length} onClick={() => setExpandedQuestionIds([])} className="rounded-lg border px-3 py-1.5 text-xs font-bold text-neutral-600 disabled:opacity-40">Hammasini yopish</button>
+                <Link href="/admin/lms/tests" className="text-xs font-bold text-neutral-600 hover:text-neutral-900">← Ro'yxatga qaytish</Link>
+              </div>
             </div>
+            {selectedQuestionIds.length > 0 && <div className="flex items-center gap-2 border-b border-violet-100 bg-violet-50 px-5 py-2 text-xs font-bold text-violet-800"><Check className="h-4 w-4" /> {selectedQuestionIds.length} ta savol tanlandi — bir tugma bilan ochib, alohida tahrirlang.</div>}
             {(!test.questions || test.questions.length === 0) ? (
               <div className="py-10 text-center text-sm text-neutral-500">Savollar yo'q — Testlar ro'yxatidan “Savol” bilan qo'shing</div>
             ) : (
               <div className="divide-y max-h-[65vh] overflow-y-auto" data-testid="admin-questions-list">
-                {test.questions.map((q: Question, idx: number) => (
-                  <div key={q.id} className="p-4" data-testid="admin-question">
+                {test.questions.map((q: Question, idx: number) => {
+                  const expanded = expandedQuestionIds.includes(q.id);
+                  const selected = selectedQuestionIds.includes(q.id);
+                  const editing = editingQuestionId === q.id;
+                  return (
+                  <div key={q.id} className={`p-4 ${selected ? "bg-violet-50/50" : ""}`} data-testid="admin-question">
                     <div className="flex items-start gap-3">
-                      <span className="grid h-7 w-7 place-items-center rounded-full bg-violet-600 text-xs font-bold text-white">{idx + 1}</span>
-                      <div className="flex-1 min-w-0">
+                      <input type="checkbox" checked={selected} onChange={() => toggleQuestionSelection(q.id)} aria-label={`${idx + 1}-savolni tanlash`} className="mt-1 h-5 w-5 shrink-0 cursor-pointer accent-violet-600" />
+                      <span className="grid h-7 w-7 shrink-0 place-items-center rounded-full bg-violet-600 text-xs font-bold text-white">{idx + 1}</span>
+                      <button onClick={() => toggleQuestionExpanded(q.id)} className="min-w-0 flex-1 text-left">
                         <p className="text-sm font-bold leading-snug">{q.text}</p>
                         <p className="mt-1 text-[11px] font-bold uppercase tracking-wide text-neutral-400">{q.type === "written" ? "Yozma" : "Variantli"} · {q.points} ball</p>
-                      </div>
-                      <button onClick={() => deleteQuestion(q.id)} className="rounded-lg p-1.5 text-rose-600 hover:bg-rose-50"><Trash2 className="h-4 w-4" /></button>
+                      </button>
+                      {expanded ? <ChevronUp className="h-4 w-4 shrink-0 text-neutral-400" /> : <ChevronDown className="h-4 w-4 shrink-0 text-neutral-400" />}
+                      <button onClick={() => startQuestionEdit(q)} title="Savolni tahrirlash" className="rounded-lg p-1.5 text-violet-600 hover:bg-violet-50"><Edit3 className="h-4 w-4" /></button>
+                      <button onClick={() => deleteQuestion(q.id)} title="Savolni o'chirish" className="rounded-lg p-1.5 text-rose-600 hover:bg-rose-50"><Trash2 className="h-4 w-4" /></button>
                     </div>
-                    {q.type === "written" ? (
-                      <div className="mt-3 rounded-xl bg-violet-50 border border-violet-200 p-3">
-                        <p className="text-[11px] font-bold uppercase text-violet-700">To'g'ri javob (faqat admin)</p>
-                        <p className="mt-1 text-sm whitespace-pre-wrap">{q.correctAnswer || "—"}</p>
+                    {expanded && (editing && questionDraft ? (
+                      <div className="ml-8 mt-3 space-y-3 rounded-xl border border-violet-200 bg-violet-50/40 p-3">
+                        <textarea value={questionDraft.text} onChange={(e) => setQuestionDraft({ ...questionDraft, text: e.target.value })} rows={2} className="w-full rounded-xl border-2 border-neutral-200 px-3 py-2 text-sm font-semibold" />
+                        {questionDraft.type === "written" ? <textarea value={questionDraft.correctAnswer} onChange={(e) => setQuestionDraft({ ...questionDraft, correctAnswer: e.target.value })} rows={2} placeholder="To'g'ri javob" className="w-full rounded-xl border-2 border-neutral-200 px-3 py-2 text-sm" /> : <div className="grid gap-2">{questionDraft.choices.map((choice, choiceIndex) => <div key={choice.id || choiceIndex} className="flex items-center gap-2"><button type="button" onClick={() => setQuestionDraft({ ...questionDraft, choices: questionDraft.choices.map((item, i) => ({ ...item, isCorrect: i === choiceIndex })) })} className={`grid h-8 w-8 shrink-0 place-items-center rounded-full border text-xs font-black ${choice.isCorrect ? "border-emerald-600 bg-emerald-600 text-white" : "bg-white text-neutral-500"}`}>{String.fromCharCode(65 + choiceIndex)}</button><input value={choice.text} onChange={(e) => updateDraftChoice(choiceIndex, { text: e.target.value })} className="w-full rounded-xl border-2 border-neutral-200 px-3 py-2 text-sm" /></div>)}</div>}
+                        <textarea value={questionDraft.explanation} onChange={(e) => setQuestionDraft({ ...questionDraft, explanation: e.target.value })} rows={2} placeholder="Tushuntirish" className="w-full rounded-xl border-2 border-neutral-200 px-3 py-2 text-sm" />
+                        <div className="flex justify-end gap-2"><button onClick={() => { setEditingQuestionId(null); setQuestionDraft(null); }} className="rounded-lg border px-3 py-1.5 text-xs font-bold">Bekor</button><button onClick={() => saveQuestion(q.id)} disabled={savingQuestionId === q.id} className="flex items-center gap-1.5 rounded-lg bg-violet-600 px-3 py-1.5 text-xs font-bold text-white disabled:opacity-50">{savingQuestionId === q.id && <Loader2 className="h-3.5 w-3.5 animate-spin" />} Saqlash</button></div>
                       </div>
                     ) : (
-                      <div className="mt-3 grid gap-1.5">
-                        {q.choices?.map((c) => (
-                          <div key={c.id} className={`flex items-center gap-2 rounded-xl border px-3 py-2 text-sm ${c.isCorrect ? "border-emerald-400 bg-emerald-50 text-emerald-900" : "border-neutral-200 bg-neutral-50"}`}>
-                            <span className={`grid h-5 w-5 place-items-center rounded-full text-[10px] font-black border ${c.isCorrect ? "bg-emerald-600 text-white border-emerald-600" : "bg-white text-neutral-500"}`}>{String.fromCharCode(65 + c.order)}</span>
-                            <span className="flex-1">{c.text}</span>
-                            {c.isCorrect && <span className="rounded bg-emerald-600 px-1.5 py-0.5 text-[10px] font-black text-white">To'g'ri</span>}
-                          </div>
-                        ))}
+                      <div className="ml-8 mt-3">
+                        {q.type === "written" ? <div className="rounded-xl bg-violet-50 border border-violet-200 p-3"><p className="text-[11px] font-bold uppercase text-violet-700">To'g'ri javob (faqat admin)</p><p className="mt-1 text-sm whitespace-pre-wrap">{q.correctAnswer || "—"}</p></div> : <div className="grid gap-1.5">{q.choices?.map((c) => <div key={c.id} className={`flex items-center gap-2 rounded-xl border px-3 py-2 text-sm ${c.isCorrect ? "border-emerald-400 bg-emerald-50 text-emerald-900" : "border-neutral-200 bg-neutral-50"}`}><span className={`grid h-5 w-5 place-items-center rounded-full text-[10px] font-black border ${c.isCorrect ? "bg-emerald-600 text-white border-emerald-600" : "bg-white text-neutral-500"}`}>{String.fromCharCode(65 + c.order)}</span><span className="flex-1">{c.text}</span>{c.isCorrect && <span className="rounded bg-emerald-600 px-1.5 py-0.5 text-[10px] font-black text-white">To'g'ri</span>}</div>)}</div>}
+                        {q.explanation && <p className="mt-2 rounded-lg bg-indigo-50 px-3 py-2 text-xs text-indigo-900">{q.explanation}</p>}
                       </div>
-                    )}
-                    {q.explanation && <p className="mt-2 rounded-lg bg-indigo-50 px-3 py-2 text-xs text-indigo-900">{q.explanation}</p>}
+                    ))}
                   </div>
-                ))}
+                  );
+                })}
               </div>
             )}
           </div>
 
-          {/* Tarix qisqacha */}
-          <div className="rounded-2xl border bg-white p-5">
-            <h3 className="flex items-center gap-2 text-sm font-bold"><History className="h-4 w-4" /> Topshirganlar tarixi ({history.length})</h3>
-            {history.length === 0 ? <p className="mt-2 text-xs text-neutral-500">Hozircha natija yo'q</p> : (
-              <div className="mt-3 max-h-64 space-y-2 overflow-y-auto pr-1">
-                {history.slice(0, 20).map((r: any) => (
-                  <div key={r.id} className="flex items-center gap-2 rounded-xl border bg-neutral-50 px-3 py-2">
-                    <span className={`rounded-full px-2 py-0.5 text-xs font-bold text-white ${r.passed ? "bg-indigo-600" : "bg-rose-600"}`}>{r.score ?? 0}%</span>
-                    <span className="text-xs truncate">{r.user?.name || r.userId.slice(0, 8)} · {r.user?.email || ""}</span>
-                    <span className="ml-auto text-xs text-neutral-500">{new Date(r.completedAt || r.createdAt).toLocaleString()}</span>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
+          <HistorySection
+            testId={id}
+            history={history}
+            selectedIds={selectedHistoryIds}
+            expandedIds={expandedHistoryIds}
+            reviews={historyReviews}
+            loadingIds={historyLoadingIds}
+            errorIds={historyErrorIds}
+            onSelect={toggleHistorySelection}
+            onSelectAll={(checked) => setSelectedHistoryIds(checked ? history.map((item: any) => item.id) : [])}
+            onOpenSelected={openSelectedHistory}
+            onClearSelected={() => setSelectedHistoryIds([])}
+            onCloseAll={() => setExpandedHistoryIds([])}
+            onToggle={toggleHistoryExpanded}
+            onDeleteSelected={deleteSelectedHistory}
+            deleting={deletingHistory}
+          />
         </div>
 
         {/* Edit modal */}
