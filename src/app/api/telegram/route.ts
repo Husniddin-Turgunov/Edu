@@ -732,6 +732,10 @@ async function handleCallbackQuery(cq: any) {
         "📄 <b>Umumiy PDF hisobot</b> — barcha test natijalari",
       );
       if (!res?.ok) await sendMessage(chatId, `📄 PDF havolasi: ${url}`);
+      console.log(
+        "[telegram] tur->pdf",
+        JSON.stringify({ userId, sent: res?.ok, desc: res?.description }),
+      );
     }
     return;
   }
@@ -781,7 +785,8 @@ async function handleCallbackQuery(cq: any) {
         },
         APP_ORIGIN,
       );
-      await sendPhoto(chatId, png, caption, { filename: "akela-natija.png" });
+      const photoRes: any = await sendPhoto(chatId, png, caption, { filename: "akela-natija.png" });
+      console.log("[telegram] ti->rasm", JSON.stringify({ resultId, sent: photoRes?.ok, desc: photoRes?.description }));
     } catch (e: any) {
       console.error("telegram: result card error", e?.message || e);
       await sendMessage(chatId, caption.replace("🖼 <b>Test natijasi</b>", "🖼 <b>Test natijasi</b> (rasm chizilmadi)"));
@@ -800,6 +805,10 @@ async function handleCallbackQuery(cq: any) {
         "📄 <b>Yakka test hisoboti</b> — savollar bo'yicha tafsilot",
       );
       if (!res?.ok) await sendMessage(chatId, `📄 PDF havolasi: ${url}`);
+      console.log(
+        "[telegram] tp->pdf",
+        JSON.stringify({ resultId, sent: res?.ok, desc: res?.description }),
+      );
     }
     return;
   }

@@ -1,7 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { PrismaClient } from "@prisma/client";
 import { PDFDocument, rgb, PDFFont } from "pdf-lib";
-import * as fontkit from "@pdf-lib/fontkit";
+import * as fontkitNS from "@pdf-lib/fontkit";
+// CJS/ESM interop: ba'zi bundlerlarda fontkit `default` ostida keladi
+const fontkit: any = (fontkitNS as any).default || fontkitNS;
 import { readFile } from "node:fs/promises";
 import path from "node:path";
 import { computeResultStats } from "@/lib/result-stats";
