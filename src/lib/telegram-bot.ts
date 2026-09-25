@@ -82,6 +82,22 @@ export async function sendPhoto(
   return res.json().catch(() => ({ ok: false }));
 }
 
+/** Hujjat (PDF) yuborish — Telegram faylni ko'rsatilgan havoladan yuklab oladi */
+export async function sendDocument(
+  chatId: number,
+  documentUrl: string,
+  caption?: string,
+  options?: { filename?: string; reply_markup?: any },
+) {
+  return callApi("sendDocument", {
+    chat_id: chatId,
+    document: documentUrl,
+    caption,
+    parse_mode: "HTML",
+    reply_markup: normalizeReplyMarkup(options?.reply_markup),
+  });
+}
+
 export function sendInlineKeyboard(
   chatId: number,
   text: string,

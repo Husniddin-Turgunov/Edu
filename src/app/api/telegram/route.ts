@@ -3,6 +3,8 @@ import { PrismaClient } from "@prisma/client";
 import {
   sendMessage,
   sendInlineKeyboard,
+  sendPhoto,
+  sendDocument,
   answerCallbackQuery,
   editMessageText,
   getMe,
@@ -15,6 +17,7 @@ import {
   type InlineButton,
 } from "@/lib/telegram-bot";
 import { renderResultCardPng, levelForScore } from "@/lib/result-card";
+import { computeResultStats } from "@/lib/result-stats";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -224,6 +227,170 @@ async function testsText(): Promise<string> {
   ].join("\n");
 }
 
+/** Loyiha domeni — rasm va PDF havolalari shu domendan olinadi */
+const APP_ORIGIN = (process.env.NEXT_PUBLIC_APP_URL || "https://edu.akelagroup.uz").replace(/\/$/, "");
+
+function shortName(name: string, max = 26) {
+  return name.length > max ? name.slice(0, max - 1) + "…" : name;
+}
+
+/** Test topshirganlar ro'yxati: kim necha marta topshirgan, o'rtacha ball */
+async function takersSection(): Promise<{ text: string; buttons: InlineButton[][] }> {
+  const rows = await prisma.testResult.findMany({
+    where: { completedAt: { not: null } },
+    orderBy: { completedAt: "desc" },
+    take: 300,
+    select: {
+      userId: true,
+      score: true,
+      passed: true,
+      user: { select: { id: true, name: true, surname: true, email: true } },
+    },
+  });
+
+  const map = new Map<
+    string,
+    { id: string; name: string; count: number; sum: number; passed: number }
+  >();
+  for (const r of rows) {
+    if (!r.user) continue;
+    const id = r.user.id;
+    const name =
+      [r.user.surname, r.user.name].filter(Boolean).join(" ").trim() || r.user.email || "Noma'lum";
+    const item = map.get(id) || { id, name, count: 0, sum: 0, passed: 0 };
+    item.count += 1;
+    item.sum += typeof r.score === "number" ? r.score : 0;
+    if (r.passed) item.passed += 1;
+    map.set(id, item);
+  }
+
+  const list = Array.from(map.values()).slice(0, 12);
+  if (!list.length) {
+    return {
+      text: "📝 <b>Test topshirganlar</b>\n\nHozircha hech kim test topshirmagan.",
+      buttons: mainMenu(),
+    };
+  }
+
+  const lines = [
+    "📝 <b>Test topshirganlar</b>",
+    "",
+    "Kimning natijasini ko'ramiz?",
+    "",
+  ];
+  list.forEach((u, i) => {
+    lines.push(
+      `${i + 1}. <b>${escapeHtml(u.name)}</b> — ${u.count} marta topshirgan · o'rtacha <b>${Math.round(
+        u.sum / u.count,
+      )}%</b>`,
+    );
+  });
+
+  const buttons: InlineButton[][] = list.map((u) => [
+    { text: `👤 ${shortName(u.name)} (${u.count})`, callback_data: `tu:${u.id}` },
+  ]);
+  buttons.push([{ text: "📋 Faol testlar ro'yxati", callback_data: "menu:activetests" }]);
+  buttons.push([{ text: "⬅️ Asosiy menyu", callback_data: "menu:home" }]);
+  return { text: lines.join("\n"), buttons };
+}
+
+/** Bitta odam: necha marta topshirgan, jami ball, har bir natija (rasm + PDF) */
+async function takerSection(
+  userId: string,
+): Promise<{ text: string; buttons: InlineButton[][] }> {
+  const user = await prisma.user.findUnique({ where: { id: userId } });
+  if (!user) {
+    return { text: "❌ Foydalanuvchi topilmadi.", buttons: mainMenu() };
+  }
+
+  const results = await prisma.testResult.findMany({
+    where: { userId, completedAt: { not: null } },
+    orderBy: { startedAt: "desc" },
+    take: 20,
+    include: {
+      test: {
+        select: {
+          id: true,
+          title: true,
+          passScore: true,
+          questions: { include: { choices: true } },
+        },
+      },
+    },
+  });
+
+  const fullName = [user.surname, user.name].filter(Boolean).join(" ").trim() || user.email;
+  const scores = results.map((r) => r.score).filter((s) => typeof s === "number") as number[];
+  const avg = scores.length ? Math.round(scores.reduce((a, b) => a + b, 0) / scores.length) : 0;
+  const totalScore = scores.reduce((a, b) => a + b, 0);
+  const passedCount = results.filter((r) => r.passed).length;
+  const level = !scores.length
+    ? "Baholanmagan"
+    : avg >= 86
+      ? "I daraja"
+      : avg >= 70
+        ? "II daraja"
+        : "III daraja";
+
+  let totalCorrect = 0;
+  let totalWrong = 0;
+  const perResult = results.map((r: any) => {
+    const stats = computeResultStats(r.test?.questions || [], r.answers);
+    totalCorrect += stats.correct;
+    totalWrong += stats.wrong + stats.pending;
+    return { result: r, stats };
+  });
+
+  const lines = [
+    `👤 <b>${escapeHtml(fullName)}</b>`,
+    user.email ? `📧 ${escapeHtml(user.email)}` : "",
+    user.department ? `🏢 ${escapeHtml(user.department)}` : "",
+    (user as any).position ? `💼 ${escapeHtml((user as any).position)}` : "",
+    "",
+    `🏅 <b>Daraja:</b> ${level} · o'rtacha ball: <b>${avg}%</b>`,
+    `📊 <b>Topshirishlar:</b> ${results.length} marta · o'tgan: ${passedCount} · yig'ilgan jami ball: <b>${totalScore}%</b>`,
+    `✅ <b>To'g'ri javoblar:</b> ${totalCorrect} · ❌ <b>Xato:</b> ${totalWrong}`,
+    "",
+    "📄 <b>Natijalar</b> (har biri uchun rasm va PDF alohida):",
+    "",
+  ];
+
+  perResult.forEach((item: any, i: number) => {
+    const r: any = item.result;
+    const when = r.completedAt ? new Date(r.completedAt) : null;
+    const p = (n: number) => String(n).padStart(2, "0");
+    const dateStr = when
+      ? `${p(when.getDate())}.${p(when.getMonth() + 1)}.${when.getFullYear()} ${p(
+          when.getHours(),
+        )}:${p(when.getMinutes())}`
+      : "—";
+    lines.push(
+      `${i + 1}. <b>${escapeHtml(r.test?.title || "Test")}</b> — ${r.score ?? "—"}% · ${
+        r.passed ? "✅ O'tdi" : "❌ Yiqildi"
+      }`,
+    );
+    lines.push(
+      `     ✅ ${item.stats.correct}/${item.stats.total} to'g'ri · ❌ ${item.stats.wrong} xato · 🕒 ${dateStr}`,
+    );
+  });
+
+  if (!results.length) lines.push("Hali test topshirmagan.");
+
+  const buttons: InlineButton[][] = perResult.map((item: any, i: number) => [
+    { text: `🖼 ${i + 1}-rasm`, callback_data: `ti:${item.result.id}` },
+    { text: `📄 ${i + 1}-PDF`, callback_data: `tp:${item.result.id}` },
+  ]);
+  buttons.push([
+    { text: "📄 Umumiy PDF hisobot (barcha testlar)", callback_data: `tur:${user.id}` },
+  ]);
+  buttons.push([
+    { text: "⬅️ Ro'yxatga qaytish", callback_data: "menu:tests" },
+    { text: "🏠 Asosiy menyu", callback_data: "menu:home" },
+  ]);
+
+  return { text: lines.join("\n"), buttons };
+}
+
 /** Menyu bo'limi matni + inline tugmalar (callback tugma bosilganda) */
 async function menuSection(section: string): Promise<{ text: string; buttons: InlineButton[][] }> {
   switch (section) {
@@ -234,6 +401,9 @@ async function menuSection(section: string): Promise<{ text: string; buttons: In
     case "pending":
       return pendingSection();
     case "tests":
+      // Endi "Testlar" — test topshirganlar ro'yxati (natijalar + PDF/rasm)
+      return takersSection();
+    case "activetests":
       return { text: await testsText(), buttons: mainMenu() };
     case "help":
       return { text: HELP_TEXT, buttons: mainMenu() };
@@ -546,6 +716,104 @@ async function handleCallbackQuery(cq: any) {
         "[telegram] callback->menu",
         JSON.stringify({ data, edited: edited?.ok, desc: edited?.description }),
       );
+    }
+    return;
+  }
+
+  // ====== Test topshirganlar: odam / rasm / PDF ======
+  if (data.startsWith("tur:")) {
+    const userId = data.slice("tur:".length);
+    await answerCallbackQuery(cq.id);
+    if (chatId) {
+      const url = `${APP_ORIGIN}/api/admin/skills/user-report?userId=${userId}`;
+      const res: any = await sendDocument(
+        chatId,
+        url,
+        "📄 <b>Umumiy PDF hisobot</b> — barcha test natijalari",
+      );
+      if (!res?.ok) await sendMessage(chatId, `📄 PDF havolasi: ${url}`);
+    }
+    return;
+  }
+
+  if (data.startsWith("ti:")) {
+    const resultId = data.slice("ti:".length);
+    await answerCallbackQuery(cq.id);
+    if (!chatId) return;
+    const r: any = await prisma.testResult.findUnique({
+      where: { id: resultId },
+      include: { user: true, test: { select: { title: true, passScore: true } } },
+    });
+    if (!r) {
+      await sendMessage(chatId, "❌ Natija topilmadi.");
+      return;
+    }
+    const u: any = r.user || {};
+    const fullName =
+      [u.surname, u.name].filter(Boolean).join(" ").trim() || u.email || "Noma'lum";
+    const score: number | null = typeof r.score === "number" ? r.score : null;
+    const caption = [
+      "🖼 <b>Test natijasi</b>",
+      "",
+      `👤 <b>F.I.Sh:</b> ${escapeHtml(fullName)}`,
+      u.department ? `🏢 <b>Bo'lim:</b> ${escapeHtml(u.department)}` : "",
+      `📝 <b>Test:</b> ${escapeHtml(r.test?.title || "Test")}`,
+      `📊 <b>Ball:</b> ${score ?? "—"}%${
+        r.test?.passScore != null ? ` (o'tish bali: ${r.test.passScore}%)` : ""
+      }`,
+      `🏅 <b>Daraja:</b> ${levelForScore(score)}`,
+      `🏁 <b>Holat:</b> ${r.passed ? "O'tdi ✅" : "Yiqildi ❌"}`,
+    ]
+      .filter(Boolean)
+      .join("\n");
+    try {
+      const png = await renderResultCardPng(
+        {
+          fullName,
+          department: u.department,
+          position: u.position,
+          testTitle: r.test?.title || "Test",
+          score,
+          passScore: r.test?.passScore ?? null,
+          passed: !!r.passed,
+          level: levelForScore(score),
+          completedAt: r.completedAt ? new Date(r.completedAt) : new Date(),
+        },
+        APP_ORIGIN,
+      );
+      await sendPhoto(chatId, png, caption, { filename: "akela-natija.png" });
+    } catch (e: any) {
+      console.error("telegram: result card error", e?.message || e);
+      await sendMessage(chatId, caption.replace("🖼 <b>Test natijasi</b>", "🖼 <b>Test natijasi</b> (rasm chizilmadi)"));
+    }
+    return;
+  }
+
+  if (data.startsWith("tp:")) {
+    const resultId = data.slice("tp:".length);
+    await answerCallbackQuery(cq.id);
+    if (chatId) {
+      const url = `${APP_ORIGIN}/api/admin/skills/result-report?resultId=${resultId}`;
+      const res: any = await sendDocument(
+        chatId,
+        url,
+        "📄 <b>Yakka test hisoboti</b> — savollar bo'yicha tafsilot",
+      );
+      if (!res?.ok) await sendMessage(chatId, `📄 PDF havolasi: ${url}`);
+    }
+    return;
+  }
+
+  if (data.startsWith("tu:")) {
+    const userId = data.slice("tu:".length);
+    await answerCallbackQuery(cq.id);
+    if (!chatId) return;
+    const { text, buttons } = await takerSection(userId);
+    const edited: any = messageId
+      ? await editMessageText(chatId, messageId, text, { parse_mode: "HTML", reply_markup: buttons })
+      : { ok: false };
+    if (!edited?.ok && !String(edited?.description || "").includes("not modified")) {
+      await sendMessage(chatId, text, { reply_markup: buttons });
     }
     return;
   }

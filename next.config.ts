@@ -11,6 +11,8 @@ const nextConfig: NextConfig = {
   outputFileTracingIncludes: {
     "/api/telegram/**": ["./public/fonts/**"],
     "/api/tests/**": ["./public/fonts/**"],
+    // Hodim hisobotlari / yakka test natijasi PDF lari ham shriftlarga bog'liq
+    "/api/admin/skills/**": ["./public/fonts/**"],
   },
 };
 

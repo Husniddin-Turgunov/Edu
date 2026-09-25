@@ -689,6 +689,16 @@ function UsersView({ filtered, search, setSearch, expandedUser, setExpandedUser,
                                         {attempt.score >= 86 ? "I" : attempt.score >= 70 ? "II" : "III"} daraja
                                       </span>
                                     )}
+                                    <a
+                                      href={`/api/admin/skills/result-report?resultId=${attempt.id}`}
+                                      target="_blank"
+                                      rel="noreferrer"
+                                      title="Shu test natijasini alohida PDF qilib yuklab olish"
+                                      className="px-3 py-2 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-700 text-white text-sm font-extrabold hover:shadow-xl hover:scale-[1.03] transition-all duration-200 flex items-center gap-1.5"
+                                    >
+                                      📄 PDF
+                                    </a>
+
                                     <button
                                       onClick={() => {
                                         // Faqat yuklaydi (yopmaydi — faqat Yopish tugmasi yopadi)
