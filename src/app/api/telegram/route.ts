@@ -4,9 +4,12 @@ import {
   sendMessage,
   sendInlineKeyboard,
   sendPhoto,
+  sendPhotoUrl,
   sendDocument,
   answerCallbackQuery,
   editMessageText,
+  editMessageCaption,
+  deleteMessage,
   getMe,
   getWebhookInfo,
   setWebhook,
@@ -94,10 +97,10 @@ function sectionFromText(text: string): string | null {
   return map[key] || null;
 }
 
-/** Bo'limni matn + inline tugmalar bilan yuborish (yuborilganini qaytaradi) */
+/** Bo'limni Liquid Glass ikonka + matn + tugmalar bilan yuborish */
 async function sendSection(chatId: number, section: string) {
   const { text, buttons } = await menuSection(section);
-  return sendMessage(chatId, text, { reply_markup: buttons });
+  return sendWithIcon(chatId, SECTION_ICON[section] || "apps", text, buttons);
 }
 
 const HELP_TEXT = [
@@ -229,6 +232,82 @@ async function testsText(): Promise<string> {
 
 /** Loyiha domeni — rasm va PDF havolalari shu domendan olinadi */
 const APP_ORIGIN = (process.env.NEXT_PUBLIC_APP_URL || "https://edu.akelagroup.uz").replace(/\/$/, "");
+
+/**
+ * Bo'lim -> Liquid Glass ikonka (public/icons/glass/*.png).
+ * Ikonkalar Google Material Symbols dan yasaladi:
+ *   node scripts/build-glass-icons.mjs
+ */
+const SECTION_ICON: Record<string, string> = {
+  home: "apps",
+  stats: "monitoring",
+  users: "group",
+  pending: "pending_actions",
+  tests: "fact_check",
+  activetests: "checklist",
+  help: "info",
+  refresh: "refresh",
+};
+
+function iconUrl(name: string): string {
+  return `${APP_ORIGIN}/icons/glass/${name}.png`;
+}
+
+/** Telegram caption chegarasi (1024) dan past xavfsiz chegara */
+const CAPTION_LIMIT = 1000;
+
+/** Matn + inline tugmalar, tepasida Liquid Glass ikonka (rasm) bilan */
+async function sendWithIcon(
+  chatId: number,
+  icon: string,
+  text: string,
+  buttons: InlineButton[][],
+) {
+  const fitAsCaption = text.length <= CAPTION_LIMIT;
+  const res: any = await sendPhotoUrl(chatId, iconUrl(icon), fitAsCaption ? text : undefined, {
+    reply_markup: buttons,
+  });
+  if (res?.ok) {
+    // Matn caption ga sig'magan bo'lsa — tugmalar bilan alohida xabar
+    if (!fitAsCaption) return sendMessage(chatId, text, { reply_markup: buttons });
+    return res;
+  }
+  // Rasm yuborilmasa — oddiy matn sifatida davom etamiz
+  return sendMessage(chatId, text, { reply_markup: buttons });
+}
+
+/**
+ * Joriy xabarni yangilaydi: matn bo'lsa `editMessageText`, rasm bo'lsa
+ * `editMessageCaption`; imkoni bo'lmasa eski xabarni o'chirib, yangisini
+ * ikonka bilan yuboradi (chat to'planib ketmasligi uchun).
+ */
+async function updateSectionMessage(
+  chatId: number,
+  messageId: number | undefined,
+  isPhoto: boolean,
+  icon: string,
+  text: string,
+  buttons: InlineButton[][],
+) {
+  if (messageId) {
+    if (isPhoto) {
+      if (text.length <= CAPTION_LIMIT) {
+        const res: any = await editMessageCaption(chatId, messageId, text, buttons);
+        if (res?.ok) return res;
+      }
+    } else {
+      const res: any = await editMessageText(chatId, messageId, text, {
+        parse_mode: "HTML",
+        reply_markup: buttons,
+      });
+      if (res?.ok) return res;
+      if (String(res?.description || "").includes("not modified")) return res;
+    }
+    await deleteMessage(chatId, messageId);
+  }
+  return sendWithIcon(chatId, icon, text, buttons);
+}
+
 
 function shortName(name: string, max = 26) {
   return name.length > max ? name.slice(0, max - 1) + "…" : name;
@@ -702,19 +781,21 @@ async function handleCallbackQuery(cq: any) {
   if (data.startsWith("menu:")) {
     const section = data.slice("menu:".length);
     await answerCallbackQuery(cq.id);
-    if (chatId && messageId) {
+    if (chatId) {
       const { text, buttons } = await menuSection(section);
-      const edited: any = await editMessageText(chatId, messageId, text, {
-        parse_mode: "HTML",
-        reply_markup: buttons,
-      });
-      // Tahrirlash imkoni bo'lmasa (juda eski xabar va h.k.) — yangi xabar yuboramiz
-      if (!edited?.ok && !String(edited?.description || "").includes("not modified")) {
-        await sendMessage(chatId, text, { reply_markup: buttons });
-      }
+      const icon = SECTION_ICON[section] || "apps";
+      const isPhoto = !!cq.message?.photo;
+      const updated: any = await updateSectionMessage(
+        chatId,
+        messageId,
+        isPhoto && text.length <= CAPTION_LIMIT,
+        icon,
+        text,
+        buttons,
+      );
       console.log(
         "[telegram] callback->menu",
-        JSON.stringify({ data, edited: edited?.ok, desc: edited?.description }),
+        JSON.stringify({ data, ok: updated?.ok, desc: updated?.description }),
       );
     }
     return;

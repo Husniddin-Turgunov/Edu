@@ -30,6 +30,39 @@ export function escapeHtml(value: unknown): string {
     .replace(/>/g, "&gt;");
 }
 
+// ====== "Stiker" emoji larni olib tashlash ======
+// Ikonkalar endi Liquid Glass PNG (rasm) ko'rinishida yuboriladi, shuning uchun
+// matn va tugmalardagi bezak emoji lar kerak emas. ✅ ❌ ⚠️ kabi ma'no
+// bildiruvchi belgilar saqlanib qoladi.
+
+const KEEP_EMOJI = new Set(["✅", "❌", "⚠️", "🔴", "🟢"]);
+const LEADING_EMOJI = /^(\s*)([\p{Extended_Pictographic}\uFE0F\u200D]+)/u;
+
+/** Qator boshidagi bezak emoji ni olib tashlaydi (ma'noli belgilar qoladi) */
+function cleanLine(line: string): string {
+  const m = line.match(LEADING_EMOJI);
+  if (!m) return line;
+  if (KEEP_EMOJI.has(m[2])) return line;
+  return line
+    .replace(/^[\s\uFE0F\u200D]*[\p{Extended_Pictographic}\uFE0F\u200D]+/u, "")
+    .replace(/^\s{1,2}/, "");
+}
+
+/** Butun matn uchun (har bir qator alohida) */
+export function cleanBody(text: unknown): string {
+  return String(text ?? "")
+    .split("\n")
+    .map(cleanLine)
+    .join("\n");
+}
+
+/** Tugma yozuvi uchun */
+export function cleanButtonLabel(text: unknown): string {
+  const cleaned = cleanLine(String(text ?? "")).trim();
+  return cleaned || String(text ?? "");
+}
+
+
 // ====== Past darajadagi API ======
 
 async function callApi(method: string, payload: Record<string, unknown>) {
@@ -48,7 +81,7 @@ export async function sendMessage(
 ) {
   return callApi("sendMessage", {
     chat_id: chatId,
-    text,
+    text: cleanBody(text),
     parse_mode: options?.parse_mode || "HTML",
     reply_markup: normalizeReplyMarkup(options?.reply_markup),
   });
@@ -57,9 +90,24 @@ export async function sendMessage(
 /**
  * Telegram `reply_markup` faqat obyektni qabul qiladi: { inline_keyboard: [...] }.
  * Massiv [[btn]] bo'lib kelsa — avtomatik o'raymiz (400 xatolikning oldini oladi).
+ * Tugma yozuvlaridagi bezak emoji lar ham shu yerda olib tashlanadi.
  */
 function normalizeReplyMarkup(markup: any): any {
-  if (Array.isArray(markup)) return { inline_keyboard: markup };
+  if (Array.isArray(markup)) {
+    return {
+      inline_keyboard: markup.map((row: any[]) =>
+        (row || []).map((b: any) => ({ ...b, text: cleanButtonLabel(b?.text) })),
+      ),
+    };
+  }
+  if (markup && Array.isArray(markup.inline_keyboard)) {
+    return {
+      ...markup,
+      inline_keyboard: markup.inline_keyboard.map((row: any[]) =>
+        (row || []).map((b: any) => ({ ...b, text: cleanButtonLabel(b?.text) })),
+      ),
+    };
+  }
   return markup ?? undefined;
 }
 
@@ -73,7 +121,7 @@ export async function sendPhoto(
   const form = new FormData();
   form.append("chat_id", String(chatId));
   form.append("photo", new Blob([photo], { type: "image/png" }), options?.filename || "natija.png");
-  form.append("caption", caption);
+  form.append("caption", cleanBody(caption));
   form.append("parse_mode", options?.parse_mode || "HTML");
   if (options?.reply_markup) {
     form.append("reply_markup", JSON.stringify(normalizeReplyMarkup(options.reply_markup)));
@@ -92,10 +140,47 @@ export async function sendDocument(
   return callApi("sendDocument", {
     chat_id: chatId,
     document: documentUrl,
-    caption,
+    caption: cleanBody(caption ?? ""),
     parse_mode: "HTML",
     reply_markup: normalizeReplyMarkup(options?.reply_markup),
   });
+}
+
+/** Havoladagi rasmni (masalan Liquid Glass ikonka) yuborish */
+export async function sendPhotoUrl(
+  chatId: number,
+  photoUrl: string,
+  caption?: string,
+  options?: { reply_markup?: any },
+) {
+  return callApi("sendPhoto", {
+    chat_id: chatId,
+    photo: photoUrl,
+    caption: caption ? cleanBody(caption) : undefined,
+    parse_mode: "HTML",
+    reply_markup: normalizeReplyMarkup(options?.reply_markup),
+  });
+}
+
+/** Rasm ostidagi yozuvni (caption) tahrirlash */
+export async function editMessageCaption(
+  chatId: number,
+  messageId: number,
+  caption: string,
+  buttons?: any,
+) {
+  return callApi("editMessageCaption", {
+    chat_id: chatId,
+    message_id: messageId,
+    caption: cleanBody(caption),
+    parse_mode: "HTML",
+    reply_markup: normalizeReplyMarkup(buttons),
+  });
+}
+
+/** Xabarni o'chirish (menyu yangilanganda eski xabar to'planmasligi uchun) */
+export async function deleteMessage(chatId: number, messageId: number) {
+  return callApi("deleteMessage", { chat_id: chatId, message_id: messageId });
 }
 
 export function sendInlineKeyboard(
@@ -115,7 +200,7 @@ export async function editMessageText(
   return callApi("editMessageText", {
     chat_id: chatId,
     message_id: messageId,
-    text,
+    text: cleanBody(text),
     parse_mode: options?.parse_mode || "HTML",
     reply_markup: normalizeReplyMarkup(options?.reply_markup),
   });
