@@ -829,18 +829,18 @@ function formatRequestTime(value: Date | string) {
   return `${pad(when.getDate())}.${pad(when.getMonth() + 1)}.${when.getFullYear()} ${pad(when.getHours())}:${pad(when.getMinutes())}`;
 }
 
-/** Testga kirishga ruxsat so'rovi С‚РђР¤ barcha bot obunachilariga yuboriladi */
+/** Testga kirishga ruxsat so'rovi barcha bot obunachilariga yuboriladi */
 export async function notifyTestAccessRequest(notice: TestAccessNotice) {
   const lines = [
-    "РЃРЇР¤Р¤ <b>Testga kirish uchun ruxsat so'rovi</b>",
+    "📋 <b>Testga kirish uchun ruxsat so'rovi</b>",
     "",
-    `РЃРЇРЎРґ <b>F.I.Sh:</b> ${escapeHtml(notice.fullName)}`,
-    notice.department ? `РЃРЇРџРІ <b>Bo'lim:</b> ${escapeHtml(notice.department)}` : "",
-    notice.position ? `РЃРЇРћРї <b>Lavozim:</b> ${escapeHtml(notice.position)}` : "",
-    notice.phone ? `РЃРЇРЈв–’ <b>Tel:</b> ${escapeHtml(notice.phone)}` : "",
-    notice.email ? `С‚Р¬Р™СЏв••Рџ <b>Email:</b> ${escapeHtml(notice.email)}` : "",
-    `РЃРЇРЈР­ <b>Test:</b> ${escapeHtml(notice.testTitle)}`,
-    `РЃРЇРҐРў <b>So'rov vaqti:</b> ${formatRequestTime(notice.requestedAt)}`,
+    `👤 <b>F.I.Sh:</b> ${escapeHtml(notice.fullName)}`,
+    notice.department ? `🏢 <b>Bo'lim:</b> ${escapeHtml(notice.department)}` : "",
+    notice.position ? `💼 <b>Lavozim:</b> ${escapeHtml(notice.position)}` : "",
+    notice.phone ? `📞 <b>Tel:</b> ${escapeHtml(notice.phone)}` : "",
+    notice.email ? `📧 <b>Email:</b> ${escapeHtml(notice.email)}` : "",
+    `📝 <b>Test:</b> ${escapeHtml(notice.testTitle)}`,
+    `🕐 <b>So'rov vaqti:</b> ${formatRequestTime(notice.requestedAt)}`,
     "",
     "Xodim testni boshlashni kutmoqda. Ruxsat bering yoki rad eting.",
   ]
@@ -849,8 +849,8 @@ export async function notifyTestAccessRequest(notice: TestAccessNotice) {
 
   const keyboard: InlineButton[][] = [
     [
-      { text: "С‚Р¬Р• Ruxsat berish", callback_data: `testacc_yes:${notice.requestId}` },
-      { text: "С‚Р­Рњ Rad etish", callback_data: `testacc_no:${notice.requestId}` },
+      { text: "✅ Ruxsat berish", callback_data: `testacc_yes:${notice.requestId}` },
+      { text: "❌ Rad etish", callback_data: `testacc_no:${notice.requestId}` },
     ],
   ];
 
@@ -861,7 +861,7 @@ export async function notifyTestAccessRequest(notice: TestAccessNotice) {
     return { ok: false, error: "no targets", messages: [] as { chatId: number; messageId: number }[] };
   }
 
-  // Hammasiga PARALLEL yuboriladi С‚РђР¤ bir vaqtda yetib boradi
+  // Hammasiga PARALLEL yuboriladi — bir vaqtda yetib boradi
   const results = await Promise.allSettled(
     targets.map((chatId) => sendMessage(Number(chatId), lines, { reply_markup: keyboard })),
   );
@@ -901,8 +901,8 @@ export async function settleTestAccessRequest(opts: {
           c.chatId,
           c.messageId,
           approved
-            ? `С‚Р¬Р• <b>Ruxsat berildi</b>\nРЃРЇРЎРґ ${escapeHtml(opts.fullName)}\nРЃРЇРЈР­ ${escapeHtml(opts.testTitle)}\n\nXodim testni boshlaydi.`
-            : `С‚Р­Рњ <b>Rad etildi</b>\nРЃРЇРЎРґ ${escapeHtml(opts.fullName)}\nРЃРЇРЈР­ ${escapeHtml(opts.testTitle)}\n\nXodimga ruxsat berilmadi.`,
+            ? `✅ <b>Ruxsat berildi</b>\n👤 ${escapeHtml(opts.fullName)}\n📝 ${escapeHtml(opts.testTitle)}\n\nXodim testni boshlaydi.`
+            : `❌ <b>Rad etildi</b>\n👤 ${escapeHtml(opts.fullName)}\n📝 ${escapeHtml(opts.testTitle)}\n\nXodimga ruxsat berilmadi.`,
           { parse_mode: "HTML", reply_markup: { inline_keyboard: [] } },
         ),
       ),
@@ -913,8 +913,8 @@ export async function settleTestAccessRequest(opts: {
   // 2) Hammaga bir xil natija
   const result = await broadcast({
     text: approved
-      ? `С‚Р¬Р• <b>Testga kirishga ruxsat berildi</b>\nРЃРЇРЎРґ ${escapeHtml(opts.fullName)}\nРЃРЇРЈР­ ${escapeHtml(opts.testTitle)}\n\nRuxsat beruvchi: HR / nazoratchi. Xodim testni boshlaydi.`
-      : `С‚Р­Рњ <b>Testga kirish rad etildi</b>\nРЃРЇРЎРґ ${escapeHtml(opts.fullName)}\nРЃРЇРЈР­ ${escapeHtml(opts.testTitle)}\n\nXodimga ruxsat berilmadi. Sabab: HR bilan bog'lanish.`,
+      ? `✅ <b>Testga kirishga ruxsat berildi</b>\n👤 ${escapeHtml(opts.fullName)}\n📝 ${escapeHtml(opts.testTitle)}\n\nRuxsat beruvchi: HR / nazoratchi. Xodim testni boshlaydi.`
+      : `❌ <b>Testga kirish rad etildi</b>\n👤 ${escapeHtml(opts.fullName)}\n📝 ${escapeHtml(opts.testTitle)}\n\nXodimga ruxsat berilmadi. Sabab: HR bilan bog'lanish.`,
   }).catch(() => ({ total: 0, sent: 0, failed: 0 }));
 
   return { cleared, ...result };

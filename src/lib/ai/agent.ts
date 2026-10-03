@@ -5,7 +5,7 @@
  * yakuniy javob. Model JSON protokol bilan ishlaydi, shuning uchun barcha
  * provayderlar (OpenAI, Anthropic, Gemini) bir xil ishlaydi.
  *
- * Model yo'q bo'lsa deterministik intent-router ishga tushadi РІР‚вЂќ chat o'chmaydi.
+ * Model yo'q bo'lsa deterministik intent-router ishga tushadi - chat o'chmaydi.
  */
 
 import { db } from "@/lib/db";
@@ -1104,7 +1104,7 @@ function emptyUsage() {
 
 /**
  * Kalit yo'q holat: so'z asosidagi niyatni aniqlab, tegishli vositani chaqiradi.
- * Bu to'liq o'rn bosmaydi РІР‚вЂќ lekin chat ishlashda davom etadi.
+ * Bu to'liq o'rn bosmaydi - lekin chat ishlashda davom etadi.
  */
 function deterministicPlan(input: AgentInput, ctx: ToolContext) {
   const text = input.message.toLowerCase();
