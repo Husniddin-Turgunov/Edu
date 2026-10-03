@@ -12,8 +12,9 @@ export async function GET(req: NextRequest) {
   const action = searchParams.get("action");
   const secret = searchParams.get("secret");
 
-  // Oddiy himoya
-  if (secret !== "akela-bot-secret-2024") {
+  // Oddiy himoya — sir kalit .env'dan o'qiladi
+  const expectedSecret = process.env.TELEGRAM_BOT_API_SECRET || "";
+  if (!expectedSecret || secret !== expectedSecret) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 

@@ -10,11 +10,22 @@
  */
 
 import { PrismaClient } from "@prisma/client";
+import { timingSafeEqual } from "node:crypto";
 import { levelForScore, renderResultCardPng } from "@/lib/result-card";
 
 const BOT_TOKEN =
   process.env.TELEGRAM_BOT_TOKEN || "8924345505:AAHc3WSg9CzhF_U-Eo5cJCSUo36ZNFVP8qg";
 const API_BASE = `https://api.telegram.org/bot${BOT_TOKEN}`;
+
+/**
+ * Webhook "secret token" — Telegram kelganda `X-Telegram-Bot-Api-Secret-Token`
+ * sarlavhasida yuboradi. `setWebhook` da ham shu qiymat beriladi.
+ *
+ * Nima uchun: `POST /api/telegram` `approve:<userId>` va `reject:<userId>`
+ * ni qayta ishlaydi. Secret bo'lmasa, butun internet soxta update yuborib
+ * xodimlarni tasdiqlay/rad eta oladi — bu jiddiy xavfsizlik teshigi.
+ */
+const WEBHOOK_SECRET = process.env.TELEGRAM_BOT_WEBHOOK_SECRET || "";
 
 /** Zaxira qabul qiluvchi: faqat obunachilar ro'yxati BO'SH bo'lganda ishlatiladi */
 const FALLBACK_CHAT_ID = Number(process.env.TELEGRAM_ADMIN_CHAT_ID || "0") || 0;
@@ -22,6 +33,18 @@ const FALLBACK_CHAT_ID = Number(process.env.TELEGRAM_ADMIN_CHAT_ID || "0") || 0;
 const prisma = new PrismaClient();
 
 export type InlineButton = { text: string; callback_data: string };
+
+/** Telegram caption chegarasi 1024 — biz xavfsiz chegara bilan 1000 ishlatamiz */
+const CAPTION_MAX = 1000;
+/** Telegram xabar chegarasi 4096 belgi — uzunroq bo'lsa 400 "message is too long" */
+const TEXT_MAX = 4000;
+
+/** Xabar matnini Telegram chegarasiga sig'idiradi (belgi, kod nuqtasi bilan). */
+function clipText(text: string, max = TEXT_MAX) {
+  const out = String(text ?? "");
+  if (out.length <= max) return out;
+  return `${out.slice(0, max - 40)}\n… (${out.length - max + 40} belgi qisqartirildi)`;
+}
 
 export function escapeHtml(value: unknown): string {
   return String(value ?? "")
@@ -81,7 +104,7 @@ export async function sendMessage(
 ) {
   return callApi("sendMessage", {
     chat_id: chatId,
-    text: cleanBody(text),
+    text: clipText(cleanBody(text)),
     parse_mode: options?.parse_mode || "HTML",
     reply_markup: normalizeReplyMarkup(options?.reply_markup),
   });
@@ -121,7 +144,7 @@ export async function sendPhoto(
   const form = new FormData();
   form.append("chat_id", String(chatId));
   form.append("photo", new Blob([photo], { type: "image/png" }), options?.filename || "natija.png");
-  form.append("caption", cleanBody(caption));
+  form.append("caption", clipText(cleanBody(caption), CAPTION_MAX));
   form.append("parse_mode", options?.parse_mode || "HTML");
   if (options?.reply_markup) {
     form.append("reply_markup", JSON.stringify(normalizeReplyMarkup(options.reply_markup)));
@@ -140,10 +163,45 @@ export async function sendDocument(
   return callApi("sendDocument", {
     chat_id: chatId,
     document: documentUrl,
-    caption: cleanBody(caption ?? ""),
+    caption: clipText(cleanBody(caption ?? ""), CAPTION_MAX),
     parse_mode: "HTML",
     reply_markup: normalizeReplyMarkup(options?.reply_markup),
   });
+}
+
+/**
+ * Tayyor PDF baytlarini multipart orqali yuborish.
+ *
+ * Nega shu yo'l: `sendDocument` havolani Telegram serveri yuklab oladi — demak
+ * hujjat umumiy (ochiq) URL bo'lishi kerak, admin sessiyasi esa ishlamaydi.
+ * Vercel'da esa shu URL bir kun qo'lda deploy qilinmasligi mumkin. Bu yo'l
+ * hujjatni shu yerda yig'ib, Telegram'ga to'g'ridan-to'g'ri beradi: URL ham,
+ * `getSession()` ham kerak bo'lmaydi.
+ */
+export async function sendDocumentBuffer(
+  chatId: number,
+  pdf: ArrayBuffer | Uint8Array,
+  filename: string,
+  caption?: string,
+  options?: { reply_markup?: any },
+) {
+  const bytes = pdf instanceof Uint8Array ? pdf : new Uint8Array(pdf);
+  const form = new FormData();
+  form.append("chat_id", String(chatId));
+  form.append(
+    "document",
+    new Blob([bytes as unknown as BlobPart], { type: "application/pdf" }),
+    filename || "hisobot.pdf",
+  );
+  if (caption) {
+    form.append("caption", cleanBody(caption).slice(0, CAPTION_MAX));
+    form.append("parse_mode", "HTML");
+  }
+  if (options?.reply_markup) {
+    form.append("reply_markup", JSON.stringify(normalizeReplyMarkup(options.reply_markup)));
+  }
+  const res = await fetch(`${API_BASE}/sendDocument`, { method: "POST", body: form });
+  return res.json().catch(() => ({ ok: false }));
 }
 
 /** Havoladagi rasmni (masalan Liquid Glass ikonka) yuborish */
@@ -156,7 +214,7 @@ export async function sendPhotoUrl(
   return callApi("sendPhoto", {
     chat_id: chatId,
     photo: photoUrl,
-    caption: caption ? cleanBody(caption) : undefined,
+    caption: caption ? clipText(cleanBody(caption), CAPTION_MAX) : undefined,
     parse_mode: "HTML",
     reply_markup: normalizeReplyMarkup(options?.reply_markup),
   });
@@ -276,9 +334,30 @@ export async function getWebhookInfo() {
 export async function setWebhook(webhookUrl: string) {
   return callApi("setWebhook", {
     url: webhookUrl,
-    allowed_updates: ["message", "callback_query"],
-    drop_pending_updates: true,
+    allowed_updates: ["message", "callback_query", "edited_message"],
+    drop_pending_updates: false,
+    // Telegram 6.6+ "secret token": kelganda `X-Telegram-Bot-Api-Secret-Token`
+    // sarlavhasida yuboriladi. Biz shuni tekshiramiz — aks holda kimdir ham
+    // soxta update yuborib `approve:<id>` orqali foydalanuvchini tasdiqlay oladi.
+    ...(WEBHOOK_SECRET ? { secret_token: WEBHOOK_SECRET } : {}),
   });
+}
+
+/**
+ * Webhook so'rovi haqiqatan Telegram'dan kelganmi tekshirish.
+ *
+ * `strict: false` — secret sozlanmagan (eski holat). U holda ogohlantirib
+ * o'tkazamiz, lekin ishni to'xtatmaymiz: aks holda prod'da bot butunlay
+ * o'chib qolardi.
+ */
+export function verifyWebhookSecret(headerValue: string | null): { ok: boolean; strict: boolean } {
+  if (!WEBHOOK_SECRET) return { ok: true, strict: false };
+  const given = String(headerValue || "");
+  // Doimiy vaqtli taqqoslash: uzunlik va `timingSafeEqual`.
+  const a = Buffer.from(given);
+  const b = Buffer.from(WEBHOOK_SECRET);
+  const ok = a.length === b.length && a.length > 0 && timingSafeEqual(a, b);
+  return { ok, strict: true };
 }
 
 export async function deleteWebhook() {
@@ -334,6 +413,98 @@ export async function subscriberCount(): Promise<number> {
   }
 }
 
+// ====== Parol tiklash xabari ======
+
+/**
+ * Admin foydalanuvchining parolini tiklaganda xabar yuboradi.
+ * Telegram ID bog'langan bo'lsa — unga, aks holda — bot obunachilariga.
+ * `secret` — true bo'lsa, parol matni umuman yuborilmaydi (faqat "yo'qlandi").
+ */
+export async function notifyPasswordReset(input: {
+  fullName: string;
+  email: string;
+  password?: string | null;
+  telegramId?: string | null;
+  secret?: boolean;
+}): Promise<boolean> {
+  const login = `https://akela.uz/login`;
+  const lines = [
+    "<b>Parol tiklandi</b>",
+    `F.I.Sh: ${escapeHtml(input.fullName)}`,
+    `Login: ${escapeHtml(input.email)}`,
+  ];
+
+  if (input.password && !input.secret) {
+    lines.push(`Yangi parol: <code>${escapeHtml(input.password)}</code>`);
+    lines.push("Iltimos, kirgandan keyin parolni darhol o'zgartiring.");
+  } else {
+    lines.push("Parol xabar qilinmadi — akela.uz orqali kirib, «parolni tiklash»dan foydalaning.");
+  }
+  lines.push(`<a href="${login}">Saytga kirish →</a>`);
+
+  const text = lines.join("\n");
+
+  // 1) Foydalanuvchining o'z Telegram hisobi
+  if (input.telegramId && /^-?\d+$/.test(String(input.telegramId))) {
+    try {
+      const res = await sendMessage(Number(input.telegramId), text);
+      if (res && res.ok !== false) return true;
+    } catch {
+      /* keyingi yo'lni sinab ko'ramiz */
+    }
+  }
+
+  // 2) Bot obunachilari (parol sir qilib yuborilmaydi)
+  const ids = await getSubscriberIds();
+  let sent = 0;
+  for (const id of ids) {
+    try {
+      const res = await sendMessage(Number(id), text);
+      if (res && res.ok !== false) sent++;
+    } catch {
+      /* o'tkazib ketamiz */
+    }
+  }
+  return sent > 0;
+}
+
+// ====== Bot ichki xatolarini ko'rsatish ======
+
+let adminErrorWarned = false;
+
+/**
+ * Bot ichida xato bo'lsa — admin chat'ga BIR marta xabar yuboriladi.
+ *
+ * Nima uchun: webhook har qanday holatda ham 200 qaytaradi (Telegram qayta
+ * urinmasligi uchun), ya'ni xato faqat server logida ko'rinadi va prod'da
+ * butunlay yo'qoladi. Foydalanuvchi esa "bot javob bermayapti" deydi va
+ * sababini topolmaydi. Shu yerdan xato ko'rinadigan bo'ladi.
+ */
+export async function notifyAdminError(where: string, error: unknown) {
+  const message = String((error as any)?.message || error || "noma'lum xato").slice(0, 600);
+  console.error(`[telegram] ${where}: ${message}`);
+  if (!FALLBACK_CHAT_ID || adminErrorWarned) return false;
+  adminErrorWarned = true;
+  try {
+    await sendMessage(
+      FALLBACK_CHAT_ID,
+      [
+        "⛔ <b>Bot xatosi</b>",
+        "",
+        `📍 <b>Joy:</b> ${escapeHtml(where)}`,
+        `🔎 <b>Xato:</b> ${escapeHtml(message)}`,
+      ].join("\n"),
+    );
+  } catch {
+    /* yana urinish shart emas */
+  }
+  // Keyingi xatolar uchun ogohlantirishni qayta yoqish (1 daqiqadan keyin)
+  setTimeout(() => {
+    adminErrorWarned = false;
+  }, 60_000);
+  return true;
+}
+
 // ====== Hammaga bir xil xabar yuborish ======
 
 export type BroadcastPayload = {
@@ -344,10 +515,36 @@ export type BroadcastPayload = {
   buttons?: InlineButton[][];
 };
 
+/**
+ * Obunachini o'chirish kerakmi?
+ *
+ * Nega sezilarli: 400 xatosi har doim "obunachi o'ldi" degani EMAS. U ham
+ * "message is too long", "can't parse entities", "photo_url_invalid" uchun ham
+ * keladi. Eski kod har qanday 400 da obunachini o'chirar edi — ya'ni bitta
+ * uzun xabar butun ro'yxatni yo'q qilardi. Endi faqat aniq "bu chat hamashu
+ * yo'q/bloklangan" deydigan holatlar bekor qilinadi.
+ */
+export function shouldUnsubscribe(res: any): boolean {
+  if (!res || res.ok !== false) return false;
+  const code = Number(res.error_code || 0);
+  const desc = String(res.description || "").toLowerCase();
+  if (code === 403) return true; // bot bloklandi / foydalanuvchi chiqarib yubordi
+  if (code !== 400) return false;
+  return (
+    /chat not found/.test(desc) ||
+    /bot was kicked/.test(desc) ||
+    /bot was blocked/.test(desc) ||
+    /bot can't initiate/.test(desc) ||
+    /user is deactivated/.test(desc) ||
+    /bot can't send messages to non-private/.test(desc)
+  );
+}
+
 export async function broadcast(payload: BroadcastPayload) {
   const ids = await getSubscriberIds();
   let sent = 0;
   let failed = 0;
+  let unsubscribed = 0;
 
   for (const id of ids) {
     const chatId = Number(id);
@@ -362,8 +559,8 @@ export async function broadcast(payload: BroadcastPayload) {
 
       if (res && res.ok === false) {
         failed++;
-        // 403 — bot bloklangan, 400 — chat topilmadi: obunachini o'chiramiz
-        if (res.error_code === 403 || res.error_code === 400) {
+        if (shouldUnsubscribe(res)) {
+          unsubscribed++;
           await prisma.botSubscriber
             .updateMany({ where: { chatId: id }, data: { isActive: false } })
             .catch(() => {});
@@ -376,8 +573,10 @@ export async function broadcast(payload: BroadcastPayload) {
     }
   }
 
-  console.log(`📣 Telegram: ${sent}/${ids.length} ga yuborildi (${failed} xato)`);
-  return { total: ids.length, sent, failed };
+  console.log(
+    `📣 Telegram: ${sent}/${ids.length} ga yuborildi (${failed} xato, ${unsubscribed} obunachi o'chirildi)`,
+  );
+  return { total: ids.length, sent, failed, unsubscribed };
 }
 
 // ====== Yangi foydalanuvchi (ruxsat / rad etish tugmalari bilan) ======
@@ -491,5 +690,59 @@ export async function notifyTestResult(result: TestResultNotice) {
 
 /** Eski nom bilan moslik uchun */
 export const notifyAdminTestResult = notifyTestResult;
+
+// ====== Xavfsizlik hodisalari ======
+
+export type SecurityAlert = {
+  type: string;
+  severity?: "info" | "warn" | "critical";
+  fullName?: string | null;
+  email?: string | null;
+  department?: string | null;
+  userId?: string | null;
+  reason?: string | null;
+  ip?: string | null;
+  path?: string | null;
+  detail?: string | null;
+  blocked?: boolean;
+};
+
+const SEVERITY_ICON: Record<string, string> = { info: "ℹ️", warn: "⚠️", critical: "🔴" };
+
+/**
+ * Xavfsizlik hodisasi (konsol/DevTools, ruxsat buzish, avtomatik bloklash).
+ * Bot obunachilariga — shu jumladan adminlarga — bir xil yuboriladi.
+ */
+export async function notifySecurityAlert(alert: SecurityAlert) {
+  const severity = alert.severity || "warn";
+  const icon = SEVERITY_ICON[severity] || "⚠️";
+  const lines = [
+    `${icon} <b>XAVFSIZLIK XABARI</b>`,
+    "",
+    `🚨 <b>Hodisa:</b> ${escapeHtml(alert.type)}`,
+  ];
+  if (alert.fullName || alert.email) {
+    lines.push(`👤 <b>F.I.Sh:</b> ${escapeHtml(alert.fullName || "—")}`);
+    lines.push(`📧 ${escapeHtml(alert.email || "yo'q")}`);
+  }
+  if (alert.department) lines.push(`🏢 <b>Bo'lim:</b> ${escapeHtml(alert.department)}`);
+  if (alert.reason) lines.push(`📝 <b>Sabab:</b> ${escapeHtml(alert.reason)}`);
+  if (alert.ip) lines.push(`🌐 <b>IP:</b> ${escapeHtml(alert.ip)}`);
+  if (alert.path) lines.push(`🔗 <b>Sahifa:</b> ${escapeHtml(alert.path)}`);
+  if (alert.detail) lines.push(`🧾 ${escapeHtml(String(alert.detail).slice(0, 400))}`);
+  lines.push(
+    "",
+    alert.blocked
+      ? "⛔ <b>Foydalanuvchi AVTOMATIK BLOKLANDI.</b> Admin panelda qo'lda blokdan chiqarish kerak."
+      : "ℹ️ Holatni admin panelida tekshiring.",
+  );
+
+  const result = await broadcast({ text: lines.join("\n") });
+  console.log(
+    `[telegram] security alert: ${alert.type} -> ${result.sent}/${result.total} (blocked=${!!alert.blocked})`,
+  );
+  return result;
+}
+
 
 

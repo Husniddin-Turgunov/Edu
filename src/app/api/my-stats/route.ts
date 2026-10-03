@@ -26,7 +26,7 @@ export async function GET() {
     const userId = String(session.userId);
 
     const [course, jobs] = await Promise.all([
-      onboardingStorage.getCourse().catch(() => null),
+      onboardingStorage.getCourseForUser(userId).catch(() => null),
       jobStorage.ensureSeedFromJson().then(() => jobStorage.getAllJobs()).catch(() => [] as any[]),
     ]);
     const lessons: any[] = ((course as any)?.modules || []).flatMap((m: any) =>

@@ -58,6 +58,10 @@ model User {
   resetToken    String?  @unique
   resetExpires  DateTime?
   telegramId    String?  @unique // Telegram bot foydalanuvchi ID si
+  /// Xavfsizlik: konsol/DevTools aniqlanganda bloklanganmi
+  blockedAt     DateTime?
+  blockedReason String?  @db.VarChar(191)
+  securityNotes Int      @default(0)
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 
@@ -66,6 +70,14 @@ model User {
   jobDayProgress  JobDayProgress[]
   testResults     TestResult[]
   jobTestResults  JobTestResult[]
+
+  aiConversations AiConversation[]
+  aiAttachments   AiAttachment[]
+  aiDrafts        AiDraft[]
+  aiUsage         AiUsage[]
+  aiFiles         AiFile[]
+  aiArtifacts     AiArtifact[]
+  securityEvents  SecurityEvent[]
 }
 
 // ====== Telegram bot obunachilari ======
@@ -423,4 +435,230 @@ model JobDayProgress {
   @@unique([userId, jobDayId])
   @@index([userId])
   @@index([jobDayId])
+}
+
+// ============================================================================
+//  AI BOSHQARUVCHI (AI Assistant) — test yaratish, boshqarish, analitika
+// ============================================================================
+
+/// Chat oynasi. Har bir admin/session bitta suhbat yuritadi.
+model AiConversation {
+  id          String   @id @default(cuid())
+  userId      String
+  title       String   @default("Yangi suhbat") @db.Text
+  mode        String   @default("source") // source | web | auto
+  messageCount Int     @default(0)
+  /// Sessiya kuni (YYYY-MM-DD). Kunlik sessiya 07:00 da yangilanadi:
+  /// 07:00 -> keyingi kuni 06:59 oralig'i bitta "sessiya kuni" hisoblanadi.
+  dayKey      String   @default("")
+  /// open | closed  — 07:00 da eskisi yopiladi, yangisi ochiladi
+  status      String   @default("open")
+  /// Kunlik xotira: bugungi suhbatda muhokama qilinganlarning qisqa xulosa
+  memory      String   @default("") @db.LongText
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  user        User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  messages    AiMessage[]
+
+  @@index([userId])
+  @@index([updatedAt])
+  @@index([userId, dayKey])
+}
+
+/// Chat xabarlari (foydalanuvchi / yordamchi / tizim).
+model AiMessage {
+  id             String   @id @default(cuid())
+  conversationId String
+  role           String   // user | assistant | tool
+  content        String   @default("") @db.LongText
+  /// Model qaysi vositalarni chaqirgani va natijalari (JSON)
+  actions        String?  @db.LongText
+  error          String?  @db.Text
+  promptTokens   Int      @default(0)
+  completionTokens Int    @default(0)
+  latencyMs      Int      @default(0)
+  createdAt      DateTime @default(now())
+
+  conversation   AiConversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+
+  @@index([conversationId])
+  @@index([createdAt])
+}
+
+/// Yuklangan manba fayllar (PDF/DOCX/XLSX/TXT/MD/CSV) va ularning matni.
+model AiAttachment {
+  id            String   @id @default(cuid())
+  ownerId       String
+  fileName      String   @db.Text
+  mimeType      String   @default("")
+  size          Int      @default(0)
+  storagePath   String   @default("") @db.Text
+  extractedText String   @default("") @db.LongText
+  charCount     Int      @default(0)
+  wordCount     Int      @default(0)
+  pageCount     Int      @default(0)
+  parser        String   @default("")
+  status        String   @default("ready") // ready | error
+  error         String?  @db.Text
+  createdAt     DateTime @default(now())
+
+  owner         User     @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+
+  @@index([ownerId])
+  @@index([createdAt])
+}
+
+model AiFile {
+  id            String   @id @default(cuid())
+  ownerId       String
+  kind          String   @default("excel") // excel | word | pdf
+  fileName      String   @db.Text
+  mimeType      String   @default("")
+  size          Int      @default(0)
+  storagePath   String   @default("") @db.Text
+  title         String   @default("") @db.Text
+  specSummary   String   @default("") @db.Text
+  downloadCount Int      @default(0)
+  expiresAt     DateTime?
+  createdAt     DateTime @default(now())
+
+  owner         User     @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+
+  @@index([ownerId])
+  @@index([createdAt])
+}
+
+/// Faza 4: AI tomonidan qurilgan vizual artifact (dashboard / kod ko'rinishi).
+/// HTML bazada saqlanadi va `sandbox` iframe'da, skriptsiz, faqat o'quvchi
+/// rejimda ko'rsatiladi (`/api/ai/artifacts/[id]`).
+model AiArtifact {
+  id             String   @id @default(cuid())
+  ownerId        String
+  conversationId String?
+  /// dashboard | code | html
+  kind           String   @default("dashboard")
+  title          String   @default("") @db.Text
+  /// Ko'rsatish uchun tayyor HTML (barcha ma'lumot escape qilingan)
+  html           String   @db.LongText
+  /// Kod artifactlari uchun manba kod (Ko'rinish/Kod tab uchun)
+  source         String   @default("") @db.LongText
+  viewCount      Int      @default(0)
+  expiresAt      DateTime?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  owner          User     @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+
+  @@index([ownerId])
+  @@index([createdAt])
+}
+
+/// AI tomonidan tayyorlangan, hali tasdiqlanmagan test qoralamasi.
+model AiDraft {
+  id          String   @id @default(cuid())
+  ownerId     String
+  title       String   @db.Text
+  topic       String   @default("") @db.Text
+  /// source (faqat fayllardan) | web (internetdan) | hybrid
+  sourceMode  String   @default("source")
+  /// draft | approved | applied | rejected
+  status      String   @default("draft")
+  /// Test sozlamalari + savollar (JSON)
+  payload     String   @db.LongText
+  /// Qaysi fayllardan foydalandi (attachment id lar)
+  sourceIds   String   @default("[]") @db.Text
+  sourceNotes String   @default("") @db.LongText
+  webRefs     String   @default("[]") @db.Text
+  testId      String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  owner       User     @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+
+  @@index([ownerId])
+  @@index([status])
+}
+
+/// Kunlik kvota / narx hisobi (rate limit + cost estimate).
+model AiUsage {
+  id               String   @id @default(cuid())
+  userId           String
+  day              String   // YYYY-MM-DD
+  requests         Int      @default(0)
+  promptTokens     Int      @default(0)
+  completionTokens Int      @default(0)
+  estimatedCost    Float    @default(0)
+  updatedAt        DateTime @updatedAt
+
+  user             User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, day])
+  @@index([day])
+}
+
+/// Har bir o'zgarish kim, qachon, nima qilgani — audit izi.
+model AiAuditLog {
+  id           String   @id @default(cuid())
+  actorId      String?
+  actorEmail   String   @default("")
+  actorRole    String   @default("")
+  action       String   @db.VarChar(191)
+  resourceType String   @default("")
+  resourceId   String   @default("")
+  args         String   @default("") @db.LongText
+  outcome      String   @default("ok") // ok | error | denied
+  detail       String   @default("") @db.Text
+  source       String   @default("chat") // chat | capability | api
+  createdAt    DateTime @default(now())
+
+  @@index([actorId])
+  @@index([createdAt])
+  @@index([action])
+}
+
+/// Kengaytirilgan ko'rinish va ruxsat qoidalari.
+/// "Shu foydalanuvchiga shu dars/test ko'rinmasin", "shuni qayta topshirishga
+/// ruxsat ber" — bular shu jadval orqali boshqariladi.
+model AccessRule {
+  id            String   @id @default(cuid())
+  subjectType   String   @db.VarChar(32) // user | department | position | role
+  subjectValue  String   @db.VarChar(191)
+  resourceType  String   // lesson | test | course | module | video | job
+  resourceId    String
+  effect        String   @default("allow") // allow | deny
+  /// Test uchun: qayta topshirishga ruxsat
+  allowRetake   Boolean  @default(false)
+  /// Test uchun: foydalanuvchiga beriladigan urinishlar soni (null = test defaulti)
+  maxAttempts   Int?
+  reason        String?  @db.Text
+  createdBy     String?  @db.Text
+  createdByName String?  @db.Text
+  expiresAt     DateTime?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@unique([subjectType, subjectValue, resourceType, resourceId])
+  @@index([resourceType, resourceId])
+  @@index([subjectType, subjectValue])
+}
+
+/// Xavfsizlik hodisalari — konsol/DevTools, ruxsat buzish, bloklash.
+/// Klient hech narsani ishonchli deb hisoblanmaydi: `userId` serverda sessiya
+/// dan olinadi, `type` esa server belgilaydi.
+model SecurityEvent {
+  id        String   @id @default(cuid())
+  userId    String?
+  user      User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  type      String   @db.VarChar(48) // devtools_open | devtools_closed | console_attempt | auto_blocked | gate_denied | ...
+  severity  String   @default("info") @db.VarChar(16) // info | warn | critical
+  ip        String?  @db.VarChar(64)
+  userAgent String?  @db.VarChar(400)
+  path      String?  @db.VarChar(255)
+  detail    String?  @db.Text
+  createdAt DateTime @default(now())
+
+  @@index([userId, createdAt])
+  @@index([type, createdAt])
+  @@index([createdAt])
 }

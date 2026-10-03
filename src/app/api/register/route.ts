@@ -6,6 +6,9 @@ import { isHiddenAdminEmail } from "@/lib/hidden-admin";
 import { notifyNewUser } from "@/lib/telegram-bot";
 
 export const dynamic = "force-dynamic";
+export const runtime = "nodejs";
+// Telegram xabari + (ihtiyoriy) rasm renderi uchun yetarli vaqt
+export const maxDuration = 60;
 
 const prisma = new PrismaClient();
 
@@ -52,17 +55,26 @@ export async function POST(req: Request) {
     });
 
     // Telegram bot: botga ulangan BARCHA foydalanuvchilarga xabar (ruxsat/rad
-    // etish tugmalari bilan). Xatoni e'tiborsiz qoldiramiz.
-    notifyNewUser({
-      id: user.id,
-      name,
-      surname,
-      email,
-      department,
-      position,
-    }).catch((err) => {
+    // etish tugmalari bilan).
+    //
+    // DIQQAT: avval `notifyNewUser(...).catch()` — ya'ni "otib yuborib" qo'yilgan
+    // edi. Vercel serverless'da response qaytarilgach funksiya muzlatiladi yoki
+    // o'chiriladi, shuning uchun kutilmagan Telegram so'rovi hech qachon
+    // tugamaydi — xabar butunlay yo'qoladi. Shu sababli `await` qilamiz va
+    // `maxDuration` ni oshiramiz (render + broadcast haqiqiy vaqt oladi).
+    try {
+      await notifyNewUser({
+        id: user.id,
+        name,
+        surname,
+        email,
+        department,
+        position,
+      });
+    } catch (err: any) {
+      // Bot ishlamasa ham ro'yxatdan o'tish to'xtamasin.
       console.error("❌ Telegram xabar yuborilmadi:", err?.message || err);
-    });
+    }
 
     return NextResponse.json({
       ok: true,

@@ -1,4 +1,4 @@
-// lib/onboarding-storage.ts
+﻿// lib/onboarding-storage.ts
 import { db as prisma } from "./db";
 
 export const ONBOARDING_COURSE_TITLE = "Akela Onboarding";
@@ -18,6 +18,62 @@ export const onboardingStorage = {
     });
   },
 
+  /**
+   * Foydalanuvchiga ko'ra filtrlangan kurs.
+   * "Shu xodimga shu darslik ko'rinmasin" вЂ” AccessRule (DENY) shu yerda
+   * qo'llaniladi. Kursni ko'rmasligi kerak bo'lsa (course DENY) null qaytaradi.
+   */
+  async getCourseForUser(userId: string | null | undefined) {
+    const course: any = await this.getCourse();
+    if (!course) return null;
+
+    const isAdmin = await isPrivileged(userId);
+    if (isAdmin) return course;
+    if (!userId) return course;
+
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { id: true, department: true, position: true, role: true },
+    });
+    if (!user) return course;
+
+    const rules = await prisma.accessRule.findMany({
+      where: {
+        resourceType: { in: ["lesson", "course", "module"] },
+        OR: [
+          { subjectType: "user", subjectValue: user.id },
+          { subjectType: "department", subjectValue: user.department || "__none__" },
+          { subjectType: "position", subjectValue: user.position || "__none__" },
+          { subjectType: "role", subjectValue: user.role },
+        ],
+      },
+      select: { subjectType: true, effect: true, resourceType: true, resourceId: true, expiresAt: true },
+    });
+
+    const now = Date.now();
+    const active = rules.filter((r) => !r.expiresAt || r.expiresAt.getTime() > now);
+    const hasDeny = (type: string, id: string) =>
+      active.some((r) => r.resourceType === type && r.resourceId === id && r.effect === "deny");
+
+    if (hasDeny("course", course.id)) return null;
+    if (hasDeny("module", "__all__")) return null;
+
+    const hiddenLessons = new Set(
+      active.filter((r) => r.resourceType === "lesson" && r.effect === "deny").map((r) => r.resourceId),
+    );
+
+    return {
+      ...course,
+      modules: (course.modules || []).map((module: any) => {
+        if (hasDeny("module", module.id)) return null;
+        return {
+          ...module,
+          lessons: (module.lessons || []).filter((l: any) => !hiddenLessons.has(String(l.id))),
+        };
+      }).filter(Boolean),
+    };
+  },
+
   async ensureCourse(authorId: string) {
     const existing = await prisma.course.findFirst({
       where: { title: ONBOARDING_COURSE_TITLE },
@@ -27,7 +83,7 @@ export const onboardingStorage = {
       data: {
         title: ONBOARDING_COURSE_TITLE,
         description:
-          "Yangi xodimlar uchun AKELA GROUP MACHINERY bilan tanishtiruv — tarix, qoidalar, tuzilma, tijorat sirlari.",
+          "Yangi xodimlar uchun AKELA GROUP MACHINERY bilan tanishtiruv вЂ” tarix, qoidalar, tuzilma, tijorat sirlari.",
         language: "uz",
         coverColor: "from-indigo-500 to-teal-600",
         status: "active",
@@ -118,3 +174,13 @@ export const onboardingStorage = {
     return prisma.lesson.findUnique({ where: { id } });
   },
 };
+
+/** Admin yoki grader — ular uchun ko'rinish qoidalari qo'llanilmaydi. */
+async function isPrivileged(userId: string | null | undefined) {
+  if (!userId) return false;
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { role: true },
+  });
+  return user?.role === "admin" || user?.role === "grader";
+}

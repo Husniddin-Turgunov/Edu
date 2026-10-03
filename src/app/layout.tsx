@@ -5,6 +5,8 @@ import { Toaster } from "@/components/ui/toaster";
 import AuthProvider from "./providers";
 import { LiquidBackground } from "@/components/akela/LiquidBackground";
 import { GradingFAB } from "@/components/GradingFAB";
+import { AiWidgetGate } from "@/components/akela/AiWidgetGate";
+import ConsoleGuard from "@/components/akela/ConsoleGuard";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -62,7 +64,13 @@ export default function RootLayout({
         <AuthProvider>
           {children}
           <GradingFAB />
+          {/* AI yordamchisi — faqat admin/grader uchun (serverda tekshiriladi) */}
+          <AiWidgetGate />
           <Toaster />
+          {/* Konsol/DevTools qatlami — faqat ishlab chiqarish muhitida.
+              Asl himoya serverda: `getSession()` bazadagi status ni har
+              so'rovda tekshiradi, shu sabab bu qatlam faqat tez qaror. */}
+          <ConsoleGuard enabled={process.env.NODE_ENV === "production"} />
         </AuthProvider>
       </body>
     </html>

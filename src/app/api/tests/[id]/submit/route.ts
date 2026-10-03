@@ -34,34 +34,44 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
       const fullName = [user?.surname, user?.name].filter(Boolean).join(" ") || "Noma'lum";
 
       if (result.score !== null) {
-        notifyTestResult({
-          fullName,
-          testTitle: test?.title || "Noma'lum test",
-          score: result.score,
-          passed: !!result.passed,
-          passScore: test?.passScore ?? null,
-          department: user?.department ?? null,
-          position: user?.position ?? null,
-          completedAt: result.completedAt ?? new Date(),
-          level: levelForScore(result.score),
-          origin: new URL(req.url).origin,
-        }).catch((err: any) => {
+        // DIQQAT: `await` majburiy. Serverless'da "otib yuborib qo'yish"
+        // (`.catch()` siz await qilmasdan) — response qaytarilgach funksiya
+        // muzlatiladi va Telegram so'rovi tugamaydi, ya'ni natija hech qachon
+        // yetib borMAYdi.
+        try {
+          await notifyTestResult({
+            fullName,
+            testTitle: test?.title || "Noma'lum test",
+            score: result.score,
+            passed: !!result.passed,
+            passScore: test?.passScore ?? null,
+            department: user?.department ?? null,
+            position: user?.position ?? null,
+            completedAt: result.completedAt ?? new Date(),
+            level: levelForScore(result.score),
+            origin: new URL(req.url).origin,
+          });
+        } catch (err: any) {
           console.error("❌ Telegram natija xabari yuborilmadi:", err?.message || err);
-        });
+        }
       } else {
         // Yozma savolli test — avtomatik ball yo'q, grader baholashini kutadi
-        notifyTestResult({
-          fullName,
-          testTitle: test?.title || "Noma'lum test",
-          score: null,
-          passed: false,
-          passScore: test?.passScore ?? null,
-          department: user?.department ?? null,
-          position: user?.position ?? null,
-          completedAt: new Date(),
-          level: "Baholanmagan",
-          origin: new URL(req.url).origin,
-        }).catch(() => {});
+        try {
+          await notifyTestResult({
+            fullName,
+            testTitle: test?.title || "Noma'lum test",
+            score: null,
+            passed: false,
+            passScore: test?.passScore ?? null,
+            department: user?.department ?? null,
+            position: user?.position ?? null,
+            completedAt: new Date(),
+            level: "Baholanmagan",
+            origin: new URL(req.url).origin,
+          });
+        } catch (err: any) {
+          console.error("❌ Telegram natija xabari yuborilmadi:", err?.message || err);
+        }
       }
 
       return NextResponse.json({ ok: true, result });

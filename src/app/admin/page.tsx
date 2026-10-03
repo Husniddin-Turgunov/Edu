@@ -223,7 +223,7 @@ export default function AdminPage() {
       department: u.department || "",
       position: u.position || "",
       role: u.role === "admin" ? "admin" : "user",
-      status: (u.status === "approved" || u.status === "pending" || u.status === "rejected") ? u.status : "approved",
+      status: (u.status === "approved" || u.status === "pending" || u.status === "rejected" || u.status === "blocked") ? u.status : "approved",
       isActive: u.isActive !== false,
       password: "",
     });
@@ -1063,9 +1063,11 @@ export default function AdminPage() {
                 <div>
                   <label className="block text-xs font-bold text-[color:var(--emerald-deep)] mb-1">Holat</label>
                   <select value={editForm.status} onChange={(e) => setEditForm({ ...editForm, status: e.target.value })} className="w-full rounded-xl glass-card px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-amber-400 bg-white">
-                    <option value="approved">Tasdiqlangan</option>
-                    <option value="pending">Kutilayotgan</option>
-                    <option value="rejected">Rad etilgan</option>
+<option value="approved">Tasdiqlangan</option>
+                <option value="pending">Kutilayotgan</option>
+                <option value="rejected">Rad etilgan</option>
+                {/* Xavfsizlik: konsol/DevTools aniqlanganda bot avtomatik shu holatga o'tkazadi */}
+                <option value="blocked">Bloklangan (konsol)</option>
                   </select>
                 </div>
                 <div className="sm:col-span-2">

@@ -1,6 +1,7 @@
 import "server-only";
 import { cookies } from "next/headers";
 import { getServerSession } from "next-auth";
+import { PrismaClient } from "@prisma/client";
 import {
   encodeSessionToken,
   parseSessionToken,
@@ -24,6 +25,11 @@ export {
   verifyPassword,
 } from "./auth-core";
 
+// Bitta Prisma client — serverless'da har so'rovda yangi ulanish ochmasligi uchun.
+const globalForPrisma = globalThis as unknown as { __akelaAuthDb?: PrismaClient };
+const prisma: PrismaClient = globalForPrisma.__akelaAuthDb ?? new PrismaClient();
+if (process.env.NODE_ENV !== "production") globalForPrisma.__akelaAuthDb = prisma;
+
 export async function setSession(user: SessionUser) {
   const days = 7;
   const token = encodeSessionToken(user, days);
@@ -46,9 +52,11 @@ export async function clearSession() {
   jar.delete(SESSION_COOKIE);
 }
 
-// Universal session resolver: NextAuth + custom akela_session
-// Returns object with both userId (string) and original fields
-export async function getSession(): Promise<(Omit<SessionUser, "userId"> & { userId: string; isAdmin: boolean }) | null> {
+/** Cookie yoki NextAuth JWT dan foydalanuvchi identifikatorini o'qiydi —
+ *  baza bilan bog'lanmaydi. Faqat ichki ishlatish uchun. */
+async function resolveSessionRaw(): Promise<
+  (Omit<SessionUser, "userId"> & { userId: string; isAdmin: boolean }) | null
+> {
   const jar = await cookies();
 
   // 1) Avval custom akela_session cookie'ni tekshiramiz
@@ -87,4 +95,93 @@ export async function getSession(): Promise<(Omit<SessionUser, "userId"> & { use
   // Faqat: (1) imzolangan akela_session, (2) NextAuth sessiyasi (authOptions bilan).
 
   return null;
+}
+
+/**
+ * Foydalanuvchining BAZADAGI joriy holati.
+ *
+ * `pending` — tasdiqlash kutilmoqda, `rejected` — rad etilgan,
+ * `blocked` — bot/admin tomonidan bloklangan.
+ */
+export type UserGate = { status: string; isActive: boolean; role: string } | null;
+
+/**
+ * Ruxsat darazasi — sessiya har doim bazadagi holat bilan tekshiriladi.
+ *
+ * Nega shunday: JWT cookie 7–30 kun yashaydi. Ilgari ruxsat faqat LOGIN
+ * paytida tekshirilardi, ya'ni admin foydalanuvchini rad etsa yoki bloklasa,
+ * uning eski cookie'si bilan u dashboard va testlarga kirishda davom etardi.
+ * Endi har bir so'rovda `status === "approved"` tekshiriladi — bloklash
+ * darhol kuchga kiradi.
+ */
+async function verifyGate(userId: string): Promise<UserGate> {
+  try {
+    const row = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { status: true, isActive: true, role: true },
+    });
+    if (!row) return null;
+    return { status: row.status, isActive: row.isActive !== false, role: row.role };
+  } catch (e: any) {
+    // Bazaga ulanib bo'lmasa — xavfsizlik uchun "yo'q" deymiz (fail-closed).
+    console.error("[auth] holat tekshiruvida xato, foydalanuvchi rad etildi:", e?.message || e);
+    return null;
+  }
+}
+
+/** Ruxsat berilgan foydalanuvchilar uchun yagona ruxsat chegarasi. */
+export function isGateOpen(gate: UserGate): boolean {
+  return !!gate && gate.status === "approved" && gate.isActive;
+}
+
+/** Bazadagi aniq sabab asosida qisqa xabar (login/register oynasi uchun). */
+export function gateReason(gate: UserGate): string | null {
+  if (!gate) return "Foydalanuvchi topilmadi";
+  if (gate.status === "pending") return "Tasdiqlash kutilmoqda";
+  if (gate.status === "rejected") return "Ro'yxatdan o'tish rad etilgan";
+  if (gate.status === "blocked") return "Akkaunt bloklangan";
+  if (!gate.isActive) return "Akkaunt faoliyatda emas";
+  return null;
+}
+
+/**
+ * Universal session resolver: NextAuth + custom akela_session.
+ *
+ * DIQQAT: bu endi "kimdir kirdi" emas, "kimdir kirdi VA hali ham ruxsat oldi"
+ * degani. Tasdiqlanmagan (`pending`), rad etilgan, bloklangan yoki
+ * `isActive = false` foydalanuvchi uchun `null` qaytaradi.
+ */
+export async function getSession(): Promise<
+  (Omit<SessionUser, "userId"> & { userId: string; isAdmin: boolean }) | null
+> {
+  const raw = await resolveSessionRaw();
+  if (!raw) return null;
+
+  const gate = await verifyGate(raw.userId);
+  if (!isGateOpen(gate)) return null;
+
+  // Holat ruxsatidan keyin — ro'l ma'lumot bazasidan (masshtablash uchun)
+  const role = (gate as any).role;
+  return {
+    ...raw,
+    role: (role === "admin" ? "admin" : role) || raw.role,
+    isAdmin: role === "admin",
+  };
+}
+
+/**
+ * Sessiyani bazasiz tekshiradi (edge/middleware yoki tashxis diagnostikasi
+ * uchun). Bu ruxsat BERMAYDI — faqat "kim" deganini aniqlaydi.
+ * Ma'lumot olish uchun doimo `getSession()` ishlating.
+ */
+export async function getSessionUnverified() {
+  return resolveSessionRaw();
+}
+
+/** Ruxsatsiz foydalanuvchilar uchun aniq sabab (login oynasi xabari). */
+export async function explainGate(): Promise<string | null> {
+  const raw = await resolveSessionRaw();
+  if (!raw) return null;
+  const gate = await verifyGate(raw.userId);
+  return isGateOpen(gate) ? null : gateReason(gate);
 }
