@@ -1,8 +1,0 @@
-- generic [active] [ref=f3e1]:
-  - main [ref=f3e2]:
-    - status "Yuklanmoqda" [ref=f3e3]:
-      - paragraph [ref=f3e6]: Yuklanmoqda...
-  - region "Notifications (F8)":
-    - list
-  - button "Open Next.js Dev Tools" [ref=f3e12] [cursor=pointer]
-  - alert [ref=f3e16]

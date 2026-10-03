@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { PrismaClient } from "@prisma/client";
 import { parseAnswersJson } from "@/lib/answers-json";
+import { getSession } from "@/lib/auth";
 
 export const dynamic = "force-dynamic";
 
@@ -12,6 +13,11 @@ const prisma = new PrismaClient();
 
 // GET: Malaka tekshirish — barcha test natijalari + statistika
 export async function GET(req: NextRequest) {
+  const session = await getSession();
+  if (!session?.isAdmin) {
+    return NextResponse.json({ ok: false, error: "Unauthorized" }, { status: 401 });
+  }
+
   const { searchParams } = new URL(req.url);
   const action = searchParams.get("action") || "overview";
 

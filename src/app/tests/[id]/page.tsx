@@ -23,6 +23,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { LiquidBackground } from "@/components/akela/LiquidBackground";
 import { Navbar } from "@/components/akela/Navbar";
 import { TestReviewList } from "@/components/akela/TestReviewList";
+import { TestAccessGate } from "@/components/akela/TestAccessGate";
 import { UI_STRINGS, type Locale } from "@/lib/akela-content";
 
 type Test = any;
@@ -34,7 +35,7 @@ function formatTime(sec: number) {
   return `${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
 }
 
-export default function TestTakePage() {
+function TestTakeInner() {
   const params = useParams<{ id: string }>();
   const id = params?.id as string;
   const router = useRouter();
@@ -1079,3 +1080,14 @@ export default function TestTakePage() {
   );
 }
 
+
+/** Test sahifasi — kirish ruxsati eshigi ichida. */
+export default function TestTakePage() {
+  const params = useParams<{ id: string }>();
+  const id = params?.id as string;
+  return (
+    <TestAccessGate endpoint={`/api/tests/${id}/access`} testTitle="Testni boshlash uchun ruxsat so'ralmoqda">
+      <TestTakeInner />
+    </TestAccessGate>
+  );
+}

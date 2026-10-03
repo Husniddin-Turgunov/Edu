@@ -31,6 +31,7 @@ export function TestAccessGate({
   const [state, setState] = useState<AccessState>("checking");
   const [requestedAt, setRequestedAt] = useState<string | null>(null);
   const [tick, setTick] = useState(0);
+  const [attempt, setAttempt] = useState(0);
   const [requestId, setRequestId] = useState<string | null>(null);
   const consumedRef = useRef(false);
 
@@ -52,6 +53,7 @@ export function TestAccessGate({
   // 1) So'rov yaratish
   useEffect(() => {
     let cancelled = false;
+    setState("checking");
     (async () => {
       try {
         const res = await fetch(endpoint, {
@@ -73,7 +75,7 @@ export function TestAccessGate({
     })();
     return () => { cancelled = true; };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [endpoint]);
+  }, [endpoint, attempt]);
 
   // 2) Holatni tekshirish (har 2 soniyada) + animatsiya taymeri
   useEffect(() => {
@@ -102,10 +104,35 @@ export function TestAccessGate({
     }
   }, [state, router]);
 
-  // Ruxsat berilgan bo'lsa — bir marta "ishlatilgan" deb belgilaymiz
-  if (state === "approved" || state === "off") {
-    if (state === "approved" && requestId) consumeOnce(requestId);
+  // Ruxsat berilgan bo'lsa — bir marta "ishlatilgan" deb belgilaymiz.
+  // DIQQAT: fail-closed — "off" (serverga ulanish/xato) holatida test
+  // HECH QACHON ochilmaydi; faqat server tasdiqlagan approved ochadi.
+  if (state === "approved") {
+    if (requestId) consumeOnce(requestId);
     return <>{children}</>;
+  }
+
+  if (state === "off") {
+    return (
+      <main className="min-h-screen grid place-items-center bg-background px-6" data-testid="access-offline">
+        <LiquidBackground />
+        <div className="glass-card w-full max-w-md rounded-3xl p-8 text-center">
+          <ShieldAlert className="mx-auto mb-4 h-12 w-12 text-rose-500" />
+          <h1 className="text-lg font-black text-neutral-900">Ruxsat tekshiruvi amalga oshmadi</h1>
+          <p className="mt-2 text-sm leading-relaxed text-neutral-600">
+            Server bilan aloqa uzildi yoki xatolik yuz berdi. Xavfsizlik uchun test ochilmaydi.
+            Internet aloqasini tekshirib, qayta urinib ko&apos;ring.
+          </p>
+          <button
+            type="button"
+            onClick={() => setAttempt((v) => v + 1)}
+            className="mt-6 inline-flex items-center gap-2 rounded-xl bg-neutral-900 px-5 py-2.5 text-sm font-bold text-white"
+          >
+            <Loader2 className="h-4 w-4" /> Qayta tekshirish
+          </button>
+        </div>
+      </main>
+    );
   }
 
   if (state === "checking" || state === "pending") {

@@ -20,6 +20,8 @@ import {
   PenLine,
   Award,
   Building2,
+  Bot,
+  KeyRound,
 } from "lucide-react";
 
 const NAV_ITEMS = [
@@ -27,6 +29,8 @@ const NAV_ITEMS = [
   { href: "/admin/jobs", label: "Kasbiy kurslar", icon: Briefcase },
   { href: "/admin/onboarding", label: "Tanishtiruv", icon: GraduationCap },
   { href: "/admin/lms/tests", label: "Testlar", icon: ListChecks },
+  { href: "/admin/ai", label: "AI markaz", icon: Bot },
+  { href: "/admin/ai/access", label: "Kirish qoidalari", icon: KeyRound },
   { href: "/admin/skills", label: "Malaka tekshirish", icon: Award },
   { href: "/admin/videos", label: "Videolar", icon: Clapperboard },
   { href: "/admin/students", label: "O'quvchilar", icon: UserCheck },

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { PrismaClient } from "@prisma/client";
+import { getSession } from "@/lib/auth";
 
 export const dynamic = "force-dynamic";
 
@@ -22,6 +23,10 @@ const prisma = new PrismaClient();
 // (completedAt != null) natijalarni hisoblaydi, shuning uchun placeholder
 // urinishlar sonini oshirmaydi va testni qayta ochishga xalaqit qilmaydi.
 export async function POST(req: NextRequest) {
+  const session = await getSession();
+  if (!session?.isAdmin) {
+    return NextResponse.json({ ok: false, error: "Unauthorized" }, { status: 401 });
+  }
   try {
     const body = await req.json();
     const userId = body.userId as string;

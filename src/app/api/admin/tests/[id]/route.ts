@@ -6,6 +6,10 @@ import { apiCacheClear, CACHE_KEYS } from "@/lib/api-cache";
 export const dynamic = "force-dynamic";
 
 export async function GET(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const session = await getSession();
+  if (!session?.isAdmin) {
+    return NextResponse.json({ ok: false, error: "Unauthorized" }, { status: 401 });
+  }
   try {
     const { id } = await params;
     const test = await lmsStorage.getTest(id);

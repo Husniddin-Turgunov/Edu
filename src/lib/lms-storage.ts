@@ -5,6 +5,87 @@ import { parseAnswersJson } from "./answers-json";
 // Eski (kesilgan) natijalarni o'qish uchun yumshoq parser — `./answers-json.ts`
 export { parseAnswersJson };
 
+/**
+ * Test olish va topshirish RUXSAT CHEGAVASI — storage qatlamida.
+ *
+ * Nega shu yerda ham: route`lar `getSession()` ni tekshiradi, lekin bu qatlam
+ * oxirgi chiziq. Klient qaysi API chaqirishidan qat'i nazar, testni olish yoki
+ * topshirishdan oldin foydalanuvchining BAZADAGI joriy holati shu yerda
+ * tekshiriladi. `pending` / `rejected` / `blocked` / `isActive = false` —
+ * barchasi rad etiladi.
+ *
+ * Konsol orqali so'rovni tahrirlash bu tekshiruvni o'chira olmaydi: u klientdan
+ * kelmaydi, bazadan o'qiladi.
+ */
+async function assertUserMayUseTests(userId: string): Promise<void> {
+  const user = await prisma.user.findUnique({
+    where: { id: String(userId) },
+    select: { status: true, isActive: true },
+  });
+  if (!user) throw new Error("Foydalanuvchi topilmadi");
+  if (user.status === "pending") throw new Error("Tasdiqlash kutilmoqda");
+  if (user.status === "rejected") throw new Error("Ro'yxatdan o'tish rad etilgan");
+  if (user.status === "blocked") throw new Error("Akkaunt bloklangan");
+  if (user.status !== "approved") throw new Error("Ruxsat berilmagan");
+  if (user.isActive === false) throw new Error("Akkaunt faoliyatda emas");
+}
+
+/**
+ * AI bergan maxsus ko'rinish/ruxsat qoidasini foydalanuvchi uchun tekshiradi.
+ * DENY ustun, keyin ALLOW. `granted` — qoida orqali maxsus ruxsat berilganmi
+ * (ya'ni test.visibility = selected bo'lsa ham ko'rinadi).
+ */
+async function resolveUserTestAccess(
+  userId: string,
+  test: { id: string; visibility: string; assignedUserIds: string; status: string; maxAttempts: number },
+): Promise<{ allowed: boolean; granted: boolean; allowRetake: boolean; maxAttempts: number | null; ruleId?: string }> {
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { id: true, department: true, position: true, role: true },
+  });
+  if (!user) return { allowed: false, granted: false, allowRetake: false, maxAttempts: null };
+
+  const rules = await prisma.accessRule.findMany({
+    where: {
+      resourceType: "test",
+      resourceId: test.id,
+      OR: [
+        { subjectType: "user", subjectValue: user.id },
+        { subjectType: "department", subjectValue: user.department || "__none__" },
+        { subjectType: "position", subjectValue: user.position || "__none__" },
+        { subjectType: "role", subjectValue: user.role },
+      ],
+    },
+    select: {
+      id: true,
+      subjectType: true,
+      effect: true,
+      allowRetake: true,
+      maxAttempts: true,
+      expiresAt: true,
+    },
+  });
+
+  const now = Date.now();
+  const active = rules.filter((r) => !r.expiresAt || r.expiresAt.getTime() > now);
+  if (active.length === 0) return { allowed: true, granted: false, allowRetake: false, maxAttempts: null };
+
+  if (active.some((r) => r.effect === "deny")) {
+    return { allowed: false, granted: false, allowRetake: false, maxAttempts: null };
+  }
+
+  const allow = active.find((r) => r.effect === "allow");
+  if (!allow) return { allowed: true, granted: false, allowRetake: false, maxAttempts: null };
+
+  return {
+    allowed: true,
+    granted: true,
+    allowRetake: !!allow.allowRetake,
+    maxAttempts: allow.maxAttempts ?? null,
+    ruleId: allow.id,
+  };
+}
+
 export type CourseInput = {
   title: string;
   description?: string;
@@ -194,7 +275,7 @@ export const lmsStorage = {
   },
 
   // ====== TESTS ======
-  async createTest(data: { title: string; description?: string; language?: string; timeLimit?: number; passScore?: number; moduleId?: string; courseId?: string; order?: number; maxAttempts?: number; questionCount?: number; shuffleQuestions?: boolean; shuffleChoices?: boolean; visibility?: string; assignedUserIds?: string[] }) {
+  async createTest(data: { title: string; description?: string; language?: string; timeLimit?: number; passScore?: number; moduleId?: string; courseId?: string; order?: number; maxAttempts?: number; questionCount?: number; shuffleQuestions?: boolean; shuffleChoices?: boolean; visibility?: string; assignedUserIds?: string[]; status?: string }) {
     return prisma.test.create({
       data: {
         title: data.title,
@@ -211,6 +292,7 @@ export const lmsStorage = {
         shuffleChoices: data.shuffleChoices ?? true,
         visibility: data.visibility || "all",
         assignedUserIds: data.assignedUserIds ? JSON.stringify(data.assignedUserIds) : "[]",
+        status: data.status || "draft",
       },
     });
   },
@@ -246,9 +328,36 @@ export const lmsStorage = {
       },
       orderBy: { createdAt: "desc" },
     });
+
+    // Maxsus ko'rinish qoidalari (AccessRule) — "kimga ko'rinadi" boshqaruvi
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { id: true, department: true, position: true, role: true },
+    });
+    const rules = user
+      ? await prisma.accessRule.findMany({
+          where: {
+            resourceType: "test",
+            OR: [
+              { subjectType: "user", subjectValue: user.id },
+              { subjectType: "department", subjectValue: user.department || "__none__" },
+              { subjectType: "position", subjectValue: user.position || "__none__" },
+              { subjectType: "role", subjectValue: user.role },
+            ],
+          },
+          select: { subjectType: true, subjectValue: true, effect: true, expiresAt: true, allowRetake: true },
+        })
+      : [];
+    const now = Date.now();
+    const activeRules = rules.filter((r) => !r.expiresAt || r.expiresAt.getTime() > now);
+    const hasDeny = activeRules.some((r) => r.effect === "deny");
+    const hasAllow = activeRules.some((r) => r.effect === "allow");
+
     return all.filter((t) => {
       // Show/hide: faqat active testlar foydalanuvchiga ko'rinadi (draft/archived = yashirin)
       if (t.status !== "active") return false;
+      if (hasDeny) return false;
+      if (hasAllow) return true;
       if (t.visibility === "all") return true;
       try {
         const ids: string[] = JSON.parse(t.assignedUserIds || "[]");
@@ -425,6 +534,7 @@ export const lmsStorage = {
   },
 
   async getTestForTaking(testId: string, userId: string) {
+    await assertUserMayUseTests(userId);
     const test = await prisma.test.findUnique({
       where: { id: testId },
       include: {
@@ -434,8 +544,13 @@ export const lmsStorage = {
     if (!test) return null;
     // Show/hide: draft/archived testni olish va topshirish mumkin emas
     if (test.status !== "active") return null;
+
+    // Maxsus ko'rinish/ruxsat qoidalari (AI orqali berilgan)
+    const ruleAccess = await resolveUserTestAccess(userId, test);
+    if (!ruleAccess.allowed) return null;
+
     // visibility check
-    if (test.visibility === "selected") {
+    if (!ruleAccess.granted && test.visibility === "selected") {
       try {
         const ids: string[] = JSON.parse(test.assignedUserIds || "[]");
         if (!ids.includes(userId)) return null; // not allowed
@@ -447,12 +562,15 @@ export const lmsStorage = {
     const unconsumedRetakes = await prisma.testResult.count({
       where: { userId, testId, gradingStatus: "retake", completedAt: null },
     });
-    if (test.maxAttempts && test.maxAttempts > 0) {
+    // AI bergan maxAttempts foydalanuvchi uchun alohida chegara bo'lishi mumkin
+    const effectiveMax = ruleAccess.maxAttempts ?? test.maxAttempts;
+    if (effectiveMax && effectiveMax > 0) {
       const completed = await prisma.testResult.count({
         where: { userId, testId, completedAt: { not: null } },
       });
-      // Bloklash: tugallangan urinishlar yetdi VA kutilayotgan retake yo'q
-      if (completed >= test.maxAttempts && unconsumedRetakes === 0) {
+      // Bloklash: tugallangan urinishlar yetdi VA kutilayotgan retake yo'q.
+      // "allowRetake" qoidasi esa qayta topshirishga ochiq ruxsat beradi.
+      if (completed >= effectiveMax && unconsumedRetakes === 0 && !ruleAccess.allowRetake) {
         return { blocked: true, test, attempts: completed } as any;
       }
     }
@@ -494,6 +612,9 @@ export const lmsStorage = {
   },
 
   async submitTestResult(data: { userId: string; testId: string; answers: Record<string, string>; questionIds?: string[]; }) {
+    // 0) Ruxsat chegarasi (storage qatlami) — route tekshirsa ham, route
+    //    unutsa ham, konsol so'rovni tahrirlasa ham o'tkazilmaydi.
+    await assertUserMayUseTests(data.userId);
     const test = await prisma.test.findUnique({
       where: { id: data.testId },
       include: { questions: { include: { choices: true } } },
@@ -501,8 +622,14 @@ export const lmsStorage = {
     if (!test) throw new Error("Test not found");
     // Show/hide: faqat active testga javob yuborish mumkin
     if (test.status !== "active") throw new Error("Test hozircha yashirilgan");
+
+    // Maxsus qoidalar (AI orqali berilgan) — to'g'ridan-to'g'ri API orqali
+    // chetlab o'tish mumkin bo'lmasligi uchun ham bu yerda tekshiriladi.
+    const ruleAccess = await resolveUserTestAccess(data.userId, test as any);
+    if (!ruleAccess.allowed) throw new Error("Sizga bu test biriktirilmagan");
+
     // visibility check
-    if (test.visibility === "selected") {
+    if (!ruleAccess.granted && test.visibility === "selected") {
       try {
         const ids: string[] = JSON.parse((test as any).assignedUserIds || "[]");
         if (!ids.includes(data.userId)) throw new Error("Sizga bu test biriktirilmagan");
@@ -510,15 +637,16 @@ export const lmsStorage = {
     }
     // maxAttempts — faqat tugallangan urinishlar; retake placeholder
     // qo'shimcha imkoniyat beradi (u bor ekan submit mumkin)
-    if ((test as any).maxAttempts && (test as any).maxAttempts > 0) {
+    const submitMax = ruleAccess.maxAttempts ?? (test as any).maxAttempts;
+    if (submitMax && submitMax > 0) {
       const completed = await prisma.testResult.count({
         where: { userId: data.userId, testId: data.testId, completedAt: { not: null } },
       });
       const unconsumedRetakes = await prisma.testResult.count({
         where: { userId: data.userId, testId: data.testId, gradingStatus: "retake", completedAt: null },
       });
-      if (completed >= (test as any).maxAttempts && unconsumedRetakes === 0) {
-        throw new Error(`Urinishlar tugadi (${(test as any).maxAttempts} / ${completed})`);
+      if (completed >= submitMax && unconsumedRetakes === 0 && !ruleAccess.allowRetake) {
+        throw new Error(`Urinishlar tugadi (${submitMax} / ${completed})`);
       }
     }
 

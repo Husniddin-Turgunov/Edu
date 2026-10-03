@@ -25,7 +25,15 @@ export type AccessTarget = {
 };
 
 function metaKey(meta?: Record<string, any> | null) {
-  return JSON.stringify({ slug: meta?.slug ?? null, mi: meta?.mi ?? null, li: meta?.li ?? null });
+  // Eslatma: lesson-access {kind, a, b, c} yuboradi, eski sahifalar {slug, mi, li}.
+  // Agar faqat "slug/mi/li" qaralsa, "kind/a/b/c" so'rovlari hammasi null kalitga
+  // tushadi — ya'ni BITTA darsda olingan ruxsat BARCHA darslarni ochadi.
+  return JSON.stringify({
+    kind: meta?.kind ?? null,
+    slug: meta?.slug ?? meta?.a ?? null,
+    mi: meta?.mi ?? meta?.b ?? null,
+    li: meta?.li ?? meta?.c ?? null,
+  });
 }
 
 async function findLast(userId: string, target: AccessTarget) {
@@ -65,6 +73,23 @@ export async function getAccessStatus(target: AccessTarget) {
   }
 
   return { status: "none" as const, request: last };
+}
+
+/** Server tomonda ruxsat tekshiruvi (asosiy himoya qatlami).
+ *  Client gate qanday bo'lishidan qat'i nazar: faqat admin yoki
+ *  "approved" (hali ochilmagan) yoki "used" (ochilgan, 2 soat ichida)
+ *  so'rov bor foydalanuvchi test kontentini/topshirishini o'tkaza oladi. */
+export const ACCESS_SESSION_MS = 2 * 60 * 60 * 1000;
+
+export async function hasApprovedAccess(target: AccessTarget): Promise<boolean> {
+  const last = await findLast(target.userId, target);
+  if (!last) return false;
+  if (last.status === "approved") return true;
+  if (last.status === "used") {
+    const anchor = last.decidedAt?.getTime() ?? last.requestedAt.getTime();
+    return Date.now() - anchor < ACCESS_SESSION_MS;
+  }
+  return false;
 }
 
 /**
