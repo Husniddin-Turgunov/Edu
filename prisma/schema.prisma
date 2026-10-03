@@ -39,9 +39,6 @@ model Position {
   department     Department @relation(fields: [departmentId], references: [id], onDelete: Cascade)
   normatives     PositionNormative[]
 
-  /// Lavozimga biriktirilgan normativ fayllar (ko'p bo'lishi mumkin)
-  normatives     PositionNormative[]
-
   @@index([departmentId])
   @@index([order])
 }
@@ -605,32 +602,6 @@ model AiArtifact {
 }
 
 /// ====== Testga kirish uchun ruxsat so'rovi ======
-/// Xodim testni boshlashdan oldin so'rov yuboradi; Telegram bot yoki admin
-/// javob beradi (approved | rejected | expired).
-model TestAccessRequest {
-  id            String    @id @default(cuid())
-  userId        String
-  testId        String?
-  targetType    String    @default("test") // test | lesson
-  targetLabel   String    @default("") @db.Text
-  targetMeta    String?   @db.Text // JSON: {slug, mi, li}
-  status        String    @default("pending")
-  note          String?   @db.Text
-  telegramChats String?   @db.Text // JSON: [{chatId,messageId}]
-  requestedAt   DateTime  @default(now())
-  decidedAt     DateTime?
-  decidedBy     String?
-
-  user User  @relation(fields: [userId], references: [id], onDelete: Cascade)
-  test Test? @relation(fields: [testId], references: [id], onDelete: Cascade)
-
-  @@index([userId])
-  @@index([testId])
-  @@index([targetType])
-  @@index([status])
-  @@index([requestedAt])
-}
-
 /// AI tomonidan tayyorlangan, hali tasdiqlanmagan test qoralamasi.
 model AiDraft {
   id          String   @id @default(cuid())
