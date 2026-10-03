@@ -17,12 +17,22 @@ import { AiFloatingWidget } from "./AiFloatingWidget";
 
 const MANAGER_ROLES = new Set(["admin", "grader"]);
 
+/** AI vidjeti HECH QACHON ko'rinmaydigan sahifalar — ayniqsa login
+ *  oynasi (foydalanuvchi almashtirayotganda ham, tashqi mehmon uchun ham). */
+const HIDDEN_PATHS = ["/login", "/register", "/forgot-password", "/reset-password"];
+
+function isHiddenPath(pathname: string | null): boolean {
+  if (!pathname) return false;
+  return HIDDEN_PATHS.some((p) => pathname === p || pathname.startsWith(p + "/"));
+}
+
 export function AiWidgetClient({ serverAllowed }: { serverAllowed: boolean }) {
   const [allowed, setAllowed] = useState(serverAllowed);
   const pathname = usePathname();
 
   useEffect(() => {
-    if (serverAllowed) return;
+    // Login/register oynasida sessiya so'rovini umuman yubormaymiz
+    if (serverAllowed || isHiddenPath(pathname)) return;
     let cancelled = false;
 
     fetch("/api/auth/session", { cache: "no-store" })
@@ -39,6 +49,8 @@ export function AiWidgetClient({ serverAllowed }: { serverAllowed: boolean }) {
     };
   }, [serverAllowed, pathname]);
 
+  // Login/register oynasiga o'tilganda vidjet darhol yopiladi
+  if (isHiddenPath(pathname)) return null;
   if (!allowed) return null;
   return <AiFloatingWidget />;
 }

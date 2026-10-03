@@ -1,8 +1,8 @@
-﻿/**
- * Telegram Bot API вЂ” AKELA GROUP
+/**
+ * Telegram Bot API — AKELA GROUP
  *
  * Bildirishnomalar (yangi ro'yxatdan o'tish, test natijasi va h.k.) botga
- * ulangan BARCHA obunachilarga bir xil yuboriladi вЂ” botda "admin" tushunchasi
+ * ulangan BARCHA obunachilarga bir xil yuboriladi — botda "admin" tushunchasi
  * yo'q, hamma teng.
  *
  * Obunachilar `BotSubscriber` jadvalida saqlanadi: botga /start bosgan yoki
@@ -18,12 +18,12 @@ const BOT_TOKEN =
 const API_BASE = `https://api.telegram.org/bot${BOT_TOKEN}`;
 
 /**
- * Webhook "secret token" вЂ” Telegram kelganda `X-Telegram-Bot-Api-Secret-Token`
+ * Webhook "secret token" — Telegram kelganda `X-Telegram-Bot-Api-Secret-Token`
  * sarlavhasida yuboradi. `setWebhook` da ham shu qiymat beriladi.
  *
  * Nima uchun: `POST /api/telegram` `approve:<userId>` va `reject:<userId>`
  * ni qayta ishlaydi. Secret bo'lmasa, butun internet soxta update yuborib
- * xodimlarni tasdiqlay/rad eta oladi вЂ” bu jiddiy xavfsizlik teshigi.
+ * xodimlarni tasdiqlay/rad eta oladi — bu jiddiy xavfsizlik teshigi.
  */
 const WEBHOOK_SECRET = process.env.TELEGRAM_BOT_WEBHOOK_SECRET || "";
 
@@ -34,16 +34,16 @@ const prisma = new PrismaClient();
 
 export type InlineButton = { text: string; callback_data: string };
 
-/** Telegram caption chegarasi 1024 вЂ” biz xavfsiz chegara bilan 1000 ishlatamiz */
+/** Telegram caption chegarasi 1024 — biz xavfsiz chegara bilan 1000 ishlatamiz */
 const CAPTION_MAX = 1000;
-/** Telegram xabar chegarasi 4096 belgi вЂ” uzunroq bo'lsa 400 "message is too long" */
+/** Telegram xabar chegarasi 4096 belgi — uzunroq bo'lsa 400 "message is too long" */
 const TEXT_MAX = 4000;
 
 /** Xabar matnini Telegram chegarasiga sig'idiradi (belgi, kod nuqtasi bilan). */
 function clipText(text: string, max = TEXT_MAX) {
   const out = String(text ?? "");
   if (out.length <= max) return out;
-  return `${out.slice(0, max - 40)}\nвЂ¦ (${out.length - max + 40} belgi qisqartirildi)`;
+  return `${out.slice(0, max - 40)}\n… (${out.length - max + 40} belgi qisqartirildi)`;
 }
 
 export function escapeHtml(value: unknown): string {
@@ -55,10 +55,10 @@ export function escapeHtml(value: unknown): string {
 
 // ====== "Stiker" emoji larni olib tashlash ======
 // Ikonkalar endi Liquid Glass PNG (rasm) ko'rinishida yuboriladi, shuning uchun
-// matn va tugmalardagi bezak emoji lar kerak emas. вњ… вќЊ вљ пёЏ kabi ma'no
+// matn va tugmalardagi bezak emoji lar kerak emas. ✅ ❌ ⚠️ kabi ma'no
 // bildiruvchi belgilar saqlanib qoladi.
 
-const KEEP_EMOJI = new Set(["вњ…", "вќЊ", "вљ пёЏ", "рџ”ґ", "рџџў"]);
+const KEEP_EMOJI = new Set(["✅", "❌", "⚠️", "🔴", "🟢"]);
 const LEADING_EMOJI = /^(\s*)([\p{Extended_Pictographic}\uFE0F\u200D]+)/u;
 
 /** Qator boshidagi bezak emoji ni olib tashlaydi (ma'noli belgilar qoladi) */
@@ -112,7 +112,7 @@ export async function sendMessage(
 
 /**
  * Telegram `reply_markup` faqat obyektni qabul qiladi: { inline_keyboard: [...] }.
- * Massiv [[btn]] bo'lib kelsa вЂ” avtomatik o'raymiz (400 xatolikning oldini oladi).
+ * Massiv [[btn]] bo'lib kelsa — avtomatik o'raymiz (400 xatolikning oldini oladi).
  * Tugma yozuvlaridagi bezak emoji lar ham shu yerda olib tashlanadi.
  */
 function normalizeReplyMarkup(markup: any): any {
@@ -153,7 +153,7 @@ export async function sendPhoto(
   return res.json().catch(() => ({ ok: false }));
 }
 
-/** Hujjat (PDF) yuborish вЂ” Telegram faylni ko'rsatilgan havoladan yuklab oladi */
+/** Hujjat (PDF) yuborish — Telegram faylni ko'rsatilgan havoladan yuklab oladi */
 export async function sendDocument(
   chatId: number,
   documentUrl: string,
@@ -172,7 +172,7 @@ export async function sendDocument(
 /**
  * Tayyor PDF baytlarini multipart orqali yuborish.
  *
- * Nega shu yo'l: `sendDocument` havolani Telegram serveri yuklab oladi вЂ” demak
+ * Nega shu yo'l: `sendDocument` havolani Telegram serveri yuklab oladi — demak
  * hujjat umumiy (ochiq) URL bo'lishi kerak, admin sessiyasi esa ishlamaydi.
  * Vercel'da esa shu URL bir kun qo'lda deploy qilinmasligi mumkin. Bu yo'l
  * hujjatni shu yerda yig'ib, Telegram'ga to'g'ridan-to'g'ri beradi: URL ham,
@@ -281,9 +281,9 @@ export function persistentReplyKeyboard(): {
 } {
   return {
     keyboard: [
-      [{ text: "рџ“Љ Statistika" }, { text: "рџ‘Ґ Foydalanuvchilar" }],
-      [{ text: "вЏі Kutilayotgan" }, { text: "рџ“ќ Testlar" }],
-      [{ text: "в„№пёЏ Yordam" }, { text: "рџ”„ Yangilash" }],
+      [{ text: "📊 Statistika" }, { text: "👥 Foydalanuvchilar" }],
+      [{ text: "⏳ Kutilayotgan" }, { text: "📝 Testlar" }],
+      [{ text: "ℹ️ Yordam" }, { text: "🔄 Yangilash" }],
     ],
     resize_keyboard: true,
     is_persistent: true,
@@ -294,16 +294,16 @@ export function persistentReplyKeyboard(): {
 export function mainInlineMenu(): InlineButton[][] {
   return [
     [
-      { text: "рџ“Љ Statistika", callback_data: "menu:stats" },
-      { text: "рџ‘Ґ Foydalanuvchilar", callback_data: "menu:users" },
+      { text: "📊 Statistika", callback_data: "menu:stats" },
+      { text: "👥 Foydalanuvchilar", callback_data: "menu:users" },
     ],
     [
-      { text: "вЏі Kutilayotgan", callback_data: "menu:pending" },
-      { text: "рџ“ќ Testlar", callback_data: "menu:tests" },
+      { text: "⏳ Kutilayotgan", callback_data: "menu:pending" },
+      { text: "📝 Testlar", callback_data: "menu:tests" },
     ],
     [
-      { text: "в„№пёЏ Yordam", callback_data: "menu:help" },
-      { text: "рџ”„ Yangilash", callback_data: "menu:refresh" },
+      { text: "ℹ️ Yordam", callback_data: "menu:help" },
+      { text: "🔄 Yangilash", callback_data: "menu:refresh" },
     ],
   ];
 }
@@ -337,7 +337,7 @@ export async function setWebhook(webhookUrl: string) {
     allowed_updates: ["message", "callback_query", "edited_message"],
     drop_pending_updates: false,
     // Telegram 6.6+ "secret token": kelganda `X-Telegram-Bot-Api-Secret-Token`
-    // sarlavhasida yuboriladi. Biz shuni tekshiramiz вЂ” aks holda kimdir ham
+    // sarlavhasida yuboriladi. Biz shuni tekshiramiz — aks holda kimdir ham
     // soxta update yuborib `approve:<id>` orqali foydalanuvchini tasdiqlay oladi.
     ...(WEBHOOK_SECRET ? { secret_token: WEBHOOK_SECRET } : {}),
   });
@@ -346,7 +346,7 @@ export async function setWebhook(webhookUrl: string) {
 /**
  * Webhook so'rovi haqiqatan Telegram'dan kelganmi tekshirish.
  *
- * `strict: false` вЂ” secret sozlanmagan (eski holat). U holda ogohlantirib
+ * `strict: false` — secret sozlanmagan (eski holat). U holda ogohlantirib
  * o'tkazamiz, lekin ishni to'xtatmaymiz: aks holda prod'da bot butunlay
  * o'chib qolardi.
  */
@@ -417,8 +417,8 @@ export async function subscriberCount(): Promise<number> {
 
 /**
  * Admin foydalanuvchining parolini tiklaganda xabar yuboradi.
- * Telegram ID bog'langan bo'lsa вЂ” unga, aks holda вЂ” bot obunachilariga.
- * `secret` вЂ” true bo'lsa, parol matni umuman yuborilmaydi (faqat "yo'qlandi").
+ * Telegram ID bog'langan bo'lsa — unga, aks holda — bot obunachilariga.
+ * `secret` — true bo'lsa, parol matni umuman yuborilmaydi (faqat "yo'qlandi").
  */
 export async function notifyPasswordReset(input: {
   fullName: string;
@@ -438,9 +438,9 @@ export async function notifyPasswordReset(input: {
     lines.push(`Yangi parol: <code>${escapeHtml(input.password)}</code>`);
     lines.push("Iltimos, kirgandan keyin parolni darhol o'zgartiring.");
   } else {
-    lines.push("Parol xabar qilinmadi вЂ” akela.uz orqali kirib, В«parolni tiklashВ»dan foydalaning.");
+    lines.push("Parol xabar qilinmadi — akela.uz orqali kirib, «parolni tiklash»dan foydalaning.");
   }
-  lines.push(`<a href="${login}">Saytga kirish в†’</a>`);
+  lines.push(`<a href="${login}">Saytga kirish →</a>`);
 
   const text = lines.join("\n");
 
@@ -468,47 +468,12 @@ export async function notifyPasswordReset(input: {
   return sent > 0;
 }
 
-// ====== Parol tiklash havolasi (reset token) вЂ” FAQAT shaxsiy chat ======
-
-/**
- * Parol tiklash havolasini foydalanuvchining O'Z Telegram chat'iga yuboradi.
- *
- * Xavfsizlik prinsipi: token hech qachon API javobida, broadcast'da yoki
- * boshqa obunachida ko'rinmaydi вЂ” faqat hisob egasiga. Telegram yo'q bo'lsa
- * false qaytaramiz (chaqiruvchi umumiy javob beradi вЂ” email enumeratsiyasi yo'q).
- */
-export async function sendPasswordResetLink(input: {
-  fullName: string;
-  email: string;
-  telegramId?: string | null;
-  resetUrl: string;
-  expiresAt: Date;
-}): Promise<boolean> {
-  if (!input.telegramId || !/^-?\d+$/.test(String(input.telegramId))) return false;
-  const lines = [
-    "<b>AKELA вЂ” parol tiklash</b>",
-    `F.I.Sh: ${escapeHtml(input.fullName)}`,
-    `Login: ${escapeHtml(input.email)}`,
-    "",
-    "Quyidagi havola orqali yangi parol o'rnatishingiz mumkin (1 soat amal qiladi):",
-    `<a href="${escapeHtml(input.resetUrl)}">Parolni tiklash</a>`,
-    "",
-    "Agar siz so'ramagan bo'lsangiz вЂ” e'tibor bermang, eski parolingiz kuchda qoladi.",
-  ];
-  try {
-    const res = await sendMessage(Number(input.telegramId), lines.join("\n"));
-    return Boolean(res && res.ok !== false);
-  } catch {
-    return false;
-  }
-}
-
 // ====== Bot ichki xatolarini ko'rsatish ======
 
 let adminErrorWarned = false;
 
 /**
- * Bot ichida xato bo'lsa вЂ” admin chat'ga BIR marta xabar yuboriladi.
+ * Bot ichida xato bo'lsa — admin chat'ga BIR marta xabar yuboriladi.
  *
  * Nima uchun: webhook har qanday holatda ham 200 qaytaradi (Telegram qayta
  * urinmasligi uchun), ya'ni xato faqat server logida ko'rinadi va prod'da
@@ -524,10 +489,10 @@ export async function notifyAdminError(where: string, error: unknown) {
     await sendMessage(
       FALLBACK_CHAT_ID,
       [
-        "в›” <b>Bot xatosi</b>",
+        "⛔ <b>Bot xatosi</b>",
         "",
-        `рџ“Ќ <b>Joy:</b> ${escapeHtml(where)}`,
-        `рџ”Ћ <b>Xato:</b> ${escapeHtml(message)}`,
+        `📍 <b>Joy:</b> ${escapeHtml(where)}`,
+        `🔎 <b>Xato:</b> ${escapeHtml(message)}`,
       ].join("\n"),
     );
   } catch {
@@ -544,7 +509,7 @@ export async function notifyAdminError(where: string, error: unknown) {
 
 export type BroadcastPayload = {
   text: string;
-  /** Rasm bo'lsa вЂ” rasm + tagida yozma matn (caption) yuboriladi */
+  /** Rasm bo'lsa — rasm + tagida yozma matn (caption) yuboriladi */
   photo?: ArrayBuffer | null;
   filename?: string;
   buttons?: InlineButton[][];
@@ -555,7 +520,7 @@ export type BroadcastPayload = {
  *
  * Nega sezilarli: 400 xatosi har doim "obunachi o'ldi" degani EMAS. U ham
  * "message is too long", "can't parse entities", "photo_url_invalid" uchun ham
- * keladi. Eski kod har qanday 400 da obunachini o'chirar edi вЂ” ya'ni bitta
+ * keladi. Eski kod har qanday 400 da obunachini o'chirar edi — ya'ni bitta
  * uzun xabar butun ro'yxatni yo'q qilardi. Endi faqat aniq "bu chat hamashu
  * yo'q/bloklangan" deydigan holatlar bekor qilinadi.
  */
@@ -581,11 +546,9 @@ export async function broadcast(payload: BroadcastPayload) {
   let failed = 0;
   let unsubscribed = 0;
 
-  const chats = ids
-    .map((id) => Number(id))
-    .filter((id) => Number.isFinite(id) && id !== 0);
-
-  const sendOne = async (chatId: number, id: string) => {
+  for (const id of ids) {
+    const chatId = Number(id);
+    if (!Number.isFinite(chatId) || chatId === 0) continue;
     try {
       const res = payload.photo
         ? await sendPhoto(chatId, payload.photo, payload.text, {
@@ -608,20 +571,10 @@ export async function broadcast(payload: BroadcastPayload) {
     } catch {
       failed++;
     }
-  };
-
-  // HAMMAGA BIR VAQTDA yetib borishi uchun parallel yuboriladi
-  // (Telegram limitiga moslik uchun kichik partiyalarga bo'linadi)
-  const BATCH = 20;
-  for (let i = 0; i < chats.length; i += BATCH) {
-    const batch = chats.slice(i, i + BATCH);
-    await Promise.all(
-      batch.map((chatId) => sendOne(chatId, ids[chats.indexOf(chatId)] || String(chatId))),
-    );
   }
 
   console.log(
-    `рџ“Ј Telegram: ${sent}/${ids.length} ga yuborildi (${failed} xato, ${unsubscribed} obunachi o'chirildi)`,
+    `📣 Telegram: ${sent}/${ids.length} ga yuborildi (${failed} xato, ${unsubscribed} obunachi o'chirildi)`,
   );
   return { total: ids.length, sent, failed, unsubscribed };
 }
@@ -629,7 +582,7 @@ export async function broadcast(payload: BroadcastPayload) {
 // ====== Yangi foydalanuvchi (ruxsat / rad etish tugmalari bilan) ======
 
 export type NewUserNotice = {
-  /** Bazadagi user id вЂ” tugmalar shu id orqali ishlaydi */
+  /** Bazadagi user id — tugmalar shu id orqali ishlaydi */
   id?: string;
   name?: string | null;
   surname?: string | null;
@@ -642,22 +595,22 @@ export async function notifyNewUser(user: NewUserNotice) {
   const fullName =
     [user.surname, user.name].filter(Boolean).join(" ").trim() || user.email || "Noma'lum";
   const lines = [
-    "рџ†• <b>Yangi foydalanuvchi qo'shildi!</b>",
+    "🆕 <b>Yangi foydalanuvchi qo'shildi!</b>",
     "",
-    `рџ‘¤ <b>F.I.Sh:</b> ${escapeHtml(fullName)}`,
-    `рџ“§ <b>Email:</b> ${escapeHtml(user.email || "yo'q")}`,
-    `рџЏў <b>Bo'lim:</b> ${escapeHtml(user.department || "belgilanmagan")}`,
+    `👤 <b>F.I.Sh:</b> ${escapeHtml(fullName)}`,
+    `📧 <b>Email:</b> ${escapeHtml(user.email || "yo'q")}`,
+    `🏢 <b>Bo'lim:</b> ${escapeHtml(user.department || "belgilanmagan")}`,
   ];
-  if (user.position) lines.push(`рџ’ј <b>Lavozim:</b> ${escapeHtml(user.position)}`);
-  lines.push("", "вЏі <b>Holat:</b> Tasdiqlash kutilmoqda", "", "рџ‘‡ Ruxsat bering yoki rad eting:");
+  if (user.position) lines.push(`💼 <b>Lavozim:</b> ${escapeHtml(user.position)}`);
+  lines.push("", "⏳ <b>Holat:</b> Tasdiqlash kutilmoqda", "", "👇 Ruxsat bering yoki rad eting:");
 
-  // Tugmalar user id bo'yicha ishlaydi (email bo'yicha emas) вЂ” uzunlik va
+  // Tugmalar user id bo'yicha ishlaydi (email bo'yicha emas) — uzunlik va
   // maxsus belgilar muammosi bo'lmaydi.
   const buttons: InlineButton[][] | undefined = user.id
     ? [
         [
-          { text: "вњ… Ruxsat berish", callback_data: `approve:${user.id}` },
-          { text: "вќЊ Rad etish", callback_data: `reject:${user.id}` },
+          { text: "✅ Ruxsat berish", callback_data: `approve:${user.id}` },
+          { text: "❌ Rad etish", callback_data: `reject:${user.id}` },
         ],
       ]
     : undefined;
@@ -682,62 +635,47 @@ export type TestResultNotice = {
   level?: string;
   /** Rasm ichidagi shrift CDN dan olinishi uchun (ixtiyoriy) */
   origin?: string;
-  /** Nechta to'g'ri javob */
-  correctCount?: number | null;
-  /** Nechta xato javob */
-  wrongCount?: number | null;
 };
 
 export async function notifyTestResult(result: TestResultNotice) {
   const level = result.level || levelForScore(result.score);
   const scoreText = typeof result.score === "number" ? `${result.score}%` : "baholanmagan";
-  const statusText = result.passed ? "O'tdi вњ…" : "Yiqildi вќЊ";
+  const statusText = result.passed ? "O'tdi ✅" : "Yiqildi ❌";
   const when = result.completedAt ? new Date(result.completedAt) : new Date();
   const pad = (n: number) => String(n).padStart(2, "0");
   const timeText = `${pad(when.getDate())}.${pad(when.getMonth() + 1)}.${when.getFullYear()} ${pad(when.getHours())}:${pad(when.getMinutes())}`;
 
   const caption = [
-    "рџЋ“ <b>Test natijasi</b>",
+    "🎓 <b>Test natijasi</b>",
     "",
-    `рџ‘¤ <b>F.I.Sh:</b> ${escapeHtml(result.fullName)}`,
-    result.department ? `рџЏў <b>Bo'lim:</b> ${escapeHtml(result.department)}` : "",
-    `рџ“ќ <b>Test:</b> ${escapeHtml(result.testTitle)}`,
-    `рџ“Љ <b>Ball:</b> ${escapeHtml(scoreText)}${typeof result.passScore === "number" ? ` (o'tish bali: ${result.passScore}%)` : ""}`,
-    ...(typeof result.correctCount === "number" && typeof result.wrongCount === "number" && result.correctCount + result.wrongCount > 0
-      ? (() => {
-          const totalAuto = result.correctCount! + result.wrongCount!;
-          return [
-            `вњ… <b>To'g'ri:</b> ${result.correctCount} ta (${Math.round((result.correctCount! / totalAuto) * 100)}%)`,
-            `вќЊ <b>Xato:</b> ${result.wrongCount} ta (${Math.round((result.wrongCount! / totalAuto) * 100)}%)`,
-          ];
-        })()
-      : []),
-    `рџҐ‡ <b>Daraja:</b> ${escapeHtml(level)}`,
-    `рџЏЃ <b>Holat:</b> ${statusText}`,
-    `рџ•’ <b>Vaqt:</b> ${timeText}`,
+    `👤 <b>F.I.Sh:</b> ${escapeHtml(result.fullName)}`,
+    result.department ? `🏢 <b>Bo'lim:</b> ${escapeHtml(result.department)}` : "",
+    `📝 <b>Test:</b> ${escapeHtml(result.testTitle)}`,
+    `📊 <b>Ball:</b> ${escapeHtml(scoreText)}${typeof result.passScore === "number" ? ` (o'tish bali: ${result.passScore}%)` : ""}`,
+    `🥇 <b>Daraja:</b> ${escapeHtml(level)}`,
+    `🏁 <b>Holat:</b> ${statusText}`,
+    `🕒 <b>Vaqt:</b> ${timeText}`,
   ]
     .filter(Boolean)
     .join("\n");
 
-  // Rasm (kartochka) generatsiyasi muvaffaqiyatsiz bo'lsa вЂ” faqat matn yuboriladi
+  // Rasm (kartochka) generatsiyasi muvaffaqiyatsiz bo'lsa — faqat matn yuboriladi
   let photo: ArrayBuffer | null = null;
-      try {
-        photo = await renderResultCardPng(
-          {
-            fullName: result.fullName,
-            department: result.department,
-            position: result.position,
-            testTitle: result.testTitle,
-            score: result.score,
-            passScore: result.passScore ?? null,
-            passed: result.passed,
-            correctCount: result.correctCount ?? null,
-            wrongCount: result.wrongCount ?? null,
-            level,
-            completedAt: when,
-          },
-          result.origin,
-        );
+  try {
+    photo = await renderResultCardPng(
+      {
+        fullName: result.fullName,
+        department: result.department,
+        position: result.position,
+        testTitle: result.testTitle,
+        score: result.score,
+        passScore: result.passScore ?? null,
+        passed: result.passed,
+        level,
+        completedAt: when,
+      },
+      result.origin,
+    );
   } catch (e: any) {
     console.error("Result card render error:", e?.message || e);
     photo = null;
@@ -769,34 +707,34 @@ export type SecurityAlert = {
   blocked?: boolean;
 };
 
-const SEVERITY_ICON: Record<string, string> = { info: "в„№пёЏ", warn: "вљ пёЏ", critical: "рџ”ґ" };
+const SEVERITY_ICON: Record<string, string> = { info: "ℹ️", warn: "⚠️", critical: "🔴" };
 
 /**
  * Xavfsizlik hodisasi (konsol/DevTools, ruxsat buzish, avtomatik bloklash).
- * Bot obunachilariga вЂ” shu jumladan adminlarga вЂ” bir xil yuboriladi.
+ * Bot obunachilariga — shu jumladan adminlarga — bir xil yuboriladi.
  */
 export async function notifySecurityAlert(alert: SecurityAlert) {
   const severity = alert.severity || "warn";
-  const icon = SEVERITY_ICON[severity] || "вљ пёЏ";
+  const icon = SEVERITY_ICON[severity] || "⚠️";
   const lines = [
     `${icon} <b>XAVFSIZLIK XABARI</b>`,
     "",
-    `рџљЁ <b>Hodisa:</b> ${escapeHtml(alert.type)}`,
+    `🚨 <b>Hodisa:</b> ${escapeHtml(alert.type)}`,
   ];
   if (alert.fullName || alert.email) {
-    lines.push(`рџ‘¤ <b>F.I.Sh:</b> ${escapeHtml(alert.fullName || "вЂ”")}`);
-    lines.push(`рџ“§ ${escapeHtml(alert.email || "yo'q")}`);
+    lines.push(`👤 <b>F.I.Sh:</b> ${escapeHtml(alert.fullName || "—")}`);
+    lines.push(`📧 ${escapeHtml(alert.email || "yo'q")}`);
   }
-  if (alert.department) lines.push(`рџЏў <b>Bo'lim:</b> ${escapeHtml(alert.department)}`);
-  if (alert.reason) lines.push(`рџ“ќ <b>Sabab:</b> ${escapeHtml(alert.reason)}`);
-  if (alert.ip) lines.push(`рџЊђ <b>IP:</b> ${escapeHtml(alert.ip)}`);
-  if (alert.path) lines.push(`рџ”— <b>Sahifa:</b> ${escapeHtml(alert.path)}`);
-  if (alert.detail) lines.push(`рџ§ѕ ${escapeHtml(String(alert.detail).slice(0, 400))}`);
+  if (alert.department) lines.push(`🏢 <b>Bo'lim:</b> ${escapeHtml(alert.department)}`);
+  if (alert.reason) lines.push(`📝 <b>Sabab:</b> ${escapeHtml(alert.reason)}`);
+  if (alert.ip) lines.push(`🌐 <b>IP:</b> ${escapeHtml(alert.ip)}`);
+  if (alert.path) lines.push(`🔗 <b>Sahifa:</b> ${escapeHtml(alert.path)}`);
+  if (alert.detail) lines.push(`🧾 ${escapeHtml(String(alert.detail).slice(0, 400))}`);
   lines.push(
     "",
     alert.blocked
-      ? "в›” <b>Foydalanuvchi AVTOMATIK BLOKLANDI.</b> Admin panelda qo'lda blokdan chiqarish kerak."
-      : "в„№пёЏ Holatni admin panelida tekshiring.",
+      ? "⛔ <b>Foydalanuvchi AVTOMATIK BLOKLANDI.</b> Admin panelda qo'lda blokdan chiqarish kerak."
+      : "ℹ️ Holatni admin panelida tekshiring.",
   );
 
   const result = await broadcast({ text: lines.join("\n") });
@@ -804,120 +742,6 @@ export async function notifySecurityAlert(alert: SecurityAlert) {
     `[telegram] security alert: ${alert.type} -> ${result.sent}/${result.total} (blocked=${!!alert.blocked})`,
   );
   return result;
-}
-
-// ====== Testga kirish uchun ruxsat so'rovi ======
-// Botga "Ruxsat berish" / "Rad etish" tugmalari bilan yuboriladi.
-
-export const TEST_ACCESS_BOT_SECRET = process.env.TEST_ACCESS_SECRET || process.env.CRON_SECRET || "";
-
-export type TestAccessNotice = {
-  requestId: string;
-  fullName: string;
-  testTitle: string;
-  email?: string | null;
-  department?: string | null;
-  position?: string | null;
-  phone?: string | null;
-  requestedAt: Date | string;
-  origin: string;
-};
-
-function formatRequestTime(value: Date | string) {
-  const when = new Date(value);
-  const pad = (n: number) => String(n).padStart(2, "0");
-  return `${pad(when.getDate())}.${pad(when.getMonth() + 1)}.${when.getFullYear()} ${pad(when.getHours())}:${pad(when.getMinutes())}`;
-}
-
-/** Testga kirishga ruxsat so'rovi С‚РђР¤ barcha bot obunachilariga yuboriladi */
-export async function notifyTestAccessRequest(notice: TestAccessNotice) {
-  const lines = [
-    "РЃРЇР¤Р¤ <b>Testga kirish uchun ruxsat so'rovi</b>",
-    "",
-    `РЃРЇРЎРґ <b>F.I.Sh:</b> ${escapeHtml(notice.fullName)}`,
-    notice.department ? `РЃРЇРџРІ <b>Bo'lim:</b> ${escapeHtml(notice.department)}` : "",
-    notice.position ? `РЃРЇРћРї <b>Lavozim:</b> ${escapeHtml(notice.position)}` : "",
-    notice.phone ? `РЃРЇРЈв–’ <b>Tel:</b> ${escapeHtml(notice.phone)}` : "",
-    notice.email ? `С‚Р¬Р™СЏв••Рџ <b>Email:</b> ${escapeHtml(notice.email)}` : "",
-    `РЃРЇРЈР­ <b>Test:</b> ${escapeHtml(notice.testTitle)}`,
-    `РЃРЇРҐРў <b>So'rov vaqti:</b> ${formatRequestTime(notice.requestedAt)}`,
-    "",
-    "Xodim testni boshlashni kutmoqda. Ruxsat bering yoki rad eting.",
-  ]
-    .filter(Boolean)
-    .join("\n");
-
-  const keyboard: InlineButton[][] = [
-    [
-      { text: "С‚Р¬Р• Ruxsat berish", callback_data: `testacc_yes:${notice.requestId}` },
-      { text: "С‚Р­Рњ Rad etish", callback_data: `testacc_no:${notice.requestId}` },
-    ],
-  ];
-
-  const chatIds = await getSubscriberIds();
-  const targets = chatIds.length ? chatIds : FALLBACK_CHAT_ID ? [String(FALLBACK_CHAT_ID)] : [];
-  if (!targets.length) {
-    console.error("notifyTestAccessRequest: hech qanday Telegram maqsadi yo'q");
-    return { ok: false, error: "no targets", messages: [] as { chatId: number; messageId: number }[] };
-  }
-
-  // Hammasiga PARALLEL yuboriladi С‚РђР¤ bir vaqtda yetib boradi
-  const results = await Promise.allSettled(
-    targets.map((chatId) => sendMessage(Number(chatId), lines, { reply_markup: keyboard })),
-  );
-
-  const messages: { chatId: number; messageId: number }[] = [];
-  results.forEach((r, i) => {
-    if (r.status === "fulfilled") {
-      const res: any = r.value;
-      const messageId = res?.result?.message_id;
-      if (messageId) messages.push({ chatId: Number(targets[i]), messageId });
-    }
-  });
-  const sent = results.filter((r) => r.status === "fulfilled").length;
-  return { ok: sent > 0, sent, total: targets.length, messages };
-}
-
-/**
- * Ruxsat berilganda/rad etilganda:
- *  1) so'rov xabari BORGAN barcha chatlarda tugmalar olib tashlanadi,
- *  2) botga ulangan hammaga bir xil natija xabari yuboriladi.
- */
-export async function settleTestAccessRequest(opts: {
-  telegramChats?: string | null;
-  approved: boolean;
-  fullName: string;
-  testTitle: string;
-}) {
-  const approved = opts.approved;
-
-  // 1) Eski so'rov xabaridagi tugmalarni hamma chatda olib tashlash
-  let cleared = 0;
-  try {
-    const chats = JSON.parse(opts.telegramChats || "[]") as { chatId: number; messageId: number }[];
-    await Promise.allSettled(
-      chats.map((c) =>
-        editMessageText(
-          c.chatId,
-          c.messageId,
-          approved
-            ? `С‚Р¬Р• <b>Ruxsat berildi</b>\nРЃРЇРЎРґ ${escapeHtml(opts.fullName)}\nРЃРЇРЈР­ ${escapeHtml(opts.testTitle)}\n\nXodim testni boshlaydi.`
-            : `С‚Р­Рњ <b>Rad etildi</b>\nРЃРЇРЎРґ ${escapeHtml(opts.fullName)}\nРЃРЇРЈР­ ${escapeHtml(opts.testTitle)}\n\nXodimga ruxsat berilmadi.`,
-          { parse_mode: "HTML", reply_markup: { inline_keyboard: [] } },
-        ),
-      ),
-    );
-    cleared = chats.length;
-  } catch { /* ignore */ }
-
-  // 2) Hammaga bir xil natija
-  const result = await broadcast({
-    text: approved
-      ? `С‚Р¬Р• <b>Testga kirishga ruxsat berildi</b>\nРЃРЇРЎРґ ${escapeHtml(opts.fullName)}\nРЃРЇРЈР­ ${escapeHtml(opts.testTitle)}\n\nRuxsat beruvchi: HR / nazoratchi. Xodim testni boshlaydi.`
-      : `С‚Р­Рњ <b>Testga kirish rad etildi</b>\nРЃРЇРЎРґ ${escapeHtml(opts.fullName)}\nРЃРЇРЈР­ ${escapeHtml(opts.testTitle)}\n\nXodimga ruxsat berilmadi. Sabab: HR bilan bog'lanish.`,
-  }).catch(() => ({ total: 0, sent: 0, failed: 0 }));
-
-  return { cleared, ...result };
 }
 
 

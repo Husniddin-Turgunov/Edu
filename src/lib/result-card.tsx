@@ -23,6 +23,10 @@ export type ResultCardData = {
   passed: boolean;
   /** "I daraja" | "II daraja" | "III daraja" | "Baholanmagan" */
   level: string;
+  /** Nechta to'g'ri javob (avto-baholangan) */
+  correctCount?: number | null;
+  /** Nechta xato javob */
+  wrongCount?: number | null;
   /** ISO yoki Date */
   completedAt?: string | Date | null;
 };
@@ -220,6 +224,50 @@ export async function renderResultCardPng(
           </div>
         </div>
       </div>
+
+      {/* To'g'ri / xato soni va foizlari */}
+      {typeof data.correctCount === "number" && typeof data.wrongCount === "number" && (data.correctCount + data.wrongCount) > 0 ? (
+        <div style={{ display: "flex", gap: 16, marginTop: 20 }}>
+          <div
+            style={{
+              display: "flex",
+              flex: 1,
+              flexDirection: "column",
+              background: "rgba(16,185,129,0.16)",
+              border: "2px solid rgba(16,185,129,0.45)",
+              borderRadius: 18,
+              padding: "14px 18px",
+            }}
+          >
+            <div style={{ display: "flex", fontSize: 19, color: "#6ee7b7", fontWeight: 600 }}>To'g'ri javoblar</div>
+            <div style={{ display: "flex", fontSize: 32, fontWeight: 700, color: "#ecfdf5", marginTop: 4 }}>
+              {data.correctCount}
+              <span style={{ fontSize: 20, color: "#6ee7b7", marginLeft: 8 }}>
+                ({Math.round((data.correctCount / (data.correctCount + data.wrongCount || 1)) * 100)}%)
+              </span>
+            </div>
+          </div>
+          <div
+            style={{
+              display: "flex",
+              flex: 1,
+              flexDirection: "column",
+              background: "rgba(244,63,94,0.16)",
+              border: "2px solid rgba(244,63,94,0.45)",
+              borderRadius: 18,
+              padding: "14px 18px",
+            }}
+          >
+            <div style={{ display: "flex", fontSize: 19, color: "#fda4af", fontWeight: 600 }}>Xato javoblar</div>
+            <div style={{ display: "flex", fontSize: 32, fontWeight: 700, color: "#fff1f2", marginTop: 4 }}>
+              {data.wrongCount}
+              <span style={{ fontSize: 20, color: "#fda4af", marginLeft: 8 }}>
+                ({Math.round((data.wrongCount / (data.correctCount + data.wrongCount || 1)) * 100)}%)
+              </span>
+            </div>
+          </div>
+        </div>
+      ) : null}
 
       {/* Test nomi + sana */}
       <div

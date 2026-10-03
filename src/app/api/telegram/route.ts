@@ -1,11 +1,11 @@
-import { NextRequest, NextResponse } from "next/server";
+﻿import { NextRequest, NextResponse } from "next/server";
 import { PrismaClient } from "@prisma/client";
 import {
   sendMessage,
   sendInlineKeyboard,
   sendPhoto,
   sendPhotoUrl,
-  sendDocumentBuffer,
+  sendDocument,
   answerCallbackQuery,
   editMessageText,
   editMessageCaption,
@@ -17,19 +17,11 @@ import {
   registerSubscriber,
   subscriberCount,
   broadcast,
-  verifyWebhookSecret,
-  notifyAdminError,
+  settleTestAccessRequest,
   type InlineButton,
 } from "@/lib/telegram-bot";
 import { renderResultCardPng, levelForScore } from "@/lib/result-card";
 import { computeResultStats } from "@/lib/result-stats";
-import {
-  buildResultReportPdf,
-  buildUserReportPdf,
-  resultReportFileName,
-  userReportFileName,
-} from "@/lib/pdf-report";
-import { getSession } from "@/lib/auth";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -66,17 +58,21 @@ function mainMenu(): InlineButton[][] {
 
 /**
  * Eski (avvalgi versiyada yuborilgan) doimiy reply-klaviatura mijozda saqlanib
- * qoladi va uni bosganda oddiy MATN keladi (callback emas).
- *
- * Nima uchun endi hech narsa yuborilmaydi:
- *  1) Eski klaviatura tugmalari allaqachon `sectionFromText()` orqali ishlaydi —
- *     demak tugma bosilsa, to'g'ri bo'lim ochiladi.
- *  2) Ilgari har bir chat uchun "⌨️ Klaviatura yangilandi" degan YANI xabar
- *     yuborilardi (har server qayta ishga tushganda, `keyboardCleaned` xotirada
- *     yo'qolgani uchun). Bu odamlar uchun shovqin edi — endi yo'q.
+ * qoladi va uni bosganda oddiy MATN keladi (callback emas). Shu matnlarni
+ * bo'limlarga aylantiramiz, klaviaturani esa bir marta olib tashlaymiz.
  */
+const keyboardCleaned = new Set<number>();
+
 async function ensureNoOldKeyboard(chatId: number) {
-  void chatId;
+  if (!chatId || keyboardCleaned.has(chatId)) return;
+  keyboardCleaned.add(chatId);
+  try {
+    await sendMessage(chatId, "⌨️ Klaviatura yangilandi — barcha tugmalar endi xabar ichida.", {
+      reply_markup: { remove_keyboard: true },
+    });
+  } catch {
+    /* muhim emas */
+  }
 }
 
 /** Matn (tugma yozuvi yoki /buyruq) ni menyu bo'limiga aylantiradi */
@@ -110,6 +106,7 @@ async function sendSection(chatId: number, section: string) {
 
 const HELP_TEXT = [
   "ℹ️ <b>AKELA GROUP bot — yordam</b>",
+  "ℹ️ <b>AKELA GROUP bot — yordam</b>",
   "",
   "Barcha bo'limlar pastdagi <b>tugmalar</b> orqali ochiladi:",
   "📊 Statistika — umumiy raqamlar",
@@ -141,10 +138,7 @@ async function statsText(): Promise<string> {
   ]);
   const latest = await prisma.testResult.findFirst({
     orderBy: { startedAt: "desc" },
-    include: {
-      user: { select: { name: true, surname: true, email: true } },
-      test: { select: { title: true } },
-    },
+    include: { user: { select: { name: true, surname: true, email: true } }, test: { select: { title: true } } },
   });
   const latestLine = latest
     ? `Oxirgi natija: <b>${escapeHtml(latest.test?.title || "?")}</b> — ${escapeHtml(
@@ -498,44 +492,11 @@ async function menuSection(section: string): Promise<{ text: string; buttons: In
 }
 
 // ====== GET: webhook sozlash / bot info / obunachilar / kartochka sinovi ======
-
-/**
- * Boshqaruvchi amallar (`set-webhook`, `subscribers`) himoyalangan.
- *
- * `set-webhook` ochiq bo'lsa — botni ishonchsiz saytga burib, butun
- * Telegram oqimini olib ketish mumkin. `subscribers` esa odamlarning
- * Telegram chat ID'sini ochiq qiladi.
- *
- * Kalit: `?secret=` (TELEGRAM_BOT_API_SECRET) yoki admin sessiyasi.
- * `TELEGRAM_BOT_API_SECRET` Vercel'de yo'q bo'lsa — 503 qaytaramiz
- * (fail-closed): "yo'q" desak, noto'g'ri xavfsizlik hissi yaratiladi.
- */
-async function requireBotAdmin(req: NextRequest, searchParams: URLSearchParams) {
-  const expected = process.env.TELEGRAM_BOT_API_SECRET || "";
-  if (!expected) {
-    return NextResponse.json(
-      {
-        ok: false,
-        error: "TELEGRAM_BOT_API_SECRET sozlanmagan",
-        hint: "Vercel -> Settings -> Environment Variables -> TELEGRAM_BOT_API_SECRET qo'shing",
-      },
-      { status: 503 },
-    );
-  }
-  const given = searchParams.get("secret") || "";
-  if (given === expected) return null;
-  const session = await getSession().catch(() => null);
-  if (session?.isAdmin) return null;
-  return NextResponse.json({ ok: false, error: "Unauthorized" }, { status: 401 });
-}
-
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
   const action = searchParams.get("action");
 
   if (action === "set-webhook") {
-    const denied = await requireBotAdmin(req, searchParams);
-    if (denied) return denied;
     const host = req.headers.get("host") || "localhost:3000";
     const protocol = req.headers.get("x-forwarded-proto") || "https";
     const webhookUrl = `${protocol}://${host}/api/telegram`;
@@ -554,8 +515,6 @@ export async function GET(req: NextRequest) {
   }
 
   if (action === "subscribers") {
-    const denied = await requireBotAdmin(req, searchParams);
-    if (denied) return denied;
     const [count, list] = await Promise.all([
       subscriberCount(),
       prisma.botSubscriber.findMany({
@@ -608,32 +567,12 @@ export async function GET(req: NextRequest) {
 }
 
 // ====== POST: webhook handler ======
-//
-// XAVFSIZLIK: so'rov haqiqatan Telegram'dan kelganini `X-Telegram-Bot-Api-Secret-Token`
-// orqali tekshiramiz. Aks holda butun internet `{"callback_query":{"data":"approve:<id>"}}`
-// yuborib xodimlarni tasdiqlay/rad eta olardi (ogohlantirishsiz xavfsizlik teshigi).
 export async function POST(req: NextRequest) {
-  const check = verifyWebhookSecret(req.headers.get("x-telegram-bot-api-secret-token"));
-  if (check.strict && !check.ok) {
-    console.warn("[telegram] webhook so'rovi sekretsiz keldi — rad etildi");
-    return NextResponse.json({ ok: false, error: "Unauthorized" }, { status: 401 });
-  }
-  if (!check.strict && !webhookWarned) {
-    webhookWarned = true;
-    console.warn(
-      "[telegram] TELEGRAM_BOT_WEBHOOK_SECRET sozlanmagan — soxta update qabul qilinmoqda. .env ga kalit qo'shib, /api/telegram?action=set-webhook ni bir marta ishga tushiring.",
-    );
-  }
-
   try {
     const body = await req.json();
 
     if (body.callback_query) {
       await handleCallbackQuery(body.callback_query);
-      return NextResponse.json({ ok: true });
-    }
-
-    if (body.edited_message) {
       return NextResponse.json({ ok: true });
     }
 
@@ -644,13 +583,11 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({ ok: true });
   } catch (error: any) {
-    // Telegram'ga har doim 200 (qayta urinma) — lekin xato ADMINGA ko'rinadi.
-    await notifyAdminError("webhook handler", error);
+    console.error("Telegram webhook error:", error?.message || error);
+    // Telegram qayta urinmasligi uchun baribir 200 qaytaramiz
     return NextResponse.json({ ok: true });
   }
 }
-
-let webhookWarned = false;
 
 // ====== Xabar handler ======
 async function handleMessage(msg: any) {
@@ -691,23 +628,23 @@ async function handleMessage(msg: any) {
 
   // /start — inline klaviyatura (DOM menyusi) bilan, hamma buyruqlar shu tugmalardan
   if (text.startsWith("/start")) {
-    // Eski doimiy (reply) klaviatura bo'lsa — uni olib tashlaymiz
+    // Eski doimiy (reply) klaviatura bo'lsa - uni olib tashlaymiz
     await ensureNoOldKeyboard(chatId);
     const total = await subscriberCount();
     await sendMessage(
       chatId,
       [
-        `Salom, <b>${escapeHtml(firstName || "do'st")}</b>! 👋`,
+        `Salom, <b>${escapeHtml(firstName || "do'st")}</b>! ??`,
         "",
-        "🎓 Siz <b>AKELA GROUP</b> ta'lim portali botidasiz.",
+        "?? Siz <b>AKELA GROUP</b> ta'lim portali botidasiz.",
         "",
-        "📌 <b>Muhim:</b> botda admin yo'q — yangi ro'yxatdan o'tganlar va test",
+        "?? <b>Muhim:</b> botda admin yo'q - yangi ro'yxatdan o'tganlar va test",
         "natijalari haqidagi xabarlar <b>botga ulangan barcha</b> foydalanuvchilarga",
         "bir xil yuboriladi.",
         "",
-        `👥 Hozir botga ulanganlar: <b>${total}</b>`,
+        `?? Hozir botga ulanganlar: <b>${total}</b>`,
         "",
-        "📋 Hamma bo'limlar quyidagi <b>inline tugmalar</b> orqali ochiladi:",
+        "?? Hamma bo'limlar quyidagi <b>inline tugmalar</b> orqali ochiladi:",
       ].join("\n"),
       { reply_markup: mainMenu() },
     );
@@ -863,64 +800,21 @@ async function handleCallbackQuery(cq: any) {
   }
 
   // ====== Test topshirganlar: odam / rasm / PDF ======
-  //
-  // PDF'lar endi bu yerda xotirada yig'ilib, multipart orqali yuboriladi.
-  // Avval `/api/admin/skills/*-report` havolasi ishlatilardi — u admin
-  // sessiyasini talab qiladi, Telegram esa havolani cookiesiz yuklab oladi
-  // (demak har doim 401) va route deploy qilinmagan bo'lsa 404 beradi.
   if (data.startsWith("tur:")) {
     const userId = data.slice("tur:".length);
     await answerCallbackQuery(cq.id);
-    if (!chatId) return;
-    try {
-      const user: any = await prisma.user.findUnique({
-        where: { id: userId },
-        select: {
-          name: true, surname: true, email: true, department: true, position: true,
-          testResults: {
-            where: { completedAt: { not: null } },
-            orderBy: { startedAt: "desc" },
-            take: 100,
-            select: {
-              score: true, passed: true, answers: true, completedAt: true,
-              test: { select: { title: true, questions: { include: { choices: true } } } },
-            },
-          },
-        },
-      });
-      if (!user) {
-        await sendMessage(chatId, "❌ Foydalanuvchi topilmadi.");
-        return;
-      }
-      const attempts = (user.testResults || []).map((r: any) => {
-        const stats = computeResultStats(r.test?.questions || [], r.answers);
-        return {
-          title: r.test?.title || "Test",
-          score: typeof r.score === "number" ? r.score : null,
-          passed: !!r.passed,
-          completedAt: r.completedAt ? new Date(r.completedAt).toISOString() : null,
-          correct: stats.correct,
-          wrong: stats.wrong,
-          total: stats.total,
-        };
-      });
-      const pdf = await buildUserReportPdf({ user, attempts }, APP_ORIGIN);
-      const sent: any = await sendDocumentBuffer(
+    if (chatId) {
+      const url = `${APP_ORIGIN}/api/admin/skills/user-report?userId=${userId}`;
+      const res: any = await sendDocument(
         chatId,
-        pdf,
-        userReportFileName(user),
+        url,
         "📄 <b>Umumiy PDF hisobot</b> — barcha test natijalari",
       );
-      if (!sent?.ok) {
-        await sendMessage(
-          chatId,
-          `📄 PDF yuborilmadi (${escapeHtml(sent?.description || "xato")}). Qayta urinib ko'ring.`,
-        );
-      }
-      console.log("[telegram] tur->pdf", JSON.stringify({ userId, sent: sent?.ok, desc: sent?.description }));
-    } catch (e: any) {
-      console.error("telegram: user report pdf error", e?.message || e);
-      await sendMessage(chatId, "📄 Hisobotni tayyorlashda xato yuz berdi.");
+      if (!res?.ok) await sendMessage(chatId, `📄 PDF havolasi: ${url}`);
+      console.log(
+        "[telegram] tur->pdf",
+        JSON.stringify({ userId, sent: res?.ok, desc: res?.description }),
+      );
     }
     return;
   }
@@ -982,49 +876,18 @@ async function handleCallbackQuery(cq: any) {
   if (data.startsWith("tp:")) {
     const resultId = data.slice("tp:".length);
     await answerCallbackQuery(cq.id);
-    if (!chatId) return;
-    try {
-      const r: any = await prisma.testResult.findUnique({
-        where: { id: resultId },
-        include: {
-          user: true,
-          test: { include: { questions: { include: { choices: true }, orderBy: { order: "asc" } } } },
-        },
-      });
-      if (!r) {
-        await sendMessage(chatId, "❌ Natija topilmadi.");
-        return;
-      }
-      const user = r.user || {};
-      const pdf = await buildResultReportPdf(
-        {
-          user,
-          testTitle: r.test?.title || "Test",
-          passScore: r.test?.passScore ?? null,
-          score: typeof r.score === "number" ? r.score : null,
-          passed: !!r.passed,
-          completedAt: r.completedAt ? new Date(r.completedAt).toISOString() : null,
-          questions: r.test?.questions || [],
-          answersJson: r.answers,
-        },
-        APP_ORIGIN,
-      );
-      const sent: any = await sendDocumentBuffer(
+    if (chatId) {
+      const url = `${APP_ORIGIN}/api/admin/skills/result-report?resultId=${resultId}`;
+      const res: any = await sendDocument(
         chatId,
-        pdf,
-        resultReportFileName(user),
+        url,
         "📄 <b>Yakka test hisoboti</b> — savollar bo'yicha tafsilot",
       );
-      if (!sent?.ok) {
-        await sendMessage(
-          chatId,
-          `📄 PDF yuborilmadi (${escapeHtml(sent?.description || "xato")}). Qayta urinib ko'ring.`,
-        );
-      }
-      console.log("[telegram] tp->pdf", JSON.stringify({ resultId, sent: sent?.ok, desc: sent?.description }));
-    } catch (e: any) {
-      console.error("telegram: result report pdf error", e?.message || e);
-      await sendMessage(chatId, "📄 Hisobotni tayyorlashda xato yuz berdi.");
+      if (!res?.ok) await sendMessage(chatId, `📄 PDF havolasi: ${url}`);
+      console.log(
+        "[telegram] tp->pdf",
+        JSON.stringify({ resultId, sent: res?.ok, desc: res?.description }),
+      );
     }
     return;
   }
@@ -1039,6 +902,93 @@ async function handleCallbackQuery(cq: any) {
       : { ok: false };
     if (!edited?.ok && !String(edited?.description || "").includes("not modified")) {
       await sendMessage(chatId, text, { reply_markup: buttons });
+    }
+    return;
+  }
+
+  // ====== Testga kirish ruxsati: "Ruxsat berish" / "Rad etish" ======
+  // callback_data: "testacc_yes:<requestId>" | "testacc_no:<requestId>"
+  if (data.startsWith("testacc_")) {
+    const [key, requestId] = data.split(":");
+    const approved = key === "testacc_yes";
+    const request = await prisma.testAccessRequest.findUnique({
+      where: { id: requestId },
+      include: { user: { select: { name: true, surname: true, email: true } }, test: { select: { title: true } } },
+    });
+    if (!request) {
+      await answerCallbackQuery(cq.id, "So'rov topilmadi");
+      return;
+    }
+    if (request.status !== "pending") {
+      await answerCallbackQuery(cq.id, `Bu so'rov allaqach hal qilingan (${request.status})`);
+      return;
+    }
+    await prisma.testAccessRequest.update({
+      where: { id: requestId },
+      data: {
+        status: approved ? "approved" : "rejected",
+        decidedAt: new Date(),
+        decidedBy: `telegram:${cq.from?.id ?? "unknown"}`,
+      },
+    });
+    const who = [request.user.surname, request.user.name].filter(Boolean).join(" ") || request.user.email;
+
+    // "Qayta topshirish" so'rovi tasdiqlansa — test qayta ochiladi (retake placeholder)
+    if (approved && request.targetType === "retake" && request.testId) {
+      const existing = await prisma.testResult.findFirst({
+        where: { userId: request.userId, testId: request.testId, gradingStatus: "retake", completedAt: null },
+      });
+      if (!existing) {
+        await prisma.testResult.create({
+          data: {
+            userId: request.userId,
+            testId: request.testId,
+            score: 0,
+            passed: false,
+            answers: "{}",
+            gradingStatus: "retake",
+            completedAt: null,
+          },
+        });
+      }
+
+      // Qayta topshirishga ruxsat berilganda — testga KIRISH uchun ham ruxsat beriladi,
+      // shunda xodim "Qayta topshirishni boshlash" desa yana so'rov yubormaydi.
+      const openAccess = await prisma.testAccessRequest.findFirst({
+        where: {
+          userId: request.userId,
+          testId: request.testId,
+          targetType: "test",
+          status: { in: ["pending", "approved"] },
+        },
+      });
+      if (!openAccess) {
+        await prisma.testAccessRequest.create({
+          data: {
+            userId: request.userId,
+            testId: request.testId,
+            targetType: "test",
+            targetLabel: request.test?.title || request.targetLabel || "Test",
+            status: "approved",
+            decidedAt: new Date(),
+            decidedBy: `telegram:${cq.from?.id ?? "unknown"} (qayta topshirish)`,
+          },
+        });
+      }
+    }
+
+    await answerCallbackQuery(cq.id, approved ? "✅ Ruxsat berildi" : "❌ Rad etildi");
+
+    // Barcha chatlarda tugmalar olib tashlanadi + botga ulangan hammaga bir xil natija yuboriladi
+    try {
+      await settleTestAccessRequest({
+        telegramChats: request.telegramChats,
+        approved,
+        fullName: who,
+        testTitle: request.test?.title || request.targetLabel || "Test",
+      });
+    } catch (e: any) {
+      console.error("settleTestAccessRequest error:", e?.message || e);
     }
     return;
   }

@@ -38,8 +38,28 @@ model Position {
 
   department     Department @relation(fields: [departmentId], references: [id], onDelete: Cascade)
 
+  /// Lavozimga biriktirilgan normativ fayllar (ko'p bo'lishi mumkin)
+  normatives     PositionNormative[]
+
   @@index([departmentId])
   @@index([order])
+}
+
+/// ====== Lavozimga biriktirilgan normativ fayllar (bir nechta) ======
+/// Bosh sahifadagi "Normativ" bo'limi shu jadvalga tayanadi. Bu jadval
+/// `normativeUrl` (bitta fayl) dan farqli: bitta lavozimga ko'p fayl.
+model PositionNormative {
+  id         String   @id @default(cuid())
+  positionId String
+  name       String   @db.Text
+  url        String   @db.Text
+  size       Int      @default(0)
+  note       String?  @db.Text
+  createdAt  DateTime @default(now())
+
+  position Position @relation(fields: [positionId], references: [id], onDelete: Cascade)
+
+  @@index([positionId])
 }
 
 model User {
@@ -72,6 +92,7 @@ model User {
   jobTestResults  JobTestResult[]
 
   aiConversations AiConversation[]
+  testAccessRequests TestAccessRequest[]
   aiAttachments   AiAttachment[]
   aiDrafts        AiDraft[]
   aiUsage         AiUsage[]
@@ -205,6 +226,7 @@ model Test {
   module      Module?  @relation(fields: [moduleId], references: [id], onDelete: SetNull)
   questions   Question[]
   results     TestResult[]
+  accessRequests TestAccessRequest[]
 
   @@index([moduleId])
   @@index([courseId])
@@ -552,6 +574,33 @@ model AiArtifact {
 
   @@index([ownerId])
   @@index([createdAt])
+}
+
+/// ====== Testga kirish uchun ruxsat so'rovi ======
+/// Xodim testni boshlashdan oldin so'rov yuboradi; Telegram bot yoki admin
+/// javob beradi (approved | rejected | expired).
+model TestAccessRequest {
+  id            String    @id @default(cuid())
+  userId        String
+  testId        String?
+  targetType    String    @default("test") // test | lesson
+  targetLabel   String    @default("") @db.Text
+  targetMeta    String?   @db.Text // JSON: {slug, mi, li}
+  status        String    @default("pending")
+  note          String?   @db.Text
+  telegramChats String?   @db.Text // JSON: [{chatId,messageId}]
+  requestedAt   DateTime  @default(now())
+  decidedAt     DateTime?
+  decidedBy     String?
+
+  user User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  test Test? @relation(fields: [testId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([testId])
+  @@index([targetType])
+  @@index([status])
+  @@index([requestedAt])
 }
 
 /// AI tomonidan tayyorlangan, hali tasdiqlanmagan test qoralamasi.

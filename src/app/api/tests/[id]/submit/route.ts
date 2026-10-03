@@ -3,6 +3,7 @@ import { getSession } from "@/lib/auth";
 import { lmsStorage } from "@/lib/lms-storage";
 import { notifyTestResult } from "@/lib/telegram-bot";
 import { levelForScore } from "@/lib/result-card";
+import { hasApprovedAccess } from "@/lib/test-access";
 import { PrismaClient } from "@prisma/client";
 
 export const dynamic = "force-dynamic";
@@ -16,6 +17,23 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
     const session = await getSession();
     if (!session) return NextResponse.json({ ok: false, error: "Unauthorized" }, { status: 401 });
     const { id } = await params;
+    // Server tomonda asosiy himoya: tasdiqlangan ruxsatisiz topshirish qabul
+    // qilinmaydi — client gate qanday ishlashidan qat'i nazar.
+    if (!session.isAdmin) {
+      const allowed = await hasApprovedAccess({
+        userId: session.userId,
+        targetType: "test",
+        testId: id,
+        targetLabel: "",
+        origin: new URL(req.url).origin,
+      });
+      if (!allowed) {
+        return NextResponse.json(
+          { ok: false, error: "Testga topshirish uchun admin tasdig'i kerak", accessDenied: true },
+          { status: 403 },
+        );
+      }
+    }
     const body = await req.json();
     const { answers, questionIds } = body; // answers: { [questionId]: choiceId | choiceId[] }, questionIds: ko'rsatilgan savollar
     if (!answers) return NextResponse.json({ ok: false, error: "answers required" }, { status: 400 });

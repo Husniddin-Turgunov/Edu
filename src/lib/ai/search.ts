@@ -101,22 +101,23 @@ export async function assertPublicUrl(raw: string) {
 }
 
 async function safeFetch(raw: string, timeoutMs = DEFAULT_TIMEOUT): Promise<string> {
+  // 1) Tez tekshiruv (xato xabarlari uchun)
   const url = await assertPublicUrl(raw);
-  const response = await fetch(url, {
-    redirect: "follow",
-    signal: AbortSignal.timeout(timeoutMs),
+  // 2) Asosiy himoya: redirect har bosqichida qayta tekshiriladi, port
+  //    chegarasi, metadata-IP (169.254.169.254), hajm limiti — net.ts orqali
+  const { safeFetchBytes } = await import("@/lib/security/net");
+  const result = await safeFetchBytes(String(url), {
+    timeoutMs,
+    maxBytes: MAX_PAGE_BYTES,
+    maxRedirects: 3,
     headers: {
       "user-agent": "Mozilla/5.0 (compatible; AkelaAI/1.0; +https://akela.uz)",
       accept: "text/html,application/xhtml+xml,application/json;q=0.9,*/*;q=0.8",
       "accept-language": "uz,ru,en;q=0.8",
     },
   });
-  if (!response.ok) throw new Error(`HTTP ${response.status}`);
-  const buffer = await response.arrayBuffer();
-  const slice = buffer.byteLength > MAX_PAGE_BYTES
-    ? Buffer.from(buffer).subarray(0, MAX_PAGE_BYTES)
-    : Buffer.from(buffer);
-  return decodeBody(slice, response.headers.get("content-type") || "");
+  if (!result.ok) throw new Error(result.error);
+  return decodeBody(result.bytes, result.contentType);
 }
 
 function decodeBody(buffer: Buffer, contentType: string) {

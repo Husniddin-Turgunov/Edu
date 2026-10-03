@@ -20,7 +20,9 @@ export async function GET(req: Request) {
   const id = new URL(req.url).searchParams.get("id");
 
   if (!id) {
+    // Faqat joriy foydalanuvchining qoralamalari — boshqa adminniki ko'rinmaydi
     const drafts = await db.aiDraft.findMany({
+      where: { ownerId: guard.actor.userId },
       select: {
         id: true,
         title: true,
@@ -46,7 +48,10 @@ export async function GET(req: Request) {
     });
   }
 
-  const draft = await db.aiDraft.findUnique({ where: { id } });
+  // Egasi tekshiruvi — boshqa adminning qoralamasini o'qib bo'lmaydi
+  const draft = await db.aiDraft.findFirst({
+    where: { id, ownerId: guard.actor.userId },
+  });
   if (!draft) return failResponse("Qoralama topilmadi", 404);
 
   let payload: unknown = null;

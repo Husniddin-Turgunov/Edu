@@ -24,8 +24,7 @@ export default function LoginPage() {
   const [forgotEmail, setForgotEmail] = useState("");
   const [forgotLoading, setForgotLoading] = useState(false);
   const [forgotMsg, setForgotMsg] = useState<string | null>(null);
-  const [forgotToken, setForgotToken] = useState<string | null>(null);
-  const [forgotMode, setForgotMode] = useState<"token" | "hidden" | null>(null);
+  const [forgotSent, setForgotSent] = useState(false);
 
   useEffect(() => {
     fetch("/api/portal-settings", { cache: "no-store" })
@@ -60,15 +59,9 @@ export default function LoginPage() {
         setForgotMsg(data?.error || "Xatolik yuz berdi");
         return;
       }
-      setForgotMode(data.mode);
-      setForgotToken(data.token || "");
-      if (data.mode === "hidden") {
-        setForgotMsg("Yashirin admin: parolni yangilash uchun tasdiqlang");
-      } else if (data.token) {
-        setForgotMsg("Tasdiqlash havolasi tayyor");
-      } else {
-        setForgotMsg("Agar email ro'yxatda bo'lsa, havolasiz yuborildi");
-      }
+      // Token javobga KELMAYDI (xavfsizlik) — havola faqat Telegram orqali boradi
+      setForgotSent(true);
+      setForgotMsg(data?.message || "Agar email ro'yxatda bo'lsa, havola Telegram orqali yuborildi.");
     } catch {
       setForgotMsg("Serverga ulanib bo'lmadi");
     } finally {
@@ -173,10 +166,17 @@ export default function LoginPage() {
           </button>
         </form>
 
-        <div className="mt-4 text-center">
-          <Link href="/register" className="inline-flex items-center gap-2 text-sm font-semibold text-[color:var(--emerald-deep)] hover:text-blue-600 transition-colors">
+        <div className="mt-4 flex items-center justify-between text-sm">
+          <Link href="/register" className="inline-flex items-center gap-2 font-semibold text-[color:var(--emerald-deep)] hover:text-blue-600 transition-colors">
             <UserPlus className="h-4 w-4" /> Yangi akkaunt ochish
           </Link>
+          <button
+            type="button"
+            onClick={() => { setForgotOpen(true); setForgotMsg(null); setForgotSent(false); }}
+            className="inline-flex items-center gap-1.5 font-semibold text-[color:var(--emerald-deep)] hover:text-blue-600 transition-colors"
+          >
+            <KeyRound className="h-4 w-4" /> Parolni tiklash
+          </button>
         </div>
 
         {supportContact && (
@@ -187,6 +187,79 @@ export default function LoginPage() {
           </div>
         )}
       </motion.div>
+
+      {/* ====== Parolni tiklash oynasi ====== */}
+      {forgotOpen && (
+        <div className="fixed inset-0 z-50 grid place-items-center bg-black/40 p-4" role="dialog" aria-modal="true">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.96 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="glass-card rounded-3xl p-6 max-w-sm w-full relative"
+          >
+            <button
+              type="button"
+              onClick={() => setForgotOpen(false)}
+              className="absolute right-4 top-4 text-[color:var(--ink-soft)] hover:text-[color:var(--emerald-deep)]"
+              aria-label="Yopish"
+            >
+              <X className="h-5 w-5" />
+            </button>
+
+            <div className="flex items-center gap-3 mb-4">
+              <KeyRound className="h-6 w-6 text-[color:var(--emerald-deep)]" />
+              <div>
+                <h2 className="text-lg font-extrabold text-[color:var(--emerald-deep)]">Parolni tiklash</h2>
+                <p className="text-[11px] text-[color:var(--ink-soft)]">
+                  Email manzilingizni kiriting — havola Telegram orqali yuboriladi
+                </p>
+              </div>
+            </div>
+
+            {forgotSent ? (
+              <div className="space-y-4">
+                <div className="rounded-xl bg-emerald-50 border border-emerald-200 px-4 py-3 text-sm text-emerald-800">
+                  {forgotMsg}
+                </div>
+                <button
+                  type="button"
+                  onClick={() => { setForgotOpen(false); setForgotSent(false); setForgotMsg(null); }}
+                  className="w-full rounded-xl bg-gradient-to-br from-indigo-700 to-indigo-600 px-6 py-3 text-sm font-bold text-white hover:scale-[1.02] transition"
+                >
+                  Tushunarli
+                </button>
+              </div>
+            ) : (
+              <form
+                onSubmit={(e) => { void handleForgotSubmit(e); }}
+                className="space-y-4"
+              >
+                <input
+                  type="email"
+                  value={forgotEmail}
+                  onChange={(e) => setForgotEmail(e.target.value)}
+                  required
+                  autoComplete="off"
+                  className="w-full glass-card rounded-xl px-4 py-3 text-sm text-[color:var(--emerald-deep)] placeholder:text-[color:var(--ink-soft)] outline-none focus:ring-2 focus:ring-blue-400"
+                  placeholder="email@akela.uz"
+                />
+                {forgotMsg && (
+                  <div className="rounded-xl bg-rose-50 border border-rose-200 px-4 py-3 text-sm text-rose-700">
+                    {forgotMsg}
+                  </div>
+                )}
+                <button
+                  type="submit"
+                  disabled={forgotLoading}
+                  className="w-full rounded-xl bg-gradient-to-br from-indigo-700 to-indigo-600 px-6 py-3 text-sm font-bold text-white hover:scale-[1.02] transition disabled:opacity-50 flex items-center justify-center gap-2"
+                >
+                  {forgotLoading && <Loader2 className="h-4 w-4 animate-spin" />}
+                  {forgotLoading ? "Yuborilmoqda…" : "Havolani yuborish"}
+                </button>
+              </form>
+            )}
+          </motion.div>
+        </div>
+      )}
     </main>
   );
 }

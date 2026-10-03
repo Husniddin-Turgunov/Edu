@@ -130,6 +130,15 @@ async function toBytes(url: string, fetchImpl: typeof fetch): Promise<Buffer> {
     const b64 = url.slice(comma + 1);
     return Buffer.from(b64, "base64");
   }
+  // Model qaytaradigan URL foydalanuvchi nazoratida → SSRF tekshiruvi shart.
+  // Test stub (`fetchImpl` almashtirilgan) xavfsizlik cheklovidan chetlab
+  // o'tmaydi — lokal serverga ulanish sinovlar uchun kerak.
+  if (fetchImpl === fetch) {
+    const { safeFetchBytes } = await import("@/lib/security/net");
+    const result = await safeFetchBytes(url, { timeoutMs: 20_000, maxBytes: 25 * 1024 * 1024 });
+    if (!result.ok) throw new Error(`Rasmni yuklab olib bo'lmadi: ${result.error}`);
+    return result.bytes;
+  }
   const res = await fetchImpl(url);
   if (!res.ok) throw new Error(`Rasmni yuklab olib bo'lmadi: HTTP ${res.status}`);
   return Buffer.from(await res.arrayBuffer());

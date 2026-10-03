@@ -1,16 +1,20 @@
 import NextAuth from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import { PrismaClient } from "@prisma/client";
-import crypto from "crypto";
-import { ensureHiddenAdmin, getHiddenAdminEmail, isHiddenAdminCredentials } from "@/lib/hidden-admin";
+import {
+  ensureHiddenAdmin,
+  getHiddenAdminEmail,
+  isHiddenAdminCredentials,
+} from "@/lib/hidden-admin";
+import {
+  hashPassword as hashScrypt,
+  inspectPasswordHash,
+  verifyPassword,
+} from "@/lib/security/password";
 
 export const dynamic = "force-dynamic";
 
 const prisma = new PrismaClient();
-
-function hashPassword(password: string) {
-  return crypto.createHash("sha256").update(password).digest("hex");
-}
 
 // Yashirin adminni har safar auth chaqirilganda kafolatlash (doimiy)
 ensureHiddenAdmin(prisma).catch(() => {});
@@ -36,7 +40,21 @@ export const authOptions = {
         }
         const user = await prisma.user.findUnique({ where: { email: credentials.email } });
         if (!user) return null;
-        if (user.passwordHash !== hashPassword(credentials.password)) return null;
+        // Parol tekshiruvi: scrypt (yangi) yoki sha256 (eski) — ikkalasi ham
+        // qo'llab-quvvatlanadi, muvaffaqiyatdan keyin eski format avtomatik
+        // scrypt'ga ko'chiriladi (ma'lumot bazasi bosqichma-bosqich yangilanadi).
+        if (!verifyPassword(credentials.password, user.passwordHash)) return null;
+        try {
+          const info = inspectPasswordHash(user.passwordHash);
+          if (info.needsRehash && info.algorithm !== "unknown") {
+            await prisma.user.update({
+              where: { id: user.id },
+              data: { passwordHash: hashScrypt(credentials.password) },
+            });
+          }
+        } catch {
+          // Migratsiya yozuvi muvaffaqiyatsiz bo'lsa — kirishni bloklamaymiz
+        }
         // Ruxsat faqat TASDIQLANGANLARGA. Rad etilgan/bloklangan/faoliyatsiz
         // akkaunt kirish olmaydi (bloklash `getSession()` da ham tekshiriladi).
         if (user.status !== "approved") return null;

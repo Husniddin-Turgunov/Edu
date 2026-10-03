@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getSession } from "@/lib/auth";
 import { lmsStorage } from "@/lib/lms-storage";
+import { hasApprovedAccess } from "@/lib/test-access";
 
 export const dynamic = "force-dynamic";
 
@@ -9,6 +10,23 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ id:
     const session = await getSession();
     if (!session) return NextResponse.json({ ok: false, error: "Unauthorized" }, { status: 401 });
     const { id } = await params;
+    // Server tomonda asosiy himoya: admin yoki tasdiqlangan ruxsat bo'lmasa
+    // savollar umuman qaytarilmaydi (client gate'ni chetlab o'tsa ham).
+    if (!session.isAdmin) {
+      const allowed = await hasApprovedAccess({
+        userId: session.userId,
+        targetType: "test",
+        testId: id,
+        targetLabel: "",
+        origin: new URL(_req.url).origin,
+      });
+      if (!allowed) {
+        return NextResponse.json(
+          { ok: false, error: "Testga kirish uchun admin tasdig'i kerak", accessDenied: true },
+          { status: 403 },
+        );
+      }
+    }
     const data: any = await lmsStorage.getTestForTaking(id, session.userId);
     if (!data) return NextResponse.json({ ok: false, error: "Test topilmadi yoki sizga biriktirilmagan" }, { status: 404 });
     if (data.blocked) {

@@ -813,7 +813,10 @@ export const TOOLS: ToolDef[] = [
     }),
     async execute(args, ctx) {
       await requireAdmin(ctx, "test.applyDraft");
-      const draft = await db.aiDraft.findUnique({ where: { id: args.draftId } });
+      // Egasi faqat o'z qoralamasini qo'llaydi (boshqa adminniki ko'rinmaydi)
+      const draft = await db.aiDraft.findFirst({
+        where: { id: args.draftId, ownerId: ctx.actor.userId },
+      });
       if (!draft) throw new Error("Qoralama topilmadi");
       if (draft.status === "applied") throw new Error("Bu qoralama allaqachon qo'llanilgan");
 
@@ -1406,10 +1409,11 @@ export const TOOLS: ToolDef[] = [
     async execute(args, ctx) {
       await requireAdmin(ctx, "user.resetPassword");
       const user = await resolveOneUser(args.user);
-      // NextAuth sha256 solishtiradi — scrypt emas, mos hash kerak
-      const { createHash } = await import("node:crypto");
+      // Parol endi scrypt bilan hashlanadi (NextAuth verifyPassword ikkala
+      // formatni ham qabul qiladi — eski sha256 ham ishlaydi).
       const password = generatePassword(8);
-      const passwordHash = createHash("sha256").update(password).digest("hex");
+      const { hashPassword } = await import("@/lib/security/password");
+      const passwordHash = hashPassword(password);
       const record = await db.user.findUnique({ where: { id: user.id }, select: { telegramId: true } });
       await db.user.update({ where: { id: user.id }, data: { passwordHash } });
 
@@ -2584,9 +2588,13 @@ export const TOOLS: ToolDef[] = [
     mutating: false,
     fields: [{ key: "status", label: "Holat", type: "select", options: ["draft", "approved", "applied", "rejected"] }],
     schema: z.object({ status: z.enum(["draft", "approved", "applied", "rejected"]).optional() }),
-    async execute(args) {
+    async execute(args, ctx) {
       const drafts = await db.aiDraft.findMany({
-        where: args.status ? { status: args.status } : {},
+        where: {
+          // Faqat o'z qoralamalari — boshqa adminniki ko'rinmaydi
+          ownerId: ctx.actor.userId,
+          ...(args.status ? { status: args.status } : {}),
+        },
         select: { id: true, title: true, topic: true, status: true, sourceMode: true, updatedAt: true, owner: { select: { email: true } } },
         orderBy: { updatedAt: "desc" },
         take: 30,
@@ -2619,6 +2627,12 @@ export const TOOLS: ToolDef[] = [
     schema: z.object({ draftId: z.string().max(64), confirm: z.literal(true) }),
     async execute(args, ctx) {
       await requireAdmin(ctx, "draft.reject");
+      // Faqat egasining qoralamasini rad etish mumkin
+      const owned = await db.aiDraft.findFirst({
+        where: { id: args.draftId, ownerId: ctx.actor.userId },
+        select: { id: true },
+      });
+      if (!owned) throw new Error("Qoralama topilmadi");
       await db.aiDraft.update({ where: { id: args.draftId }, data: { status: "rejected" } });
       return ok("Qoralama rad etildi.", { draftId: args.draftId });
     },

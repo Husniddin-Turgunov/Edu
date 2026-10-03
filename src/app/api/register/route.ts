@@ -1,9 +1,12 @@
 import { NextResponse } from "next/server";
 import { PrismaClient } from "@prisma/client";
-import crypto from "crypto";
 import { getSettings } from "@/lib/settings-storage";
 import { isHiddenAdminEmail } from "@/lib/hidden-admin";
 import { notifyNewUser } from "@/lib/telegram-bot";
+import {
+  hashPassword,
+  passwordProblems,
+} from "@/lib/security/password";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -11,10 +14,6 @@ export const runtime = "nodejs";
 export const maxDuration = 60;
 
 const prisma = new PrismaClient();
-
-function hashPassword(password: string) {
-  return crypto.createHash("sha256").update(password).digest("hex");
-}
 
 export async function POST(req: Request) {
   try {
@@ -31,8 +30,12 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Bu email himoyalangan" }, { status: 403 });
     }
 
-    if (password.length < 6) {
-      return NextResponse.json({ error: "Parol kamida 6 ta belgi bo'lishi kerak" }, { status: 400 });
+    const problems = passwordProblems(password);
+    if (problems.length) {
+      return NextResponse.json(
+        { error: `Parol juda oddiy. Talablar: ${problems.join(", ")}` },
+        { status: 400 },
+      );
     }
 
     const existing = await prisma.user.findUnique({ where: { email } });

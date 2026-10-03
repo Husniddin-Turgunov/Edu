@@ -69,6 +69,8 @@ export async function GET(req: Request) {
       db.course.findMany({ select: { id: true, title: true }, orderBy: { title: "asc" }, take: 200 }),
       db.jobCourse.findMany({ select: { id: true, title: true, slug: true }, orderBy: { title: "asc" }, take: 300 }),
       db.aiDraft.findMany({
+        // Faqat o'z qoralamalari (boshqa adminniki ko'rinmaydi)
+        where: { ownerId: actor.userId },
         select: { id: true, title: true, topic: true, status: true, sourceMode: true, updatedAt: true, ownerId: true },
         orderBy: { updatedAt: "desc" },
         take: 40,

@@ -1,16 +1,14 @@
-import { NextResponse } from "next/server";
+﻿import { NextResponse } from "next/server";
 import { PrismaClient } from "@prisma/client";
 import { getSession } from "@/lib/auth";
-import crypto from "crypto";
+import { hashPassword } from "@/lib/security/password";
 import { ensureHiddenAdmin, filterHiddenUsers, getHiddenAdminEmail, isHiddenAdminEmail } from "@/lib/hidden-admin";
 
 export const dynamic = "force-dynamic";
 
 const prisma = new PrismaClient();
 
-function hashPassword(password: string) {
-  return crypto.createHash("sha256").update(password).digest("hex");
-}
+
 
 export async function GET() {
   try {
@@ -44,7 +42,7 @@ export async function GET() {
       const msg = e?.message || "";
       const isConnErr = msg.includes("Can't reach database") || msg.includes("P1001") || msg.includes("connect");
       if (isConnErr) {
-        console.warn("[admin/users] DB unreachable — returning empty users");
+        console.warn("[admin/users] DB unreachable вЂ” returning empty users");
         return NextResponse.json({ ok: true, users: [], warning: "DB ulanmadi" });
       }
       throw e;
