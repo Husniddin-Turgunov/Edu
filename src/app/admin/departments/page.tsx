@@ -1,10 +1,12 @@
-"use client";
+﻿"use client";
 
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState, useCallback, useMemo } from "react";
+import { cachedFetch } from "@/lib/admin-cache";
 import { motion, AnimatePresence } from "framer-motion";
 import { AdminSidebar, AdminHeader } from "@/components/admin/AdminSidebar";
+import { NormativeFiles } from "@/components/admin/NormativeFiles";
 import {
   Building2,
   Plus,
@@ -133,7 +135,7 @@ export default function DepartmentsPage() {
   // Auth check
   useEffect(() => {
     if (status === "unauthenticated") router.push("/login");
-    if (status === "authenticated" && (session?.user as any)?.role !== "admin") router.push("/dashboard");
+    if (status === "authenticated" && (session?.user as any)?.role === "user") router.push("/dashboard");
   }, [status, session, router]);
 
   // Fetch data
@@ -142,8 +144,8 @@ export default function DepartmentsPage() {
     setError(null);
     try {
       const [deptRes, userRes] = await Promise.all([
-        fetch("/api/admin/departments", { cache: "no-store" }),
-        fetch("/api/admin/users", { cache: "no-store" }),
+        cachedFetch("/api/admin/departments", { cache: "no-store" }),
+        cachedFetch("/api/admin/users", { cache: "no-store" }),
       ]);
       const deptData = await deptRes.json();
       const userData = await userRes.json();
@@ -175,7 +177,7 @@ export default function DepartmentsPage() {
       const payload = editingDept
         ? { id: editingDept.id, ...deptForm }
         : { ...deptForm };
-      const res = await fetch("/api/admin/departments", {
+      const res = await cachedFetch("/api/admin/departments", {
         method: editingDept ? "PATCH" : "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
@@ -215,7 +217,7 @@ export default function DepartmentsPage() {
       const payload = editingPos
         ? { id: editingPos.id, ...posForm }
         : { departmentId: selectedDept.id, ...posForm };
-      const res = await fetch("/api/admin/positions", {
+      const res = await cachedFetch("/api/admin/positions", {
         method: editingPos ? "PATCH" : "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
@@ -423,12 +425,12 @@ export default function DepartmentsPage() {
                   <div className="relative p-5">
                     {/* Header */}
                     <div className="flex items-start justify-between mb-4">
-                      <div className="flex items-center gap-3">
-                        <div className="grid h-11 w-11 place-items-center rounded-xl shadow-lg"
+                      <div className="flex items-center gap-3 min-w-0">
+                        <div className="grid h-11 w-11 shrink-0 place-items-center rounded-xl shadow-lg"
                           style={{ background: `linear-gradient(135deg, ${dept.color}, ${dept.color}CC)` }}>
                           <DeptIcon icon={dept.icon} className="h-5 w-5 text-white" />
                         </div>
-                        <div>
+                        <div className="min-w-0">
                           <h3 className="font-bold text-neutral-900 text-base">{dept.name}</h3>
                         </div>
                       </div>
@@ -526,7 +528,7 @@ export default function DepartmentsPage() {
                 <div className="relative p-6 pb-8">
                   <div className="flex items-start justify-between">
                     <div className="flex items-center gap-4">
-                      <div className="grid h-14 w-14 place-items-center rounded-2xl bg-white/25 backdrop-blur-sm shadow-lg border border-white/30">
+                      <div className="grid h-14 w-14 shrink-0 place-items-center rounded-xl bg-white/25 backdrop-blur-sm shadow-lg border border-white/30">
                         <DeptIcon icon={selectedDept.icon} className="h-7 w-7 text-white" />
                       </div>
                       <div>
@@ -630,33 +632,11 @@ export default function DepartmentsPage() {
                               </div>
                             </div>
 
-                            {/* Normative file */}
-                            {pos.normativeUrl && (
-                              <div className="mt-3 flex items-center gap-2 rounded-xl bg-blue-50/80 backdrop-blur-sm px-3 py-2.5 border border-blue-100">
-                                <div className="grid h-8 w-8 place-items-center rounded-lg bg-blue-100">
-                                  <FileText className="h-4 w-4 text-blue-600" />
-                                </div>
-                                <a href={pos.normativeUrl} target="_blank" rel="noopener" onClick={(e) => e.stopPropagation()}
-                                  className="text-xs font-semibold text-blue-700 hover:underline truncate flex-1">
-                                  Normativ hujjat
-                                </a>
-                                {pos.normativeDesc && (
-                                  <button onClick={(e) => { e.stopPropagation(); setShowNormativeInfo({ url: pos.normativeUrl!, desc: pos.normativeDesc! }); }}
-                                    className="text-[10px] text-blue-500 hover:text-blue-700 font-medium">
-                                    Batafsil
-                                  </button>
-                                )}
-                              </div>
-                            )}
-
-                            {/* Upload */}
-                            <label className="mt-2 flex items-center gap-2 rounded-xl border border-dashed border-neutral-200 px-3 py-2 text-xs text-neutral-400 hover:border-blue-300 hover:text-blue-500 cursor-pointer transition-colors"
-                              onClick={(e) => e.stopPropagation()}>
-                              <Upload className="h-3.5 w-3.5" />
-                              {uploading ? "Yuklanmoqda..." : "Fayl yuklash"}
-                              <input type="file" accept=".pdf,.xlsx,.xls,.doc,.docx" className="hidden"
-                                onChange={(e) => { const file = e.target.files?.[0]; if (file) handleUploadNormative(file, pos.id); }} />
-                            </label>
+                            {/* ===== Normativ fayllar (bir nechta) ===== */}
+                            <NormativeFiles
+                              positionId={pos.id}
+                              onChanged={fetchData}
+                            />
                           </div>
 
                           {/* Expanded: Users */}
@@ -772,7 +752,7 @@ export default function DepartmentsPage() {
                       const IconComp = ICON_MAP[key];
                       return (
                         <button key={key} onClick={() => setDeptForm({ ...deptForm, icon: key })}
-                          className={`h-9 w-9 rounded-lg flex items-center justify-center border-2 transition-all ${deptForm.icon === key ? "border-blue-500 bg-blue-50 text-blue-600" : "border-transparent hover:bg-neutral-50 text-neutral-400"}`}>
+                          className={`h-9 w-9 rounded-xl flex items-center justify-center border-2 transition-all ${deptForm.icon === key ? "border-blue-500 bg-blue-50 text-blue-600" : "border-transparent hover:bg-neutral-50 text-neutral-400"}`}>
                           <IconComp className="h-5 w-5" />
                         </button>
                       );
@@ -881,7 +861,7 @@ export default function DepartmentsPage() {
                         }}
                         className="h-4 w-4 rounded border-neutral-300 text-blue-600 focus:ring-blue-500"
                       />
-                      <div className="h-6 w-6 rounded-full bg-gradient-to-br from-blue-500 to-indigo-500 flex items-center justify-center text-white text-[10px] font-bold shrink-0">
+                      <div className="h-6 w-6 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-500 flex items-center justify-center text-white text-[10px] font-bold shrink-0">
                         {u.name[0]}{u.surname?.[0] || ""}
                       </div>
                       <div className="min-w-0 flex-1">
@@ -936,7 +916,7 @@ export default function DepartmentsPage() {
             <motion.div initial={{ scale: 0.95, y: 20 }} animate={{ scale: 1, y: 0 }} exit={{ scale: 0.95, y: 10 }}
               className="bg-white rounded-2xl p-6 w-full max-w-md space-y-4 shadow-2xl" onClick={(e) => e.stopPropagation()}>
               <div className="flex items-center gap-3">
-                <div className="h-10 w-10 rounded-xl bg-blue-100 flex items-center justify-center">
+                <div className="h-10 w-10 shrink-0 rounded-xl bg-blue-100 flex items-center justify-center">
                   <FileText className="h-5 w-5 text-blue-600" />
                 </div>
                 <h3 className="text-lg font-bold text-neutral-900">Normativ fayl</h3>

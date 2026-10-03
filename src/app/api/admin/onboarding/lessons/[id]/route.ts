@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getSession } from "@/lib/auth";
 import { onboardingStorage } from "@/lib/onboarding-storage";
+import { apiCacheClear, CACHE_KEYS } from "@/lib/api-cache";
 
 export const dynamic = "force-dynamic";
 
@@ -20,6 +21,8 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
       status: body.status,
     });
     return NextResponse.json({ ok: true, lesson });
+    apiCacheClear(CACHE_KEYS.adminOnboarding);
+    apiCacheClear(CACHE_KEYS.adminTests);
   } catch (e) {
     console.error("PATCH /api/admin/onboarding/lessons/[id] error:", e);
     return NextResponse.json({ ok: false, error: "Failed to update lesson" }, { status: 500 });
@@ -35,6 +38,8 @@ export async function DELETE(_req: NextRequest, { params }: { params: Promise<{ 
     const { id } = await params;
     await onboardingStorage.deleteLesson(id);
     return NextResponse.json({ ok: true });
+    apiCacheClear(CACHE_KEYS.adminOnboarding);
+    apiCacheClear(CACHE_KEYS.adminTests);
   } catch (e) {
     console.error("DELETE /api/admin/onboarding/lessons/[id] error:", e);
     return NextResponse.json({ ok: false, error: "Failed to delete lesson" }, { status: 500 });

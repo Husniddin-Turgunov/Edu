@@ -6,12 +6,20 @@ export const dynamic = "force-dynamic";
 
 const prisma = new PrismaClient();
 
+// Qisqa muddatli kesh (DB Vercel'dan uzoqda — takror so'rovlarni tezlashtiradi)
+const CACHE_TTL_MS = 20_000;
+let _cache: { at: number; data: any } | null = null;
+
 // GET — barcha bo'limlar (ichida lavozimlar + foydalanuvchilar soni)
 export async function GET() {
   try {
     const session = await getSession();
     if (!session?.isAdmin) {
       return NextResponse.json({ error: "Ruxsat yo'q" }, { status: 403 });
+    }
+
+    if (_cache && Date.now() - _cache.at < CACHE_TTL_MS) {
+      return NextResponse.json(_cache.data);
     }
 
     const departments = await prisma.department.findMany({
@@ -23,49 +31,47 @@ export async function GET() {
       orderBy: { order: "asc" },
     });
 
-    // Har bir lavozim uchun nechta foydalanuvchi borligini hisoblash
-    const result = await Promise.all(
-      departments.map(async (dept) => {
-        const positionsWithCount = await Promise.all(
-          dept.positions.map(async (pos) => {
-            const count = await prisma.user.count({
-              where: {
-                department: dept.name,
-                position: pos.name,
-                status: "approved",
-              },
-            });
-            const users = await prisma.user.findMany({
-              where: {
-                department: dept.name,
-                position: pos.name,
-                status: "approved",
-              },
-              select: {
-                id: true,
-                name: true,
-                surname: true,
-                email: true,
-                isActive: true,
-              },
-            });
-            return {
-              ...pos,
-              userCount: count,
-              users,
-              isVacant: count === 0,
-            };
-          })
-        );
-        return {
-          ...dept,
-          positions: positionsWithCount,
-          totalUsers: positionsWithCount.reduce((sum, p) => sum + p.userCount, 0),
-        };
-      })
-    );
+    // ====== TEZKORLIK =====
+    // Avval har bir lavozim uchun 2 ta alohida so'rov (count + findMany) ketma-ket
+    // yuborilardi — 20+ lavozimda bu 40+ DB round-trip, ya'ni o'ntalar soniya.
+    // Endi BARCHA foydalanuvchilar bitta so'rovda olib, xotirada bo'lim/lavozim
+    // bo'yicha guruhlanadi (0 ta qo'shimcha so'rov).
+    const allUsers = await prisma.user.findMany({
+      where: { status: "approved" },
+      select: { id: true, name: true, surname: true, email: true, isActive: true, department: true, position: true },
+    });
 
-    return NextResponse.json({ ok: true, departments: result });
+    const grouped = new Map<string, typeof allUsers>();
+    for (const u of allUsers) {
+      if (!u.department || !u.position) continue;
+      const key = `${u.department}||${u.position}`;
+      const list = grouped.get(key);
+      if (list) list.push(u);
+      else grouped.set(key, [u]);
+    }
+
+    const result = departments.map((dept) => {
+      const positionsWithCount = (dept.positions || []).map((pos) => {
+        const users = grouped.get(`${dept.name}||${pos.name}`) || [];
+        const { department: _d, position: _p, ...clean } = users[0] ?? ({} as any);
+        void _d; void _p;
+        return {
+          ...pos,
+          userCount: users.length,
+          users: users.map((u) => ({ id: u.id, name: u.name, surname: u.surname, email: u.email, isActive: u.isActive })),
+          isVacant: users.length === 0,
+        };
+      });
+      return {
+        ...dept,
+        positions: positionsWithCount,
+        totalUsers: positionsWithCount.reduce((sum: number, p: any) => sum + p.userCount, 0),
+      };
+    });
+
+    const payload = { ok: true, departments: result };
+    _cache = { at: Date.now(), data: payload };
+    return NextResponse.json(payload);
   } catch (e: any) {
     return NextResponse.json({ error: e.message || "Server xatosi" }, { status: 500 });
   }

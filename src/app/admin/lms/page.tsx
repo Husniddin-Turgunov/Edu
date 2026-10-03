@@ -1,6 +1,7 @@
 ﻿"use client";
 
 import { useEffect, useState, useCallback } from "react";
+import { cachedFetch } from "@/lib/admin-cache";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -96,7 +97,7 @@ export default function AdminLmsPage() {
 
   useEffect(() => {
     if (status === "unauthenticated") router.push("/login");
-    if (status === "authenticated" && (session?.user as any)?.role !== "admin") {
+    if (status === "authenticated" && (session?.user as any)?.role === "user") {
       router.push("/dashboard");
     }
   }, [status, session, router]);
@@ -105,8 +106,8 @@ export default function AdminLmsPage() {
     setLoading(true);
     try {
       const [c, f] = await Promise.all([
-        fetch("/api/admin/courses", { cache: "no-store" }).then((r) => r.json()),
-        fetch("/api/admin/folders", { cache: "no-store" }).then((r) => r.json()),
+        cachedFetch("/api/admin/courses", { cache: "no-store" }).then((r) => r.json()),
+        cachedFetch("/api/admin/folders", { cache: "no-store" }).then((r) => r.json()),
       ]);
       if (c.ok) setCourses(c.courses);
       if (f.ok) setFolders(f.folders);
@@ -309,16 +310,22 @@ export default function AdminLmsPage() {
                 </button>
               </div>
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+              <div className={viewMode === "grid" ? "grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4" : "flex flex-col gap-3"}>
                 {/* Create new card */}
                 <button
                   onClick={() => setShowCreateCourse(true)}
-                  className="group min-h-[200px] flex flex-col items-center justify-center gap-3 p-6 bg-white border-2 border-dashed border-neutral-300 rounded-2xl hover:border-blue-600 hover:bg-neutral-50 transition-colors"
+                  className={`group bg-white border-2 border-dashed border-neutral-300 hover:border-blue-600 hover:bg-neutral-50 transition-colors ${
+                    viewMode === "grid"
+                      ? "min-h-[200px] flex flex-col items-center justify-center gap-3 p-6 rounded-2xl"
+                      : "flex items-center gap-3 p-4 rounded-2xl"
+                  }`}
                 >
-                  <div className="w-14 h-14 rounded-full border-2 border-dashed border-neutral-300 group-hover:border-blue-600 flex items-center justify-center">
-                    <Plus className="w-6 h-6 text-neutral-400 group-hover:text-neutral-900" />
+                  <div className={`rounded-full border-2 border-dashed border-neutral-300 group-hover:border-blue-600 flex items-center justify-center shrink-0 ${
+                    viewMode === "grid" ? "w-14 h-14" : "w-10 h-10"
+                  }`}>
+                    <Plus className={`text-neutral-400 group-hover:text-neutral-900 ${viewMode === "grid" ? "w-6 h-6" : "w-5 h-5"}`} />
                   </div>
-                  <div className="text-center">
+                  <div className={viewMode === "grid" ? "text-center" : "text-left"}>
                     <div className="font-semibold text-base text-neutral-900">Kurs yaratish</div>
                     <div className="text-xs text-neutral-500 mt-0.5">Yangi o'quv materiali</div>
                   </div>
@@ -332,15 +339,19 @@ export default function AdminLmsPage() {
                     <motion.div
                       key={course.id}
                       whileHover={{ y: -2 }}
-                      className="group relative bg-white border border-neutral-200 rounded-2xl overflow-hidden hover:shadow-xl transition-shadow"
+                      className={`group relative bg-white border border-neutral-200 rounded-2xl overflow-hidden hover:shadow-xl transition-shadow ${
+                        viewMode === "list" ? "flex flex-row items-stretch" : ""
+                      }`}
                     >
                       {/* ticket notches */}
-                      <div className="pointer-events-none absolute left-0 top-[7.5rem] h-5 w-5 -translate-y-1/2 -translate-x-1/2 rounded-full bg-neutral-50 border border-neutral-200 hidden sm:block z-10" />
-                      <div className="pointer-events-none absolute right-0 top-[7.5rem] h-5 w-5 -translate-y-1/2 translate-x-1/2 rounded-full bg-neutral-50 border border-neutral-200 hidden sm:block z-10" />
+                      <div className={`pointer-events-none absolute left-0 top-[7.5rem] h-5 w-5 -translate-y-1/2 -translate-x-1/2 rounded-full bg-neutral-50 border border-neutral-200 z-10 ${viewMode === "list" ? "hidden" : "hidden sm:block"}`} />
+                      <div className={`pointer-events-none absolute right-0 top-[7.5rem] h-5 w-5 -translate-y-1/2 translate-x-1/2 rounded-full bg-neutral-50 border border-neutral-200 z-10 ${viewMode === "list" ? "hidden" : "hidden sm:block"}`} />
                       {/* Cover */}
                       <div
                         onClick={() => router.push(`/admin/lms/${course.id}`)}
-                        className={`relative h-28 bg-gradient-to-br ${course.coverColor} cursor-pointer`}
+                        className={`relative bg-gradient-to-br ${course.coverColor} cursor-pointer shrink-0 ${
+                          viewMode === "grid" ? "h-28" : "w-24 sm:w-32"
+                        }`}
                       >
                         <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_50%,rgba(255,255,255,0.2),transparent)]" />
                         <button
@@ -390,22 +401,22 @@ export default function AdminLmsPage() {
                             {status.label}
                           </span>
                         </div>
-                        <h3 className="font-bold text-base text-neutral-900 mb-1.5 line-clamp-2 min-h-[3rem]">
+                        <h3 className={`font-bold text-neutral-900 ${viewMode === "grid" ? "text-base mb-1.5 line-clamp-2 min-h-[3rem]" : "text-sm mb-1 line-clamp-1"}`}>
                           {course.title}
                         </h3>
                         {course.description && (
-                          <p className="text-xs text-neutral-500 line-clamp-2 mb-3 min-h-[2rem]">
+                          <p className={`text-neutral-500 ${viewMode === "grid" ? "text-xs line-clamp-2 mb-3 min-h-[2rem]" : "text-xs line-clamp-1 mb-2"}`}>
                             {course.description}
                           </p>
                         )}
-                        <div className="grid grid-cols-4 gap-2 mt-3 pt-3 border-t border-dashed border-neutral-200">
+                        <div className={`grid grid-cols-4 gap-2 border-t border-dashed border-neutral-200 ${viewMode === "grid" ? "mt-3 pt-3" : "mt-1 pt-2"}`}>
                           <Stat icon={<BookOpen className="w-3 h-3" />} label="TILI" value={LANG_LABELS[course.language] || course.language.toUpperCase()} />
                           <Stat icon={<Users className="w-3 h-3" />} label="STUD." value={0} />
                           <Stat icon={<FileText className="w-3 h-3" />} label="MODUL" value={modulesCount} />
                           <Stat icon={<Sparkles className="w-3 h-3" />} label="ELEMENT" value={lessonsCount} />
                         </div>
                         {/* subtle barcode */}
-                        <div className="pointer-events-none mt-3 flex items-center gap-[2px] opacity-[0.06] group-hover:opacity-10 transition-opacity">
+                        <div className={`pointer-events-none flex items-center gap-[2px] opacity-[0.06] group-hover:opacity-10 transition-opacity ${viewMode === "grid" ? "mt-3" : "hidden"}`}>
                           {Array.from({ length: 20 }).map((_, i) => (
                             <div key={i} className={`h-4 bg-neutral-900 ${i % 3 === 0 ? "w-[2px]" : i % 2 === 0 ? "w-[2.5px]" : "w-[1px]"}`} />
                           ))}

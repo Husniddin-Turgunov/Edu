@@ -3,6 +3,7 @@
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState, useCallback } from "react";
+import { cachedFetch } from "@/lib/admin-cache";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import ReactMarkdown from "react-markdown";
@@ -145,7 +146,7 @@ export default function AdminOnboardingPage() {
 
   const load = useCallback(async () => {
     try {
-      const res = await fetch("/api/admin/onboarding", { cache: "no-store" });
+      const res = await cachedFetch("/api/admin/onboarding", { cache: "no-store" });
       const data = await res.json();
       if (data?.ok && data.course) setCourse(data.course);
       else setCourse(null);
@@ -158,7 +159,7 @@ export default function AdminOnboardingPage() {
 
   const loadTests = useCallback(async () => {
     try {
-      const res = await fetch("/api/admin/tests", { cache: "no-store" });
+      const res = await cachedFetch("/api/admin/tests", { cache: "no-store" });
       const data = await res.json();
       if (data?.ok && Array.isArray(data.tests)) setTests(data.tests);
       else setTests([]);
@@ -196,7 +197,7 @@ export default function AdminOnboardingPage() {
 
   useEffect(() => {
     if (status === "unauthenticated") router.push("/login");
-    if (status === "authenticated" && (session?.user as any)?.role !== "admin") {
+    if (status === "authenticated" && (session?.user as any)?.role === "user") {
       router.push("/dashboard");
     }
   }, [status, session, router]);

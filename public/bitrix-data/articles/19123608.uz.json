@@ -1,0 +1,344 @@
+{
+ "id": "19123608",
+ "title": "BI Konstruktor bilan ishlashni qanday boshlash kerak",
+ "sectionId": "161786",
+ "section": "BI Konstruktor",
+ "parent": null,
+ "order": 88,
+ "short": null,
+ "toc": [],
+ "breadcrumb": [
+  "Новые статьи",
+  "С чего начать",
+  "Написать в чат",
+  "Лента Новостей",
+  "Приложение Битрикс24",
+  "Общие вопросы"
+ ],
+ "articleMeta": [],
+ "related": [
+  {
+   "id": "19123608",
+   "t": "Открыть в новой вкладке"
+  },
+  {
+   "id": "18897300",
+   "t": "BI Конструктор для создания аналитических отчетов"
+  },
+  {
+   "id": "19498394",
+   "t": "Как создавать отчеты в BI Конструкторе"
+  },
+  {
+   "id": "19123632",
+   "t": "Как редактировать отчеты в BI Конструкторе"
+  }
+ ],
+ "blocks": [
+  {
+   "k": "P",
+   "t": "BI Конструктор — инструмент, в котором можно просматривать и создавать аналитические отчеты на основе данных вашего бизнеса. Начать работать с конструктором можно тремя способами."
+  },
+  {
+   "k": "H2",
+   "t": "Использовать набор стандартных отчетов"
+  },
+  {
+   "k": "P",
+   "t": "Перейдите в раздел BI Конструктор и выберите отчет из списка. Он автоматически соберет информацию из Битрикс24 и заполнит показатели."
+  },
+  {
+   "k": "IMG",
+   "n": 1,
+   "src": "/images/helpdesk/screenshots/ru/gb/screenshot/196.jpg",
+   "local": "/bitrix-img/19123608__01.jpg"
+  },
+  {
+   "k": "P",
+   "t": "Мы подготовили набор стандартных отчетов для анализа основных показателей бизнеса."
+  },
+  {
+   "k": "IMG",
+   "n": 2,
+   "src": "/upload/medialibrary/9a8/aqvkh38uq2uu1hdeaofpamtzpnmum9k7/01.jpg",
+   "local": "/bitrix-img/19123608__02.jpg"
+  },
+  {
+   "k": "IMG",
+   "n": 3,
+   "src": "/upload/medialibrary/c99/gl9vpfzjpyjf1sdkm53f2a2dyc4laxit/02.jpg",
+   "local": "/bitrix-img/19123608__03.jpg"
+  },
+  {
+   "k": "IMG",
+   "n": 4,
+   "src": "/upload/medialibrary/4f2/ra2imamx5kb0dyjr8f4v6demsin7t11y/03.jpg",
+   "local": "/bitrix-img/19123608__04.jpg"
+  },
+  {
+   "k": "IMG",
+   "n": 5,
+   "src": "/upload/medialibrary/395/ui0zqetmxfxnjsbtrd0xzaqo6f1n5wrw/06.jpg",
+   "local": "/bitrix-img/19123608__05.jpg"
+  },
+  {
+   "k": "IMG",
+   "n": 6,
+   "src": "/upload/medialibrary/927/64puee4tvjk8m5kxgwo8sccv0db1zyj5/04.jpg",
+   "local": "/bitrix-img/19123608__06.jpg"
+  },
+  {
+   "k": "IMG",
+   "n": 7,
+   "src": "/upload/medialibrary/bfe/v8b5fys4jvxy58ge39ngil8x1lfgci8n/05.jpg",
+   "local": "/bitrix-img/19123608__07.jpg"
+  },
+  {
+   "k": "IMG",
+   "n": 8,
+   "src": "/upload/medialibrary/ddf/y2fjti52k8zar6bxgki0dbaxmd0nyggt/06.jpg",
+   "local": "/bitrix-img/19123608__08.jpg"
+  },
+  {
+   "k": "IMG",
+   "n": 9,
+   "src": "/upload/medialibrary/a3c/decfyupof4x99ajxegsvsf5gi7cyv8jj/07.jpg",
+   "local": "/bitrix-img/19123608__09.jpg"
+  },
+  {
+   "k": "IMG",
+   "n": 10,
+   "src": "/upload/medialibrary/56c/713cx8r8ajr0bhgog7xwt6u8fyhtckbn/08.jpg",
+   "local": "/bitrix-img/19123608__10.jpg"
+  },
+  {
+   "k": "IMG",
+   "n": 11,
+   "src": "/upload/medialibrary/3a9/fu68tfz3vchtu5oxfs588vkapo7hp46c/02.jpg",
+   "local": "/bitrix-img/19123608__11.jpg"
+  },
+  {
+   "k": "IMG",
+   "n": 12,
+   "src": "/upload/medialibrary/9ec/gpy96wlmrdd42a0gyo825oa542sqthii/01.jpg",
+   "local": "/bitrix-img/19123608__12.jpg"
+  },
+  {
+   "k": "IMG",
+   "n": 13,
+   "src": "/upload/medialibrary/06b/qlso3vwlq96347ebjcpwxwnyqsqepvv9/01.jpg",
+   "local": "/bitrix-img/19123608__13.jpg"
+  },
+  {
+   "k": "IMG",
+   "n": 14,
+   "src": "/upload/medialibrary/d53/by22xewddsjco4h3oin37fwek6bhaify/02.jpg",
+   "local": "/bitrix-img/19123608__14.jpg"
+  },
+  {
+   "k": "IMG",
+   "n": 15,
+   "src": "/upload/medialibrary/6c2/s2k8cj6zjwrbf845i0qyosts17nne2yo/03.jpg",
+   "local": "/bitrix-img/19123608__15.jpg"
+  },
+  {
+   "k": "IMG",
+   "n": 16,
+   "src": "/upload/medialibrary/2d9/duyi5so4aharl5cs0a6hrlo8zb6cpvnx/04.jpg",
+   "local": "/bitrix-img/19123608__16.jpg"
+  },
+  {
+   "k": "IMG",
+   "n": 17,
+   "src": "/upload/medialibrary/1ce/8at84hz13mfiz0lhatqeuucj2am28kwa/05.jpg",
+   "local": "/bitrix-img/19123608__17.jpg"
+  },
+  {
+   "k": "IMG",
+   "n": 18,
+   "src": "/upload/medialibrary/455/jh5w83w07bcxo8qtib4w5y0glzshanzg/06.jpg",
+   "local": "/bitrix-img/19123608__18.jpg"
+  },
+  {
+   "k": "P",
+   "t": "Чтобы установить одинаковый период для всех отчетов, откройте Настройки > Общие настройки и укажите нужный период."
+  },
+  {
+   "k": "IMG",
+   "n": 19,
+   "src": "/images/helpdesk/screenshots/ru/gb/screenshot/197.jpg",
+   "local": "/bitrix-img/19123608__19.jpg"
+  },
+  {
+   "k": "IMG",
+   "n": 20,
+   "src": "/images/helpdesk/screenshots/ru/gb/screenshot/198.jpg",
+   "local": "/bitrix-img/19123608__20.jpg"
+  },
+  {
+   "k": "H2",
+   "t": "Установить отчет из Маркета или заказать у партнера"
+  },
+  {
+   "k": "P",
+   "t": "Кроме стандартных отчетов, посмотрите решения из Маркета. Там разработчики публикуют отчеты для разных задач и сфер бизнеса. В отчетах уже есть графики и настроены фильтры, вам не придется ничего дополнительно настраивать."
+  },
+  {
+   "k": "IMG",
+   "n": 21,
+   "src": "/images/helpdesk/screenshots/ru/gb/screenshot/199.jpg",
+   "local": "/bitrix-img/19123608__21.jpg"
+  },
+  {
+   "k": "P",
+   "t": "Если не нашли подходящий вариант отчета, вы можете заказать отчет у партнеров через специальную форму."
+  },
+  {
+   "k": "IMG",
+   "n": 22,
+   "src": "/images/helpdesk/screenshots/ru/gb/screenshot/200.jpg",
+   "local": "/bitrix-img/19123608__22.jpg"
+  },
+  {
+   "k": "H2",
+   "t": "Создать отчет или дополнить стандартный"
+  },
+  {
+   "k": "P",
+   "t": "В списке отчетов вы можете создать новые или скопировать и отредактировать стандартные. Как создавать и редактировать отчеты в BI Конструкторе"
+  },
+  {
+   "k": "IMG",
+   "n": 23,
+   "src": "/images/helpdesk/screenshots/ru/gb/screenshot/201.jpg",
+   "local": "/bitrix-img/19123608__23.jpg"
+  },
+  {
+   "k": "H2",
+   "t": "Коротко"
+  },
+  {
+   "k": "UL",
+   "t": "Используйте набор готовых отчетов, чтобы сразу начать анализировать показатели бизнеса. Если не нашли подходящий вариант отчета, посмотрите готовые отчеты в Маркете или закажите у партнеров. Посмотрите видео, чтобы больше узнать о возможностях BI Конструктора: Как работает BI-конструктор и Как управлять фильтрацией по датам."
+  }
+ ],
+ "images": [
+  {
+   "n": 1,
+   "local": "/bitrix-img/19123608__01.jpg",
+   "bytes": 256698
+  },
+  {
+   "n": 2,
+   "local": "/bitrix-img/19123608__02.jpg",
+   "bytes": 182026
+  },
+  {
+   "n": 3,
+   "local": "/bitrix-img/19123608__03.jpg",
+   "bytes": 125619
+  },
+  {
+   "n": 4,
+   "local": "/bitrix-img/19123608__04.jpg",
+   "bytes": 159480
+  },
+  {
+   "n": 5,
+   "local": "/bitrix-img/19123608__05.jpg",
+   "bytes": 219590
+  },
+  {
+   "n": 6,
+   "local": "/bitrix-img/19123608__06.jpg",
+   "bytes": 140312
+  },
+  {
+   "n": 7,
+   "local": "/bitrix-img/19123608__07.jpg",
+   "bytes": 133054
+  },
+  {
+   "n": 8,
+   "local": "/bitrix-img/19123608__08.jpg",
+   "bytes": 128820
+  },
+  {
+   "n": 9,
+   "local": "/bitrix-img/19123608__09.jpg",
+   "bytes": 121409
+  },
+  {
+   "n": 10,
+   "local": "/bitrix-img/19123608__10.jpg",
+   "bytes": 177484
+  },
+  {
+   "n": 11,
+   "local": "/bitrix-img/19123608__11.jpg",
+   "bytes": 163317
+  },
+  {
+   "n": 12,
+   "local": "/bitrix-img/19123608__12.jpg",
+   "bytes": 155266
+  },
+  {
+   "n": 13,
+   "local": "/bitrix-img/19123608__13.jpg",
+   "bytes": 192639
+  },
+  {
+   "n": 14,
+   "local": "/bitrix-img/19123608__14.jpg",
+   "bytes": 218135
+  },
+  {
+   "n": 15,
+   "local": "/bitrix-img/19123608__15.jpg",
+   "bytes": 137071
+  },
+  {
+   "n": 16,
+   "local": "/bitrix-img/19123608__16.jpg",
+   "bytes": 148815
+  },
+  {
+   "n": 17,
+   "local": "/bitrix-img/19123608__17.jpg",
+   "bytes": 171698
+  },
+  {
+   "n": 18,
+   "local": "/bitrix-img/19123608__18.jpg",
+   "bytes": 158374
+  },
+  {
+   "n": 19,
+   "local": "/bitrix-img/19123608__19.jpg",
+   "bytes": 264923
+  },
+  {
+   "n": 20,
+   "local": "/bitrix-img/19123608__20.jpg",
+   "bytes": 531620
+  },
+  {
+   "n": 21,
+   "local": "/bitrix-img/19123608__21.jpg",
+   "bytes": 710756
+  },
+  {
+   "n": 22,
+   "local": "/bitrix-img/19123608__22.jpg",
+   "bytes": 359047
+  },
+  {
+   "n": 23,
+   "local": "/bitrix-img/19123608__23.jpg",
+   "bytes": 814649
+  }
+ ],
+ "sectionKey": "BI Конструктор",
+ "lang": "uz"
+}

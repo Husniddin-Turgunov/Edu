@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Telegram Bot API — AKELA GROUP
  *
  * Bildirishnomalar (yangi ro'yxatdan o'tish, test natijasi va h.k.) botga
@@ -349,9 +349,11 @@ export async function broadcast(payload: BroadcastPayload) {
   let sent = 0;
   let failed = 0;
 
-  for (const id of ids) {
-    const chatId = Number(id);
-    if (!Number.isFinite(chatId) || chatId === 0) continue;
+  const chats = ids
+    .map((id) => Number(id))
+    .filter((id) => Number.isFinite(id) && id !== 0);
+
+  const sendOne = async (chatId: number, id: string) => {
     try {
       const res = payload.photo
         ? await sendPhoto(chatId, payload.photo, payload.text, {
@@ -361,19 +363,27 @@ export async function broadcast(payload: BroadcastPayload) {
         : await sendMessage(chatId, payload.text, { reply_markup: payload.buttons });
 
       if (res && res.ok === false) {
-        failed++;
         // 403 — bot bloklangan, 400 — chat topilmadi: obunachini o'chiramiz
         if (res.error_code === 403 || res.error_code === 400) {
           await prisma.botSubscriber
             .updateMany({ where: { chatId: id }, data: { isActive: false } })
             .catch(() => {});
         }
-      } else {
-        sent++;
+        return false;
       }
+      return true;
     } catch {
-      failed++;
+      return false;
     }
+  };
+
+  // HAMMAGA BIR VAQTDA yetib borishi uchun parallel yuboriladi
+  // (Telegram limitiga moslik uchun kichik partiyalarga bo'linadi)
+  const BATCH = 20;
+  for (let i = 0; i < chats.length; i += BATCH) {
+    const batch = chats.slice(i, i + BATCH);
+    const results = await Promise.all(batch.map((chatId, idx) => sendOne(chatId, ids[chats.indexOf(chatId)] || String(chatId))));
+    for (const ok of results) (ok ? sent++ : failed++);
   }
 
   console.log(`📣 Telegram: ${sent}/${ids.length} ga yuborildi (${failed} xato)`);
@@ -436,6 +446,10 @@ export type TestResultNotice = {
   level?: string;
   /** Rasm ichidagi shrift CDN dan olinishi uchun (ixtiyoriy) */
   origin?: string;
+  /** Nechta to'g'ri javob */
+  correctCount?: number | null;
+  /** Nechta xato javob */
+  wrongCount?: number | null;
 };
 
 export async function notifyTestResult(result: TestResultNotice) {
@@ -453,6 +467,15 @@ export async function notifyTestResult(result: TestResultNotice) {
     result.department ? `🏢 <b>Bo'lim:</b> ${escapeHtml(result.department)}` : "",
     `📝 <b>Test:</b> ${escapeHtml(result.testTitle)}`,
     `📊 <b>Ball:</b> ${escapeHtml(scoreText)}${typeof result.passScore === "number" ? ` (o'tish bali: ${result.passScore}%)` : ""}`,
+    ...(typeof result.correctCount === "number" && typeof result.wrongCount === "number" && result.correctCount + result.wrongCount > 0
+      ? (() => {
+          const totalAuto = result.correctCount! + result.wrongCount!;
+          return [
+            `✅ <b>To'g'ri:</b> ${result.correctCount} ta (${Math.round((result.correctCount! / totalAuto) * 100)}%)`,
+            `❌ <b>Xato:</b> ${result.wrongCount} ta (${Math.round((result.wrongCount! / totalAuto) * 100)}%)`,
+          ];
+        })()
+      : []),
     `🥇 <b>Daraja:</b> ${escapeHtml(level)}`,
     `🏁 <b>Holat:</b> ${statusText}`,
     `🕒 <b>Vaqt:</b> ${timeText}`,
@@ -462,21 +485,23 @@ export async function notifyTestResult(result: TestResultNotice) {
 
   // Rasm (kartochka) generatsiyasi muvaffaqiyatsiz bo'lsa — faqat matn yuboriladi
   let photo: ArrayBuffer | null = null;
-  try {
-    photo = await renderResultCardPng(
-      {
-        fullName: result.fullName,
-        department: result.department,
-        position: result.position,
-        testTitle: result.testTitle,
-        score: result.score,
-        passScore: result.passScore ?? null,
-        passed: result.passed,
-        level,
-        completedAt: when,
-      },
-      result.origin,
-    );
+      try {
+        photo = await renderResultCardPng(
+          {
+            fullName: result.fullName,
+            department: result.department,
+            position: result.position,
+            testTitle: result.testTitle,
+            score: result.score,
+            passScore: result.passScore ?? null,
+            passed: result.passed,
+            correctCount: result.correctCount ?? null,
+            wrongCount: result.wrongCount ?? null,
+            level,
+            completedAt: when,
+          },
+          result.origin,
+        );
   } catch (e: any) {
     console.error("Result card render error:", e?.message || e);
     photo = null;
@@ -491,5 +516,120 @@ export async function notifyTestResult(result: TestResultNotice) {
 
 /** Eski nom bilan moslik uchun */
 export const notifyAdminTestResult = notifyTestResult;
+
+// ====== Testga kirish uchun ruxsat so'rovi ======
+// Botga "Ruxsat berish" / "Rad etish" tugmalari bilan yuboriladi.
+
+export const TEST_ACCESS_BOT_SECRET =
+  process.env.TEST_ACCESS_SECRET || process.env.CRON_SECRET || "akela-test-access-secret";
+
+export type TestAccessNotice = {
+  requestId: string;
+  fullName: string;
+  testTitle: string;
+  email?: string | null;
+  department?: string | null;
+  position?: string | null;
+  phone?: string | null;
+  requestedAt: Date | string;
+  origin: string;
+};
+
+function formatRequestTime(value: Date | string) {
+  const when = new Date(value);
+  const pad = (n: number) => String(n).padStart(2, "0");
+  return `${pad(when.getDate())}.${pad(when.getMonth() + 1)}.${when.getFullYear()} ${pad(when.getHours())}:${pad(when.getMinutes())}`;
+}
+
+/** Testga kirishga ruxsat so'rovi — barcha bot obunachilariga yuboriladi */
+export async function notifyTestAccessRequest(notice: TestAccessNotice) {
+  const lines = [
+    "🔔 <b>Testga kirish uchun ruxsat so'rovi</b>",
+    "",
+    `👤 <b>F.I.Sh:</b> ${escapeHtml(notice.fullName)}`,
+    notice.department ? `🏢 <b>Bo'lim:</b> ${escapeHtml(notice.department)}` : "",
+    notice.position ? `🎯 <b>Lavozim:</b> ${escapeHtml(notice.position)}` : "",
+    notice.phone ? `📱 <b>Tel:</b> ${escapeHtml(notice.phone)}` : "",
+    notice.email ? `✉️ <b>Email:</b> ${escapeHtml(notice.email)}` : "",
+    `📝 <b>Test:</b> ${escapeHtml(notice.testTitle)}`,
+    `🕒 <b>So'rov vaqti:</b> ${formatRequestTime(notice.requestedAt)}`,
+    "",
+    "Xodim testni boshlashni kutmoqda. Ruxsat bering yoki rad eting.",
+  ]
+    .filter(Boolean)
+    .join("\n");
+
+  const keyboard: InlineButton[][] = [
+    [
+      { text: "✅ Ruxsat berish", callback_data: `testacc_yes:${notice.requestId}` },
+      { text: "❌ Rad etish", callback_data: `testacc_no:${notice.requestId}` },
+    ],
+  ];
+
+  const chatIds = await getSubscriberIds();
+  const targets = chatIds.length ? chatIds : FALLBACK_CHAT_ID ? [String(FALLBACK_CHAT_ID)] : [];
+  if (!targets.length) {
+    console.error("notifyTestAccessRequest: hech qanday Telegram maqsadi yo'q");
+    return { ok: false, error: "no targets", messages: [] as { chatId: number; messageId: number }[] };
+  }
+
+  // Hammasiga PARALLEL yuboriladi — bir vaqtda yetib boradi
+  const results = await Promise.allSettled(
+    targets.map((chatId) => sendMessage(Number(chatId), lines, { reply_markup: keyboard })),
+  );
+
+  const messages: { chatId: number; messageId: number }[] = [];
+  results.forEach((r, i) => {
+    if (r.status === "fulfilled") {
+      const res: any = r.value;
+      const messageId = res?.result?.message_id;
+      if (messageId) messages.push({ chatId: Number(targets[i]), messageId });
+    }
+  });
+  const sent = results.filter((r) => r.status === "fulfilled").length;
+  return { ok: sent > 0, sent, total: targets.length, messages };
+}
+
+/**
+ * Ruxsat berilganda/rad etilganda:
+ *  1) so'rov xabari BORGAN barcha chatlarda tugmalar olib tashlanadi,
+ *  2) botga ulangan hammaga bir xil natija xabari yuboriladi.
+ */
+export async function settleTestAccessRequest(opts: {
+  telegramChats?: string | null;
+  approved: boolean;
+  fullName: string;
+  testTitle: string;
+}) {
+  const approved = opts.approved;
+
+  // 1) Eski so'rov xabaridagi tugmalarni hamma chatda olib tashlash
+  let cleared = 0;
+  try {
+    const chats = JSON.parse(opts.telegramChats || "[]") as { chatId: number; messageId: number }[];
+    await Promise.allSettled(
+      chats.map((c) =>
+        editMessageText(
+          c.chatId,
+          c.messageId,
+          approved
+            ? `✅ <b>Ruxsat berildi</b>\n👤 ${escapeHtml(opts.fullName)}\n📝 ${escapeHtml(opts.testTitle)}\n\nXodim testni boshlaydi.`
+            : `❌ <b>Rad etildi</b>\n👤 ${escapeHtml(opts.fullName)}\n📝 ${escapeHtml(opts.testTitle)}\n\nXodimga ruxsat berilmadi.`,
+          { parse_mode: "HTML", reply_markup: { inline_keyboard: [] } },
+        ),
+      ),
+    );
+    cleared = chats.length;
+  } catch { /* ignore */ }
+
+  // 2) Hammaga bir xil natija
+  const result = await broadcast({
+    text: approved
+      ? `✅ <b>Testga kirishga ruxsat berildi</b>\n👤 ${escapeHtml(opts.fullName)}\n📝 ${escapeHtml(opts.testTitle)}\n\nRuxsat beruvchi: HR / nazoratchi. Xodim testni boshlaydi.`
+      : `❌ <b>Testga kirish rad etildi</b>\n👤 ${escapeHtml(opts.fullName)}\n📝 ${escapeHtml(opts.testTitle)}\n\nXodimga ruxsat berilmadi. Sabab: HR bilan bog'lanish.`,
+  }).catch(() => ({ total: 0, sent: 0, failed: 0 }));
+
+  return { cleared, ...result };
+}
 
 

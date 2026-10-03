@@ -324,6 +324,39 @@ async function handleCallbackQuery(cq: any) {
     return;
   }
 
+  // ====== Testga kirish ruxsati (ruxsat berish / rad etish) =====
+  if (data.startsWith("testacc_")) {
+    const [key, requestId] = data.split(":"); // "testacc_yes:<id>" | "testacc_no:<id>"
+    const approved = key === "testacc_yes";
+    const req = await prisma.testAccessRequest.findUnique({
+      where: { id: requestId },
+      include: { user: { select: { name: true, surname: true, email: true } }, test: { select: { title: true } } },
+    });
+    if (!req) {
+      await editMessageText(chatId, messageId, "❌ So'rov topilmadi.");
+      return;
+    }
+    if (req.status !== "pending") {
+      await editMessageText(chatId, messageId, `ℹ️ Bu so'rov allaqach hal qilingan (${req.status}).`);
+      return;
+    }
+    const decision = approved ? "approved" : "rejected";
+    await prisma.testAccessRequest.update({
+      where: { id: requestId },
+      data: { status: decision, decidedAt: new Date(), decidedBy: String(userId) },
+    });
+    const who = [req.user.surname, req.user.name].filter(Boolean).join(" ") || req.user.email;
+    await editMessageText(
+      chatId,
+      messageId,
+      approved
+        ? `✅ <b>Ruxsat berildi</b>\n👤 ${escapeHtml(who)}\n📝 ${escapeHtml(req.test.title)}\nXodim testni boshlaydi.`
+        : `❌ <b>Rad etildi</b>\n👤 ${escapeHtml(who)}\n📝 ${escapeHtml(req.test.title)}\nXodimga ruxsat berilmadi.`,
+      { inline_keyboard: [] },
+    );
+    return;
+  }
+
   if (data.startsWith("approve_")) {
     const email = data.replace("approve_", "");
     const user = await prisma.user.findUnique({ where: { email } });

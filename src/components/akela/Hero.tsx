@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import {
   GraduationCap,
@@ -8,8 +9,18 @@ import {
   Users,
   CalendarDays,
   ListChecks,
+  FileText,
+  ExternalLink,
 } from "lucide-react";
 import type { UiStrings } from "@/lib/akela-content";
+
+type HeroNormative = {
+  id: string;
+  name: string;
+  url: string;
+  positionName?: string | null;
+  departmentName?: string | null;
+};
 
 export function Hero({
   strings,
@@ -20,6 +31,23 @@ export function Hero({
   onStart: () => void;
   onExplore: () => void;
 }) {
+  // Foydalanuvchining bo'limi/lavozimidagi normativ fayllar.
+  // Fayl yo'q bo'lsa — tugma umuman ko'rinmaydi.
+  const [normatives, setNormatives] = useState<HeroNormative[]>([]);
+  const [normativesOpen, setNormativesOpen] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await fetch("/api/user/position-normatives", { cache: "no-store" });
+        const data = await res.json().catch(() => ({}));
+        if (!cancelled && data?.ok && Array.isArray(data.items)) setNormatives(data.items);
+      } catch { /* ignore */ }
+    })();
+    return () => { cancelled = true; };
+  }, []);
+
   return (
     <section
       id="home"
@@ -105,6 +133,84 @@ export function Hero({
                 <Building2 className="h-4 w-4" />
                 {strings.hero_cta_explore}
               </button>
+
+              {/* ===== Normativ hujjatlar (faqat foydalanuvchining bo'limida fayl bo'lsa) ===== */}
+              {normatives.length > 0 && (
+                <button
+                  type="button"
+                  onClick={() => setNormativesOpen(true)}
+                  data-testid="hero-normative-btn"
+                  className="inline-flex items-center gap-2 rounded-2xl glass px-6 py-3.5 text-sm font-semibold text-[color:var(--emerald-deep)] transition-transform hover:scale-[1.03] active:scale-95"
+                >
+                  <FileText className="h-4 w-4" />
+                  Normativ hujjatlar
+                  <span className="rounded-full bg-blue-600 px-1.5 py-0.5 text-[10px] font-black text-white">
+                    {normatives.length}
+                  </span>
+                </button>
+              )}
+
+              {normativesOpen && (
+                <div
+                  className="fixed inset-0 z-50 grid place-items-center bg-black/40 p-4"
+                  onClick={() => setNormativesOpen(false)}
+                >
+                  <div
+                    className="w-full max-w-lg rounded-2xl bg-white p-6 shadow-2xl"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <h3 className="text-base font-black">Normativ hujjatlar</h3>
+                    <p className="mt-1 text-xs text-neutral-500">
+                      {normatives[0]?.departmentName ? `Bo'lim: ${normatives[0].departmentName}` : ""}
+                    </p>
+                    <div className="mt-4 space-y-2">
+                      {normatives.map((n) => (
+                        <div
+                          key={n.id}
+                          className="flex items-center gap-3 rounded-xl border border-blue-100 bg-blue-50/70 px-3 py-2.5 transition-colors hover:bg-blue-50"
+                        >
+                          <a
+                            href={n.url}
+                            target="_blank"
+                            rel="noopener"
+                            data-testid="hero-normative-item"
+                            className="flex min-w-0 flex-1 items-center gap-3"
+                          >
+                            <span className="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-blue-100">
+                              <FileText className="h-4 w-4 text-blue-600" />
+                            </span>
+                            <span className="min-w-0 flex-1">
+                              <span className="block truncate text-xs font-semibold text-blue-800">{n.name}</span>
+                              {n.positionName && (
+                                <span className="block text-[10px] text-blue-500">{n.positionName}</span>
+                              )}
+                            </span>
+                            <ExternalLink className="h-3.5 w-3.5 shrink-0 text-blue-500" />
+                          </a>
+                          {/* Yuklab olish */}
+                          <a
+                            href={`/api/normatives/download?url=${encodeURIComponent(n.url)}&name=${encodeURIComponent(n.name)}`}
+                            data-testid="hero-normative-download"
+                            title="Yuklab olish"
+                            className="shrink-0 rounded-lg border border-blue-200 bg-white px-2.5 py-1.5 text-[10px] font-bold text-blue-700 transition-colors hover:bg-blue-100"
+                          >
+                            Yuklab olish
+                          </a>
+                        </div>
+                      ))}
+                    </div>
+                    <div className="mt-5 flex justify-end">
+                      <button
+                        type="button"
+                        onClick={() => setNormativesOpen(false)}
+                        className="rounded-xl border px-4 py-2 text-sm font-semibold"
+                      >
+                        Yopish
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
             </motion.div>
 
             {/* Stats inline */}

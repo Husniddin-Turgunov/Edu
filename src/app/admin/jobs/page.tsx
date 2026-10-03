@@ -1,6 +1,7 @@
 ﻿"use client";
 
 import { useEffect, useState, useCallback, useMemo } from "react";
+import { cachedFetch } from "@/lib/admin-cache";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -71,13 +72,13 @@ export default function AdminJobsPage() {
 
   useEffect(() => {
     if (status === "unauthenticated") router.push("/login");
-    if (status === "authenticated" && (session?.user as any)?.role !== "admin") router.push("/dashboard");
+    if (status === "authenticated" && (session?.user as any)?.role === "user") router.push("/dashboard");
   }, [status, session, router]);
 
   const fetchJobs = useCallback(async () => {
     setLoading(true);
     try {
-      const res = await fetch("/api/admin/jobs", { cache: "no-store" });
+      const res = await cachedFetch("/api/admin/jobs", { cache: "no-store" });
       const data = await res.json();
       if (data.ok) setJobs(data.jobs);
       else showToast("err", data.error || "Yuklab bo'lmadi");
@@ -187,7 +188,7 @@ export default function AdminJobsPage() {
           subtitle="30 ta kasb — /courses dagi ticket ko'rinishidagi barcha kurslarni shu yerdan boshqaring"
           action={
             <div className="flex items-center gap-2">
-              <Link href="/courses" target="_blank" className="hidden sm:flex items-center gap-2 px-4 py-2 text-sm font-medium text-neutral-700 bg-white border border-neutral-200 rounded-lg hover:bg-neutral-50">
+              <Link href="/admin/preview?path=%2Fcourses" className="hidden sm:flex items-center gap-2 px-4 py-2 text-sm font-medium text-neutral-700 bg-white border border-neutral-200 rounded-lg hover:bg-neutral-50">
                 <Eye className="w-4 h-4" /> Saytda ko'rish
               </Link>
               <button onClick={() => setShowCreate(true)} className="flex items-center gap-2 px-4 py-2 text-sm font-semibold text-white bg-neutral-900 rounded-lg hover:from-blue-800 hover:to-indigo-700">
@@ -243,7 +244,7 @@ export default function AdminJobsPage() {
                 Bu sahifadagi kartalar <span className="font-semibold">/courses</span> dagi kabi ticket (chipta) dizaynida — perforatsiya, dashed chiziq va shtrix-kod bilan. Foydalanuvchi ko'radi — admin shu yerda boshqaradi. Qolgan bo'limlar ham shu ticket uslubiga o'tkazildi.
               </p>
             </div>
-            <Link href="/courses" className="ml-auto hidden sm:inline-flex shrink-0 items-center gap-1.5 rounded-lg bg-white border border-violet-200 px-3 py-1.5 text-xs font-bold text-violet-700 hover:bg-violet-50">
+            <Link href="/admin/preview?path=%2Fcourses" className="ml-auto hidden sm:inline-flex shrink-0 items-center gap-1.5 rounded-lg bg-white border border-violet-200 px-3 py-1.5 text-xs font-bold text-violet-700 hover:bg-violet-50">
               Kurslarni ko'rish <ArrowLeft className="h-3 w-3 rotate-180" />
             </Link>
           </div>
@@ -292,8 +293,7 @@ export default function AdminJobsPage() {
                       adminActions={
                         <>
                           <Link
-                            href={`/courses/job/${job.slug}`}
-                            target="_blank"
+                            href={`/admin/preview?path=${encodeURIComponent(`/courses/job/${job.slug}`)}`}
                             className="inline-flex items-center gap-1 rounded-lg bg-white border border-neutral-200 px-2.5 py-1.5 text-xs font-semibold text-neutral-700 hover:bg-neutral-50"
                           >
                             <Eye className="h-3.5 w-3.5" /> Ko'rish

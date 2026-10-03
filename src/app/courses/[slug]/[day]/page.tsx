@@ -1,7 +1,8 @@
-"use client";
+﻿"use client";
 
 import { useEffect, useState, use } from "react";
 import { useRouter } from "next/navigation";
+import { TestAccessGate } from "@/components/akela/TestAccessGate";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   BookOpen,
@@ -336,6 +337,11 @@ export default function CourseLessonPage({
                 </div>
               </motion.div>
             ) : (
+              <TestAccessGate
+                endpoint="/api/lesson-access"
+                body={{ kind: "day", a: slug, b: String(day), c: String(currentSection) }}
+                testTitle={`Nazorat testi — ${slug}, ${day}-kun`}
+              >
               <motion.div
                 key="quiz"
                 initial={{ opacity: 0, y: 20 }}
@@ -709,6 +715,7 @@ export default function CourseLessonPage({
                   </>
                 )}
               </motion.div>
+              </TestAccessGate>
             )}
           </AnimatePresence>
         </div>

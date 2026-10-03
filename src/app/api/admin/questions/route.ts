@@ -1,8 +1,32 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getSession } from "@/lib/auth";
 import { lmsStorage } from "@/lib/lms-storage";
+import { apiCacheClear, CACHE_KEYS } from "@/lib/api-cache";
 
 export const dynamic = "force-dynamic";
+
+// DELETE — tanlangan savollarni bir vaqtda o'chirish (faqat admin)
+// body: { ids: string[] }
+export async function DELETE(req: NextRequest) {
+  try {
+    const session = await getSession();
+    if (!session || !session.isAdmin) {
+      return NextResponse.json({ ok: false, error: "Unauthorized" }, { status: 401 });
+    }
+    const body = await req.json().catch(() => ({}));
+    const ids: string[] = Array.isArray(body?.ids) ? body.ids.map(String).filter(Boolean) : [];
+    if (!ids.length) return NextResponse.json({ ok: false, error: "ids required" }, { status: 400 });
+
+    // Bitta DB so'rovi — 59 ta savol ham millisekundlarda o'chadi
+    const result = await lmsStorage.deleteQuestions(ids);
+    return NextResponse.json({ ok: true, deleted: result.count });
+    apiCacheClear(CACHE_KEYS.adminOnboarding);
+    apiCacheClear(CACHE_KEYS.adminTests);
+  } catch (error) {
+    console.error("DELETE /api/admin/questions error:", error);
+    return NextResponse.json({ ok: false, error: "Failed to delete questions" }, { status: 500 });
+  }
+}
 
 export async function POST(req: NextRequest) {
   try {
@@ -30,6 +54,8 @@ export async function POST(req: NextRequest) {
         choices: [], // yozma javobda variantlar yo'q
       });
       return NextResponse.json({ ok: true, question });
+    apiCacheClear(CACHE_KEYS.adminOnboarding);
+    apiCacheClear(CACHE_KEYS.adminTests);
     }
 
     // Variantli savol (single/multiple)

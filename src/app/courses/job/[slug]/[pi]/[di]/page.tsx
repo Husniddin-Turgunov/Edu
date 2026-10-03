@@ -5,6 +5,7 @@ import { useParams, useRouter } from "next/navigation";
 import { useState, useEffect, useMemo } from "react";
 import { useSession } from "next-auth/react";
 import { motion, AnimatePresence } from "framer-motion";
+import { TestAccessGate } from "@/components/akela/TestAccessGate";
 import { LiquidBackground } from "@/components/akela/LiquidBackground";
 import { Navbar } from "@/components/akela/Navbar";
 import {
@@ -194,7 +195,7 @@ function renderLessonMarkdown(content: string) {
   });
 }
 
-export default function JobDayLessonPage() {
+function JobDayLessonInner() {
   const params = useParams<{ slug: string; pi: string; di: string }>();
   const { data: session, status } = useSession();
   const router = useRouter();
@@ -628,3 +629,17 @@ export default function JobDayLessonPage() {
   );
 }
 
+
+/** Kasb testiga kirish uchun Telegram bot orqali ruxsat eshigi */
+export default function JobDayLessonPage() {
+  const params = useParams<{ slug: string; pi: string; di: string }>();
+  return (
+    <TestAccessGate
+      endpoint="/api/lesson-access"
+      body={{ kind: "job", a: params.slug, b: params.pi, c: params.di }}
+      testTitle={`Kasb testi - ${params.pi}-${params.di}`}
+    >
+      <JobDayLessonInner />
+    </TestAccessGate>
+  );
+}

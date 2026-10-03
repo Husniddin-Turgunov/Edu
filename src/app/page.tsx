@@ -16,7 +16,7 @@ import { NormativeFloating } from "@/components/akela/NormativeFloating";
 import VideoPlayer from "@/components/VideoPlayer";
 import { videoThumb } from "@/lib/video-thumb";
 import { motion, AnimatePresence, LayoutGroup } from "framer-motion";
-import { Play, Clock, Settings, Loader2, Shield } from "lucide-react";
+import { Play, Clock, Settings, Loader2, Shield, X } from "lucide-react";
 import {
   ONBOARDING_STEPS,
   DISCIPLINE_RULES,
@@ -42,6 +42,17 @@ export default function HomePage() {
   const rules = DISCIPLINE_RULES[locale];
   // Videolar — API dan placement tartibida. Admin joylashtirgan videolar chiqadi.
   const [homeVideos, setHomeVideos] = useState<HomeVideo[]>([]);
+  // Testga kirishga ruxsat rad etilgan bo'lsa — ogohlantirish banneri
+  const [testRejected, setTestRejected] = useState(false);
+
+  useEffect(() => {
+    try {
+      if (window.sessionStorage.getItem("akela:test-rejected") === "1") {
+        setTestRejected(true);
+        window.sessionStorage.removeItem("akela:test-rejected");
+      }
+    } catch {}
+  }, []);
 
   useEffect(() => {
     if (status !== "authenticated") return;
@@ -121,6 +132,32 @@ export default function HomePage() {
         strings={strings}
         onLocaleChange={setLocale}
       />
+
+      {/* Testga kirishga ruxsat rad etilganligi haqida ogohlantirish */}
+      {testRejected && (
+        <motion.div
+          initial={{ opacity: 0, y: -12 }}
+          animate={{ opacity: 1, y: 0 }}
+          data-testid="test-rejected-banner"
+          className="relative z-20 mx-auto mt-24 flex max-w-4xl items-start gap-3 rounded-2xl border border-rose-200 bg-rose-50/95 px-5 py-4 text-rose-800 shadow-lg backdrop-blur"
+        >
+          <Shield className="mt-0.5 h-5 w-5 shrink-0 text-rose-600" />
+          <div className="min-w-0 flex-1">
+            <p className="text-sm font-black">Testni topshirishga ruxsat etilmadi</p>
+            <p className="mt-0.5 text-xs leading-relaxed text-rose-700">
+              Sizga hozirda testni topshirishga ruxsat etilmadi. Savollaringiz uchun HR bo&apos;limi bilan bog&apos;laning.
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={() => setTestRejected(false)}
+            aria-label="Yopish"
+            className="shrink-0 rounded-lg p-1 text-rose-500 hover:bg-rose-100"
+          >
+            <X className="h-4 w-4" />
+          </button>
+        </motion.div>
+      )}
 
       <Hero
         strings={strings}

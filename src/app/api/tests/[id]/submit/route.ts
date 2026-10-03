@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from "next/server";
+﻿import { NextRequest, NextResponse } from "next/server";
 import { getSession } from "@/lib/auth";
 import { lmsStorage } from "@/lib/lms-storage";
 import { notifyTestResult } from "@/lib/telegram-bot";
@@ -36,6 +36,8 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
       if (result.score !== null) {
         notifyTestResult({
           fullName,
+          correctCount: (result as any).correctCount ?? null,
+          wrongCount: (result as any).wrongCount ?? null,
           testTitle: test?.title || "Noma'lum test",
           score: result.score,
           passed: !!result.passed,
@@ -59,6 +61,8 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
           department: user?.department ?? null,
           position: user?.position ?? null,
           completedAt: new Date(),
+          correctCount: (result as any).correctCount ?? null,
+          wrongCount: (result as any).wrongCount ?? null,
           level: "Baholanmagan",
           origin: new URL(req.url).origin,
         }).catch(() => {});

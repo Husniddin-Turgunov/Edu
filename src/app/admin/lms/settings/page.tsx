@@ -16,7 +16,7 @@ export default function AdminSettingsPage() {
 
   useEffect(() => {
     if (status === "unauthenticated") router.push("/login");
-    if (status === "authenticated" && (session?.user as any)?.role !== "admin") {
+    if (status === "authenticated" && (session?.user as any)?.role === "user") {
       router.push("/dashboard");
     }
   }, [status, session, router]);

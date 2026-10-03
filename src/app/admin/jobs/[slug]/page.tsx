@@ -188,7 +188,7 @@ export default function AdminJobDetailPage() {
 
   useEffect(() => {
     if (status === "unauthenticated") router.push("/login");
-    if (status === "authenticated" && (session?.user as any)?.role !== "admin") router.push("/dashboard");
+    if (status === "authenticated" && (session?.user as any)?.role === "user") router.push("/dashboard");
   }, [status, session, router]);
 
   const fetchJob = useCallback(async () => {
@@ -547,7 +547,7 @@ setJob(data.job);
                   <span className="font-bold text-neutral-900">{totalDays} dars</span>
                 </div>
               </div>
-              <Link href={`/courses/job/${job.slug}`} target="_blank" className="hidden sm:flex items-center gap-2 px-4 py-2 text-sm font-medium bg-white border border-neutral-200 rounded-lg hover:bg-neutral-50">
+              <Link href={`/courses/job/${job.slug}`} className="hidden sm:flex items-center gap-2 px-4 py-2 text-sm font-medium bg-white border border-neutral-200 rounded-lg hover:bg-neutral-50">
                 <Eye className="w-4 h-4" /> Saytda ko'rish
               </Link>
             </div>

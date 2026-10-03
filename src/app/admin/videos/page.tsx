@@ -3,6 +3,7 @@
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState, useCallback } from "react";
+import { cachedFetch } from "@/lib/admin-cache";
 import { AdminSidebar, AdminHeader } from "@/components/admin/AdminSidebar";
 import { videoThumb } from "@/lib/video-thumb";
 import {
@@ -142,13 +143,13 @@ export default function AdminVideosPage() {
 
   useEffect(() => {
     if (status === "unauthenticated") router.push("/login");
-    if (status === "authenticated" && (session?.user as any)?.role !== "admin") router.push("/dashboard");
+    if (status === "authenticated" && (session?.user as any)?.role === "user") router.push("/dashboard");
   }, [status, session, router]);
 
   const load = useCallback(async () => {
     setLoading(true);
     try {
-      const res = await fetch("/api/admin/videos", { cache: "no-store" });
+      const res = await cachedFetch("/api/admin/videos", { cache: "no-store" });
       const data = await res.json();
       if (data?.ok) setVideos(data.videos);
     } catch {}
@@ -189,7 +190,7 @@ export default function AdminVideosPage() {
     }
     setSaving(true);
     try {
-      const res = await fetch("/api/admin/videos", {
+      const res = await cachedFetch("/api/admin/videos", {
         method: editing ? "PATCH" : "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(editing ? { id: editing.id, ...form } : form),

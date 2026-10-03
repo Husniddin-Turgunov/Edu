@@ -3,6 +3,7 @@
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState, useCallback } from "react";
+import { cachedFetch } from "@/lib/admin-cache";
 import { motion } from "framer-motion";
 import { AdminSidebar, AdminHeader } from "@/components/admin/AdminSidebar";
 import {
@@ -76,14 +77,14 @@ export default function AdminStudentsPage() {
 
   useEffect(() => {
     if (status === "unauthenticated") router.push("/login");
-    if (status === "authenticated" && (session?.user as any)?.role !== "admin") router.push("/dashboard");
+    if (status === "authenticated" && (session?.user as any)?.role === "user") router.push("/dashboard");
   }, [status, session, router]);
 
   const load = useCallback(async (opts?: { background?: boolean }) => {
     const background = opts?.background === true;
     if (!background) setLoading(true);
     try {
-      const res = await fetch("/api/admin/user-stats", { cache: "no-store" });
+      const res = await cachedFetch("/api/admin/user-stats", { cache: "no-store" });
       const data = await res.json();
       if (data?.ok) setRows(data.rows);
     } catch {}
@@ -98,7 +99,7 @@ export default function AdminStudentsPage() {
     setSelectedId(id);
     setDetailLoading(true);
     try {
-      const res = await fetch(`/api/admin/user-stats?userId=${id}`, { cache: "no-store" });
+      const res = await cachedFetch(`/api/admin/user-stats?userId=${id}`, { cache: "no-store" });
       const data = await res.json();
       if (data?.ok) setDetail(data);
     } catch {}
@@ -115,9 +116,9 @@ export default function AdminStudentsPage() {
     setSaving(false);
     try {
       const [jobsRes, onbRes, enrRes] = await Promise.all([
-        fetch("/api/jobs", { cache: "no-store" }).then((r) => r.json()).catch(() => null),
-        fetch("/api/onboarding", { cache: "no-store" }).then((r) => r.json()).catch(() => null),
-        fetch(`/api/admin/enrollments?userId=${row.user.id}`, { cache: "no-store" }).then((r) => r.json()).catch(() => null),
+        cachedFetch("/api/jobs", { cache: "no-store" }).then((r) => r.json()).catch(() => null),
+        cachedFetch("/api/onboarding", { cache: "no-store" }).then((r) => r.json()).catch(() => null),
+        cachedFetch(`/api/admin/enrollments?userId=${row.user.id}`, { cache: "no-store" }).then((r) => r.json()).catch(() => null),
       ]);
       if (jobsRes?.ok) setAllJobs(jobsRes.jobs);
       if (onbRes?.ok?.course) setOnboardingTitle(onbRes.course.title || "Tanishtiruv kursi");

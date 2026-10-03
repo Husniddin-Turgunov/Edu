@@ -1,398 +1,294 @@
-"use client";
-
-import { use, useEffect, useState } from "react";
+import fs from "node:fs";
+import path from "node:path";
 import Link from "next/link";
-import { motion } from "framer-motion";
-import {
-  ArrowLeft,
-  BookOpen,
-  Lightbulb,
-  ListOrdered,
-  ChevronRight,
-  ChevronLeft,
-  ExternalLink,
-  ImageIcon,
-} from "lucide-react";
-import { Navbar } from "@/components/akela/Navbar";
-import { UI_STRINGS, type Locale } from "@/lib/akela-content";
-import { HELPDESK_SECTIONS } from "@/lib/helpdesk-content";
-import {
-  getHelpdeskBody,
-  getHelpdeskImages,
-  getHelpdeskSectionImages,
-} from "@/lib/helpdesk-bodies";
+import { notFound } from "next/navigation";
+import { redirect } from "next/navigation";
+import { NavbarStatic } from "@/components/akela/NavbarStatic";
 
-const UI: Record<
-  Locale,
-  {
-    back: string;
-    notFound: string;
-    notFoundSub: string;
-    tipLabel: string;
-    stepsLabel: string;
-    related: string;
-    allGuides: string;
-    bitrixDemos: string;
-  }
-> = {
-  uz: {
-    back: "Yo'riqlar",
-    notFound: "Maqola topilmadi",
-    notFoundSub: "Bu ID uchun kontent hali qo'shilmagan.",
-    tipLabel: "Maslahat",
-    stepsLabel: "Qadamlar",
-    related: "Boshqa yo'riqlar",
-    allGuides: "Barcha yo'riqlar",
-    bitrixDemos: "Bitrix24 interfeys rasmlari",
-  },
-  ru: {
-    back: "Инструкции",
-    notFound: "Статья не найдена",
-    notFoundSub: "Контент для этого ID ещё не добавлен.",
-    tipLabel: "Совет",
-    stepsLabel: "Шаги",
-    related: "Другие инструкции",
-    allGuides: "Все инструкции",
-    bitrixDemos: "Скриншоты интерфейса Битрикс24",
-  },
-  en: {
-    back: "Guides",
-    notFound: "Article not found",
-    notFoundSub: "Content for this ID is not available yet.",
-    tipLabel: "Tip",
-    stepsLabel: "Steps",
-    related: "More guides",
-    allGuides: "All guides",
-    bitrixDemos: "Bitrix24 interface screenshots",
-  },
+const ROOT = process.cwd();
+const ART = path.join(ROOT, "public", "bitrix-data", "articles");
+const INDEX = path.join(ROOT, "public", "bitrix-data", "index.json");
+
+const readJson = (p: string) => JSON.parse(fs.readFileSync(p, "utf8").replace(/^\uFEFF/, ""));
+
+type Block =
+  | { k: "P" | "H2" | "H3" | "BLOCKQUOTE"; t: string }
+  | { k: "LI"; list: "UL" | "OL"; t: string }
+  | { k: "IMG"; n: number; local: string };
+
+type Article = {
+  id: string;
+  title: string;
+  section: string | null;
+  sectionId: string | null;
+  parent: string | null;
+  short: string | null;
+  toc: string[] | null;
+  breadcrumb: string[] | null;
+  articleMeta: string[] | null;
+  related: { id: string; t: string }[] | null;
+  blocks: Block[];
+  images: { n: number; local: string }[];
 };
 
-export default function GuideArticlePage({
+function getIndex(lang = "ru") {
+  const p = lang === "ru" ? INDEX : path.join(ROOT, "public", "bitrix-data", `index.${lang}.json`);
+  try {
+    return readJson(p) as { total: number; articles: Article[] };
+  } catch {
+    try { return readJson(INDEX) as { total: number; articles: Article[] }; }
+    catch { return { total: 0, articles: [] as Article[] }; }
+  }
+}
+
+function getArticle(id: string, lang: string): Article | null {
+  // RU — asl fayl; uz/en — tarjima qilingan fayl (yo' bo'lsa RU'ga qaytadi)
+  const name = lang === "ru" ? `${id}.json` : `${id}.${lang}.json`;
+  try {
+    return readJson(path.join(ART, name)) as Article;
+  } catch {
+    try {
+      return readJson(path.join(ART, `${id}.json`)) as Article;
+    } catch {
+      return null;
+    }
+  }
+}
+
+
+export function generateStaticParams() {
+  return getIndex().articles.map((a) => ({ id: a.id }));
+}
+
+export default async function ArticlePage({
   params,
+  searchParams,
 }: {
   params: Promise<{ id: string }>;
+  searchParams: Promise<{ lang?: string }>;
 }) {
-  const { id } = use(params);
-  const [locale, setLocale] = useState<Locale>("uz");
-  const [activeImg, setActiveImg] = useState(0);
-  const strings = UI_STRINGS[locale];
-  const t = UI[locale];
-  const body = getHelpdeskBody(id);
+  const { id } = await params;
+  const sp = await searchParams;
+  const lang = sp.lang === "uz" || sp.lang === "en" ? sp.lang : "ru";
+  const art = getArticle(id, lang);
+  if (!art) notFound();
 
-  const section = HELPDESK_SECTIONS.find((s) =>
-    s.articles.some((a) => a.id === id),
+
+  const index = getIndex(lang);
+  const sections = [...new Set(index.articles.map((a) => a.section).filter(Boolean))] as string[];
+  const inSection = index.articles.filter((a) => a.section === art.section);
+
+  // "Коротко" ni kontent oxiridan chiqaramiz (Bitrixdagidek)
+  const shortIdx = art.blocks.findIndex(
+    (b) => b.k === "P" && typeof (b as { t: string }).t === "string" && /^Коротко/.test((b as { t: string }).t)
   );
-  const article = section?.articles.find((a) => a.id === id);
+  const body = art.blocks.filter((_, i) => i !== shortIdx);
+  const toc = (art.toc ?? []).filter((t) => t && !/^Коротко/.test(t));
 
-  const related = (section?.articles ?? []).filter((a) => a.id !== id).slice(0, 5);
-
-  const articleImages =
-    body?.images?.length
-      ? body.images
-      : getHelpdeskImages(id).length
-        ? getHelpdeskImages(id)
-        : section?.key
-          ? getHelpdeskSectionImages(section.key)
-          : [];
-  const heroCover = article?.cover || section?.cover;
-
-  useEffect(() => {
-    const saved = localStorage.getItem("akela-locale") as Locale | null;
-    if (saved === "uz" || saved === "ru" || saved === "en") setLocale(saved);
-  }, []);
-
-  if (!article || !body) {
-    return (
-      <main className="min-h-screen bg-transparent">
-        <Navbar locale={locale} strings={strings} onLocaleChange={setLocale} />
-        <div className="mx-auto max-w-3xl px-6 pt-32 pb-20 text-center">
-          <BookOpen className="mx-auto mb-4 h-10 w-10 text-[color:var(--ink-soft)]" />
-          <h1 className="text-2xl font-black text-[color:var(--emerald-deep)]">
-            {t.notFound}
-          </h1>
-          <p className="mt-2 text-sm text-[color:var(--ink-soft)]">
-            {t.notFoundSub}
-          </p>
-          <Link
-            href="/guides"
-            className="mt-6 inline-flex items-center gap-1.5 rounded-xl bg-gradient-to-br from-indigo-700 to-indigo-600 px-5 py-2.5 text-sm font-bold text-white shadow-lg"
-          >
-            <ArrowLeft className="h-4 w-4" /> {t.back}
-          </Link>
-        </div>
-      </main>
-    );
-  }
+  const crumb = [...(art.breadcrumb ?? []), art.section, art.title].filter(Boolean) as string[];
+  const related = (art.related ?? []).filter((r) => r.id !== id).slice(0, 6);
 
   return (
     <main className="min-h-screen bg-transparent">
-      <Navbar locale={locale} strings={strings} onLocaleChange={setLocale} />
+      <NavbarStatic initial="uz" />
 
-      <article className="mx-auto max-w-3xl px-6 pt-28 pb-16">
-        <motion.div
-          initial={{ opacity: 0, y: 12 }}
-          animate={{ opacity: 1, y: 0 }}
-        >
-          <div className="mb-5 flex flex-wrap items-center gap-2 text-xs font-bold">
-            <Link
-              href="/guides"
-              className="inline-flex items-center gap-1 text-[color:var(--ink-soft)] hover:text-blue-600"
-            >
-              <ArrowLeft className="h-3.5 w-3.5" /> {t.back}
-            </Link>
-            <ChevronRight className="h-3 w-3 opacity-40" />
-            <span className="rounded-full bg-sky-50 px-2.5 py-0.5 text-sky-700">
-              {section?.title[locale]}
-            </span>
-          </div>
-
-          <div className="mb-3 flex items-center gap-3">
-            <span className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-gradient-to-br from-sky-600 to-indigo-600 text-white shadow-lg">
-              <BookOpen className="h-5 w-5" />
-            </span>
-            <div className="min-w-0">
-              <span className="rounded-full bg-sky-600/10 px-2 py-0.5 text-[10px] font-black uppercase tracking-wide text-sky-700">
-                {locale === "uz" ? "Darslik" : locale === "ru" ? "Инструкция" : "Guide"}
-              </span>
-              <h1
-                data-testid="guide-title"
-                className="text-2xl font-black leading-tight text-[color:var(--emerald-deep)] sm:text-3xl"
-              >
-                {article.title[locale]}
-              </h1>
-            </div>
-          </div>
-
-          <p className="text-base leading-relaxed text-[color:var(--ink-soft)]">
-            {body.intro[locale]}
-          </p>
-
-          {heroCover && (
-            <div
-              data-testid="guide-hero-cover"
-              className="mt-5 overflow-hidden rounded-3xl border border-slate-200/70 bg-white shadow-sm"
-            >
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src={heroCover}
-                alt={article.title[locale]}
-                className="h-48 w-full object-cover sm:h-64"
-              />
-            </div>
-          )}
-        </motion.div>
-
-        {articleImages.length > 0 && (
-          <motion.section
-            data-testid="guide-bitrix-images"
-            initial={{ opacity: 0, y: 14 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.35, delay: 0.08 }}
-            className="mt-8 glass-card rounded-3xl p-5 sm:p-6"
-          >
-            <div className="flex flex-wrap items-center justify-between gap-2">
-              <h2 className="text-lg font-extrabold text-[color:var(--emerald-deep)]">
-                {t.bitrixDemos}
-              </h2>
-              <span className="rounded-full bg-sky-50 px-2.5 py-1 text-xs font-black text-sky-700">
-                {activeImg + 1} / {articleImages.length}
-              </span>
-            </div>
-
-            {/* Bitta katta rasm */}
-            <figure
-              data-testid="guide-bitrix-image"
-              className="group relative mt-4 overflow-hidden rounded-2xl border border-slate-200/80 bg-slate-50"
-            >
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src={articleImages[activeImg]}
-                alt={`${article.title[locale]} — ${activeImg + 1}`}
-                className="max-h-[560px] w-full object-contain bg-slate-50"
-              />
-              {articleImages.length > 1 && (
-                <>
-                  <button
-                    type="button"
-                    aria-label="Oldingi rasm"
-                    onClick={() =>
-                      setActiveImg(
-                        (i) => (i - 1 + articleImages.length) % articleImages.length,
-                      )
-                    }
-                    className="absolute left-2 top-1/2 grid h-10 w-10 -translate-y-1/2 place-items-center rounded-full bg-white/90 text-slate-700 shadow-lg transition hover:bg-white"
-                  >
-                    <ChevronLeft className="h-5 w-5" />
-                  </button>
-                  <button
-                    type="button"
-                    aria-label="Keyingi rasm"
-                    onClick={() => setActiveImg((i) => (i + 1) % articleImages.length)}
-                    className="absolute right-2 top-1/2 grid h-10 w-10 -translate-y-1/2 place-items-center rounded-full bg-white/90 text-slate-700 shadow-lg transition hover:bg-white"
-                  >
-                    <ChevronRight className="h-5 w-5" />
-                  </button>
-                </>
-              )}
-            </figure>
-
-            {/* Rasm ostidagi izoh — nima qilinishi + Bitrix ma'lumotlari */}
-            <div className="mt-3 rounded-2xl border border-sky-100 bg-sky-50/60 p-4">
-              <div className="flex items-start gap-2.5">
-                <span className="mt-0.5 grid h-7 w-7 shrink-0 place-items-center rounded-lg bg-sky-600 text-white">
-                  <ImageIcon className="h-4 w-4" />
-                </span>
-                <div className="min-w-0">
-                  <p className="text-sm font-black text-slate-800">
-                    {activeImg + 1}-rasm: {article.title[locale]}
-                  </p>
-                  <p className="mt-1 text-sm leading-relaxed text-slate-600">
-                    {article.summary[locale]}
-                  </p>
-                  <a
-                    href={article.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    data-testid="guide-bitrix-source"
-                    className="mt-2.5 inline-flex items-center gap-1.5 rounded-lg border border-sky-200 bg-white px-3 py-1.5 text-xs font-bold text-sky-700 transition-colors hover:border-sky-400 hover:bg-sky-50"
-                  >
-                    <ExternalLink className="h-3.5 w-3.5" />
-                    {locale === "uz"
-                      ? "Bitrix24 manbasida ochish"
-                      : locale === "ru"
-                        ? "Открыть в источнике Битрикс24"
-                        : "Open in Bitrix24 source"}
-                  </a>
-                </div>
-              </div>
-            </div>
-
-            {/* Miniatyuralar */}
-            {articleImages.length > 1 && (
-              <div className="mt-3 flex flex-wrap gap-2">
-                {articleImages.map((src, i) => (
-                  <button
-                    key={`${src}-${i}`}
-                    type="button"
-                    onClick={() => setActiveImg(i)}
-                    aria-label={`${i + 1}-rasm`}
-                    className={`h-14 w-20 overflow-hidden rounded-lg border-2 transition ${
-                      i === activeImg
-                        ? "border-sky-500 shadow-md"
-                        : "border-transparent opacity-60 hover:opacity-100"
+      <div className="mx-auto max-w-7xl px-4 pt-24 pb-20 lg:flex lg:gap-8">
+        {/* ---- CHAP MENYU (Bitrix kabi) ---- */}
+        <aside className="hidden w-64 shrink-0 lg:block">
+          <div className="sticky top-24 max-h-[calc(100vh-8rem)] overflow-y-auto pr-2">
+            <p className="mb-2 px-2 text-[11px] font-black uppercase tracking-wide text-slate-400">
+              Разделы
+            </p>
+            <ul className="space-y-0.5">
+              {sections.map((s) => (
+                <li key={s}>
+                  <Link
+                    href={`/guides?s=${encodeURIComponent(s)}`}
+                    className={`block rounded-lg px-2.5 py-1.5 text-[13px] leading-snug transition-colors ${
+                      s === art.section
+                        ? "bg-sky-50 font-bold text-sky-700"
+                        : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"
                     }`}
                   >
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src={src} alt="" className="h-full w-full object-cover" />
-                  </button>
-                ))}
-              </div>
-            )}
-          </motion.section>
-        )}
+                    {s}
+                    <span className="ml-1.5 text-[11px] text-slate-400">
+                      {index.articles.filter((a) => a.section === s).length}
+                    </span>
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </aside>
 
-        <div className="mt-8 space-y-8">
-          {body.sections.map((sec, i) => (
-            <motion.section
-              key={i}
-              data-testid={`guide-section-${i}`}
-              initial={{ opacity: 0, y: 14 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: "-40px" }}
-              transition={{ duration: 0.35, delay: 0.04 * i }}
-              className="glass-card rounded-3xl p-5 sm:p-6"
-            >
-              <h2 className="text-lg font-extrabold text-[color:var(--emerald-deep)]">
-                {sec.title[locale]}
-              </h2>
-              {sec.text && (
-                <p className="mt-2 text-sm leading-relaxed text-[color:var(--ink-soft)]">
-                  {sec.text[locale]}
-                </p>
-              )}
-              {sec.image && (
-                <figure
-                  data-testid="guide-section-image"
-                  className="mt-4 overflow-hidden rounded-2xl border border-slate-200/80 bg-slate-50"
-                >
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    src={sec.image}
-                    alt={sec.imageAlt?.[locale] || sec.title[locale]}
-                    loading="lazy"
-                    className="h-full w-full object-cover"
-                  />
-                </figure>
-              )}
-              {sec.steps && (
-                <ol className="mt-4 space-y-2.5">
-                  {sec.steps[locale].map((step, si) => (
-                    <li key={si} className="flex items-start gap-3">
-                      <span className="mt-0.5 grid h-6 w-6 shrink-0 place-items-center rounded-full bg-gradient-to-br from-indigo-600 to-sky-500 text-[11px] font-black text-white">
-                        {si + 1}
-                      </span>
-                      <span className="text-sm leading-relaxed text-[color:var(--ink-soft)]">
-                        {step}
-                      </span>
-                    </li>
-                  ))}
-                </ol>
-              )}
-            </motion.section>
-          ))}
-
-          {body.tip && (
-            <motion.aside
-              data-testid="guide-tip"
-              initial={{ opacity: 0, y: 12 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              className="flex items-start gap-3 rounded-3xl border border-amber-200/70 bg-gradient-to-br from-amber-50 to-orange-50/70 p-5"
-            >
-              <span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-amber-500 text-white shadow">
-                <Lightbulb className="h-4.5 w-4.5" />
+        {/* ---- MAQOLA ---- */}
+        <article className="min-w-0 flex-1">
+          {/* breadcrumb */}
+          <nav className="mb-3 flex flex-wrap items-center gap-1 text-[12px] text-slate-500">
+            <Link href="/guides" className="hover:text-sky-700">Главная</Link>
+            {crumb.map((c, i) => (
+              <span key={i} className="flex items-center gap-1">
+                <span className="text-slate-300">›</span>
+                <span className={i === crumb.length - 1 ? "font-semibold text-slate-700" : ""}>{c}</span>
               </span>
-              <div>
-                <p className="text-xs font-black uppercase tracking-wide text-amber-700">
-                  {t.tipLabel}
-                </p>
-                <p className="mt-1 text-sm leading-relaxed text-amber-950">
-                  {body.tip[locale]}
-                </p>
-              </div>
-            </motion.aside>
-          )}
-        </div>
+            ))}
+          </nav>
 
-        {related.length > 0 && (
-          <section className="mt-10">
-            <h2 className="mb-3 text-sm font-black uppercase tracking-wide text-[color:var(--ink-soft)]">
-              {t.related}
-            </h2>
-            <div className="flex flex-wrap gap-2">
-              {related.map((a) => (
-                <Link
-                  key={a.id}
-                  href={`/guides/${a.id}`}
-                  data-testid="guide-related-link"
-                  className="rounded-full border border-sky-200 bg-white/70 px-3.5 py-1.5 text-xs font-bold text-[color:var(--emerald-deep)] transition-colors hover:border-sky-400 hover:bg-sky-50"
-                >
-                  {a.title[locale]}
-                </Link>
+          <h1 className="text-2xl font-black leading-tight text-[color:var(--emerald-deep)] sm:text-3xl">
+            {art.title}
+          </h1>
+
+          {art.articleMeta && art.articleMeta.length > 0 && (
+            <div className="mt-2 flex flex-wrap gap-x-3 gap-y-1 text-[12px] text-slate-400">
+              {art.articleMeta.map((m, i) => (
+                <span key={i}>{m}</span>
               ))}
             </div>
-          </section>
-        )}
+          )}
 
-        <div className="mt-10 flex flex-wrap gap-3">
-          <Link
-            href="/guides"
-            className="inline-flex items-center gap-1.5 rounded-xl bg-gradient-to-br from-indigo-700 to-indigo-600 px-5 py-2.5 text-sm font-bold text-white shadow-lg transition-transform hover:scale-105"
-          >
-            <ArrowLeft className="h-4 w-4" /> {t.allGuides}
-          </Link>
-        </div>
-      </article>
+          <div className="mt-6 flex gap-8">
+            {/* kontent — ketma-ket LI bloklari bitta ro'yxatga guruhlanadi */}
+            <div className="min-w-0 flex-1">
+              {(() => {
+                const out: React.ReactNode[] = [];
+                let run: Block[] = [];
+                const flush = (key: string) => {
+                  if (!run.length) return;
+                  const ord = (run[0] as { list?: string }).list === "OL";
+                  out.push(
+                    <ul
+                      key={key}
+                      className={`mt-3 space-y-1.5 pl-5 text-[15px] leading-relaxed text-slate-700 ${
+                        ord ? "list-decimal" : "list-disc"
+                      }`}
+                    >
+                      {run.map((li, k) => (
+                        <li key={k}>{(li as { t: string }).t}</li>
+                      ))}
+                    </ul>
+                  );
+                  run = [];
+                };
+
+                body.forEach((b, i) => {
+                  if (b.k === "LI") {
+                    run.push(b);
+                    return;
+                  }
+                  flush(`ul-${i}`);
+                  if (b.k === "IMG") {
+                    out.push(
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        key={i}
+                        src={b.local}
+                        alt=""
+                        loading="lazy"
+                        className="my-5 w-full rounded-xl border border-black/10"
+                      />
+                    );
+                    return;
+                  }
+                  const t = (b as { t: string }).t;
+                  if (!t) return;
+                  if (b.k === "H2")
+                    out.push(
+                      <h2
+                        key={i}
+                        id={slug(t)}
+                        className="mt-8 scroll-mt-24 text-[19px] font-extrabold leading-snug text-[color:var(--emerald-deep)]"
+                      >
+                        {t}
+                      </h2>
+                    );
+                  else if (b.k === "H3")
+                    out.push(
+                      <h3 key={i} className="mt-5 text-[16px] font-bold text-slate-800">
+                        {t}
+                      </h3>
+                    );
+                  else
+                    out.push(
+                      <p key={i} className="mt-3 text-[15px] leading-relaxed text-slate-700">
+                        {t}
+                      </p>
+                    );
+                });
+                flush("ul-end");
+                return out;
+              })()}
+
+
+              {/* «Коротко» — Bitrixda kontent oxirida */}
+              {art.short && (
+                <div className="mt-10 rounded-2xl border-l-4 border-sky-500 bg-sky-50/70 px-5 py-4">
+                  <p className="mb-1.5 text-[13px] font-black uppercase tracking-wide text-sky-700">
+                    Коротко
+                  </p>
+                  <p className="text-[14px] leading-relaxed text-slate-700">{art.short}</p>
+                </div>
+              )}
+
+              {/* «Похожие статьи» */}
+              {related.length > 0 && (
+                <section className="mt-10">
+                  <h2 className="mb-3 text-[15px] font-extrabold text-slate-800">
+                    Похожие статьи
+                  </h2>
+                  <div className="grid gap-2 sm:grid-cols-2">
+                    {related.map((r) => (
+                      <Link
+                        key={r.id}
+                        href={`/guides/${r.id}?lang=${lang}`}
+                        className="rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-[13px] font-semibold text-slate-700 transition-colors hover:border-sky-300 hover:text-sky-700"
+                      >
+                        {r.t || r.id}
+                      </Link>
+                    ))}
+                  </div>
+                </section>
+              )}
+
+              {/* «Статья вам помогла?» */}
+              <section className="mt-10 rounded-2xl border border-slate-200 bg-white px-5 py-4 text-center">
+                <p className="text-[14px] font-bold text-slate-700">Статья вам помогла?</p>
+                <div className="mt-2.5 flex justify-center gap-2">
+                  {["👍 Да", "👎 Нет"].map((x) => (
+                    <span key={x} className="rounded-lg border border-slate-200 px-4 py-1.5 text-[13px] text-slate-500">
+                      {x}
+                    </span>
+                  ))}
+                </div>
+              </section>
+            </div>
+
+            {/* «В этой статье» — o'ng panel */}
+            {toc.length > 0 && (
+              <aside className="hidden w-60 shrink-0 xl:block">
+                <div className="sticky top-24">
+                  <p className="mb-2 text-[12px] font-extrabold text-slate-700">В этой статье</p>
+                  <ul className="space-y-1 border-l-2 border-slate-100 pl-3">
+                    {toc.map((t, i) => (
+                      <li key={i}>
+                        <a
+                          href={`#${slug(t)}`}
+                          className="block text-[12px] leading-snug text-slate-500 hover:text-sky-700"
+                        >
+                          {t}
+                        </a>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </aside>
+            )}
+          </div>
+        </article>
+      </div>
     </main>
   );
+}
+
+function slug(s: string) {
+  return "h-" + s.toLowerCase().replace(/[^a-zа-я0-9]+/gi, "-").replace(/^-|-$/g, "").slice(0, 60);
 }

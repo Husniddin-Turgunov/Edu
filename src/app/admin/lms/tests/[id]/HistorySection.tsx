@@ -1,4 +1,5 @@
 import {
+  Check,
   ChevronRight,
   Eye,
   History,
@@ -67,40 +68,44 @@ export function HistorySection({
             <p className="mt-1 pl-10 text-xs text-neutral-500">Natijalarni belgilab, bir vaqtda ochib ko‘ring.</p>
           </div>
 
-          {history.length > 0 && (
-            <div className="flex flex-wrap items-center gap-2">
-              <label className="mr-1 flex cursor-pointer items-center gap-2 rounded-lg border border-white bg-white/80 px-3 py-2 text-xs font-bold text-neutral-700 shadow-sm hover:bg-white">
-                <input
-                  type="checkbox"
-                  checked={selectedIds.length === history.length}
-                  onChange={(event) => onSelectAll(event.target.checked)}
-                  className="h-4 w-4 accent-violet-600"
-                />
-                Hammasini tanlash
-              </label>
-              <button
-                type="button"
-                disabled={!selectedIds.length}
-                onClick={onOpenSelected}
-                className="flex items-center gap-1.5 rounded-lg bg-violet-600 px-3 py-2 text-xs font-bold text-white shadow-sm transition hover:bg-violet-700 disabled:cursor-not-allowed disabled:opacity-40"
-              >
-                <Eye className="h-3.5 w-3.5" /> Tanlanganlarni ochish ({selectedIds.length})
-              </button>
-              <button type="button" disabled={!selectedIds.length} onClick={onClearSelected} className="rounded-lg border border-neutral-200 bg-white px-3 py-2 text-xs font-bold text-neutral-600 hover:bg-neutral-50 disabled:opacity-40">Tozalash</button>
-              <button
-                type="button"
-                disabled={!selectedIds.length || deleting}
-                onClick={onDeleteSelected}
-                className="flex items-center gap-1.5 rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-xs font-bold text-rose-600 transition hover:bg-rose-100 disabled:cursor-not-allowed disabled:opacity-40"
-                title="Tanlangan natijalarni o'chirish"
-              >
-                {deleting ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Trash2 className="h-3.5 w-3.5" />}
-                O'chirish ({selectedIds.length})
-              </button>
-              <button type="button" disabled={!expandedIds.length} onClick={onCloseAll} className="rounded-lg border border-neutral-200 bg-white px-3 py-2 text-xs font-bold text-neutral-600 hover:bg-neutral-50 disabled:opacity-40">Hammasini yopish</button>
-            </div>
-          )}
+          <div className="flex flex-wrap items-center gap-2">
+            <label className="mr-1 flex cursor-pointer items-center gap-2 rounded-lg border border-white bg-white/80 px-3 py-2 text-xs font-bold text-neutral-700 shadow-sm hover:bg-white disabled:cursor-not-allowed disabled:opacity-50" title={history.length ? undefined : "Natija yo'q"}>
+              <input
+                type="checkbox"
+                disabled={!history.length}
+                checked={history.length > 0 && selectedIds.length === history.length}
+                onChange={(event) => onSelectAll(event.target.checked)}
+                className="h-4 w-4 accent-violet-600"
+              />
+              Hammasini tanlash
+            </label>
+            <button
+              type="button"
+              disabled={!selectedIds.length}
+              onClick={onOpenSelected}
+              className="flex items-center gap-1.5 rounded-lg bg-violet-600 px-3 py-2 text-xs font-bold text-white shadow-sm transition hover:bg-violet-700 disabled:cursor-not-allowed disabled:opacity-40"
+            >
+              <Eye className="h-3.5 w-3.5" /> Tanlanganlarni ochish ({selectedIds.length})
+            </button>
+            <button type="button" disabled={!selectedIds.length} onClick={onClearSelected} className="rounded-lg border border-neutral-200 bg-white px-3 py-2 text-xs font-bold text-neutral-600 hover:bg-neutral-50 disabled:opacity-40">Tozalash</button>
+            <button
+              type="button"
+              disabled={!selectedIds.length || deleting}
+              onClick={onDeleteSelected}
+              className="flex items-center gap-1.5 rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-xs font-bold text-rose-600 transition hover:bg-rose-100 disabled:cursor-not-allowed disabled:opacity-40"
+              title="Tanlangan natijalarni o'chirish"
+            >
+              {deleting ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Trash2 className="h-3.5 w-3.5" />}
+              O'chirish ({selectedIds.length})
+            </button>
+            <button type="button" disabled={!expandedIds.length} onClick={onCloseAll} className="rounded-lg border border-neutral-200 bg-white px-3 py-2 text-xs font-bold text-neutral-600 hover:bg-neutral-50 disabled:opacity-40">Hammasini yopish</button>
+          </div>
         </div>
+        {selectedIds.length > 0 && (
+          <div className="mt-3 flex items-center gap-2 rounded-xl border border-violet-100 bg-white/80 px-3 py-2 text-xs font-bold text-violet-800 shadow-sm">
+            <Check className="h-4 w-4 shrink-0" /> {selectedIds.length} ta natija tanlandi — bir tugma bilan ochib ko‘ring yoki o‘chirib tashlang.
+          </div>
+        )}
       </div>
 
       {history.length === 0 ? (

@@ -1,6 +1,7 @@
-"use client";
+﻿"use client";
 
 import { useEffect, useState } from "react";
+import { cachedFetch } from "@/lib/admin-cache";
 import { AdminSidebar, AdminHeader } from "@/components/admin/AdminSidebar";
 import {
   Award,
@@ -125,7 +126,7 @@ export default function SkillsPage() {
   const [subFilter, setSubFilter] = useState<"all" | "passed" | "failed" | "pending">("all");
 
   useEffect(() => {
-    fetch("/api/admin/skills?action=overview", { cache: "no-store" })
+    cachedFetch("/api/admin/skills?action=overview", { cache: "no-store" })
       .then((r) => r.json())
       .then((d) => { if (d.ok) setData(d); setLoading(false); })
       .catch(() => setLoading(false));
@@ -135,7 +136,7 @@ export default function SkillsPage() {
   useEffect(() => {
     if (view !== "submissions" || submissions !== null) return;
     setSubmissionsLoading(true);
-    fetch("/api/tests/history?all=1", { cache: "no-store" })
+    cachedFetch("/api/tests/history?all=1", { cache: "no-store" })
       .then((r) => r.json())
       .then((d) => { setSubmissions(d.ok && Array.isArray(d.results) ? d.results : []); })
       .catch(() => setSubmissions([]))
@@ -489,7 +490,7 @@ function UsersView({ filtered, search, setSearch, expandedUser, setExpandedUser,
   useEffect(() => {
     if (!expandedUser) { setExpandedDetails(null); setReviewData(null); return; }
     setExpandedLoading(true);
-    fetch(`/api/admin/skills?action=user&userId=${expandedUser}`, { cache: "no-store" })
+    cachedFetch(`/api/admin/skills?action=user&userId=${expandedUser}`, { cache: "no-store" })
       .then((r) => r.json())
       .then((d) => { if (d.ok) setExpandedDetails(d.user); })
       .catch(() => setExpandedDetails(null))
@@ -615,7 +616,7 @@ function UsersView({ filtered, search, setSearch, expandedUser, setExpandedUser,
                           try {
                             setPdfBusy(true);
                             const id = expandedDetails?.id || u.id;
-                            const res = await fetch(
+                            const res = await cachedFetch(
                               `/api/admin/skills/user-report?userId=${encodeURIComponent(id)}`,
                             );
                             if (!res.ok) throw new Error("PDF tayyorlanmadi");
@@ -703,7 +704,7 @@ function UsersView({ filtered, search, setSearch, expandedUser, setExpandedUser,
                                       onClick={() => {
                                         // Faqat yuklaydi (yopmaydi — faqat Yopish tugmasi yopadi)
                                         setReviewLoading(true);
-                                        fetch(`/api/admin/skills?action=review&userId=${expandedDetails.id}&testId=${attempt.testId || attempt.test?.id}&resultId=${attempt.id}`, { cache: "no-store" })
+                                        cachedFetch(`/api/admin/skills?action=review&userId=${expandedDetails.id}&testId=${attempt.testId || attempt.test?.id}&resultId=${attempt.id}`, { cache: "no-store" })
                                           .then((r) => r.json())
                                           .then((d) => { if (d.ok) setReviewData({ ...d.review, attemptId: attempt.id, testTitle: attempt.test?.title || "Test" }); })
                                           .catch(() => setReviewData({ error: "Natija yuklanmadi" }))
@@ -750,7 +751,7 @@ function UsersView({ filtered, search, setSearch, expandedUser, setExpandedUser,
                                       .then((d) => {
                                         if (d.ok) {
                                           // Refresh expanded details so new attempt appears
-                                          fetch(`/api/admin/skills?action=user&userId=${userId}`, { cache: "no-store" })
+                                          cachedFetch(`/api/admin/skills?action=user&userId=${userId}`, { cache: "no-store" })
                                             .then((r2) => r2.json())
                                             .then((d2) => { if (d2.ok) setExpandedDetails(d2.user); })
                                             .catch(() => {});
@@ -865,7 +866,7 @@ function UsersView({ filtered, search, setSearch, expandedUser, setExpandedUser,
                                   .then((d) => {
                                     if (d.ok) {
                                       // Refresh details
-                                      fetch(`/api/admin/skills?action=user&userId=${expandedDetails?.id}`, { cache: "no-store" })
+                                      cachedFetch(`/api/admin/skills?action=user&userId=${expandedDetails?.id}`, { cache: "no-store" })
                                         .then((r2) => r2.json())
                                         .then((d2) => { if (d2.ok) setExpandedDetails(d2.user); })
                                         .catch(() => {});

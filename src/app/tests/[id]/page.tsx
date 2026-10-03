@@ -62,6 +62,54 @@ export default function TestTakePage() {
   const [reviewLoading, setReviewLoading] = useState(false);
   const [review, setReview] = useState<any>(null);
   const [reviewError, setReviewError] = useState<string | null>(null);
+  // ====== Testga kirish ruxsati (Telegram bot orqali) ======
+  const [accessState, setAccessState] = useState<"checking" | "pending" | "approved" | "rejected" | "expired" | "bypassed" | "off">("checking");
+  const [accessTick, setAccessTick] = useState(0); // kutish animatsiyasi uchun
+  const [accessReqAt, setAccessReqAt] = useState<string | null>(null);
+  const [accessRequestId, setAccessRequestId] = useState<string | null>(null);
+  // ====== Qayta topshirish (urinish limiti tugagan) ======
+  const [retakeState, setRetakeState] = useState<"none" | "checking" | "pending" | "approved" | "rejected">("none");
+  const [retakeRequestId, setRetakeRequestId] = useState<string | null>(null);
+
+  const requestRetake = useCallback(async () => {
+    if (!id) return;
+    setRetakeState("checking");
+    try {
+      const res = await fetch(`/api/tests/${id}/retake`, { method: "POST" });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok || !data?.ok) return setRetakeState("none");
+      setRetakeRequestId(data.requestId ?? null);
+      setRetakeState(data.status === "approved" ? "approved" : "pending");
+    } catch {
+      setRetakeState("none");
+    }
+  }, [id]);
+
+  // Qayta topshirish so'rovining javobini kuzatish
+  useEffect(() => {
+    if (retakeState !== "pending" || !id) return;
+    const poll = window.setInterval(async () => {
+      try {
+        const res = await fetch(`/api/tests/${id}/retake`, { cache: "no-store" });
+        const data = await res.json().catch(() => ({}));
+        if (data?.status === "approved") {
+          if (data?.requestId) setRetakeRequestId(data.requestId);
+          setRetakeState("approved");
+        } else if (data?.status === "rejected") setRetakeState("rejected");
+      } catch { /* ignore */ }
+    }, 2000);
+    return () => window.clearInterval(poll);
+  }, [retakeState, id]);
+
+  // Ruxsat berilgach so'rovni "ishlatilgan" qilamiz (qayta so'rov yuborilmasin)
+  useEffect(() => {
+    if (retakeState !== "approved" || !retakeRequestId || !id) return;
+    fetch(`/api/tests/${id}/retake`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ requestId: retakeRequestId }),
+    }).catch(() => {});
+  }, [retakeState, retakeRequestId, id]);
 
   const showToast = useCallback((kind: "ok" | "err", msg: string) => {
     setToast({ kind, msg });
@@ -86,9 +134,9 @@ export default function TestTakePage() {
       try { data = JSON.parse(text); } catch { data = null; }
       if (!res.ok || !data?.ok) {
         if (res.status === 401) {
-          setReviewError("Sessiya eskirgan вЂ” qayta kiring");
+          setReviewError("Sessiya eskirgan — qayta kiring");
         } else if (text && text.trim().startsWith("<")) {
-          setReviewError("Server javobi noto'g'ri вЂ” qayta urinib ko'ring");
+          setReviewError("Server javobi noto'g'ri — qayta urinib ko'ring");
         } else {
           setReviewError(data?.error || `Xato ${res.status}: Natijani yuklab bo'lmadi`);
         }
@@ -96,7 +144,7 @@ export default function TestTakePage() {
         setReview(data.review);
       }
     } catch {
-      setReviewError("Tarmoq xatosi вЂ” qayta urinib ko'ring");
+      setReviewError("Tarmoq xatosi — qayta urinib ko'ring");
     } finally {
       setReviewLoading(false);
     }
@@ -146,6 +194,74 @@ export default function TestTakePage() {
     })();
   }, [status, id, loadHistory]);
 
+  // ====== Testga kirish ruxsati: Telegram botga so'rov yuboriladi =====
+  // 1) Test yuklangandan keyin ruxsat so'rovi yaratiladi.
+  // 2) Talaba har 2 soniyada holatni tekshiradi.
+  // 3) approved -> test ochiladi, rejected -> bosh sahifaga chiqariladi.
+  useEffect(() => {
+    if (status !== "authenticated" || !id || !test) return;
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await fetch(`/api/tests/${id}/access`, { method: "POST" });
+        const data = await res.json().catch(() => ({}));
+        if (cancelled) return;
+        if (!res.ok || !data?.ok) {
+          // Bot/server xatosi — testni bloklamaymiz, ogohlantiramiz
+          setAccessState("off");
+          return;
+        }
+        if (data?.requestId) setAccessRequestId(data.requestId);
+        if (data?.bypassed) { setAccessState("bypassed"); return; }
+        if (data?.status === "approved") { setAccessState("approved"); return; }
+        if (data?.status === "rejected") { setAccessState("rejected"); return; }
+        setAccessReqAt(data?.requestedAt || new Date().toISOString());
+        setAccessState("pending");
+      } catch {
+        if (!cancelled) setAccessState("off"); // bot/xato — testni bloklamaymiz
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [status, id, test?.id]);
+
+  // Holatni tekshirish (polling) + animatsiya taymeri
+  useEffect(() => {
+    if (accessState !== "pending" || !id) return;
+    const tick = window.setInterval(() => setAccessTick((v) => v + 1), 1000);
+    const poll = window.setInterval(async () => {
+      try {
+        const res = await fetch(`/api/tests/${id}/access`, { cache: "no-store" });
+        const data = await res.json().catch(() => ({}));
+        if (data?.status === "approved") {
+          if (data?.requestId) setAccessRequestId(data.requestId);
+          setAccessState("approved");
+        }
+        else if (data?.status === "rejected") setAccessState("rejected");
+        else if (data?.status === "expired") setAccessState("expired");
+      } catch { /* ignore */ }
+    }, 2000);
+    return () => { window.clearInterval(tick); window.clearInterval(poll); };
+  }, [accessState, id]);
+
+  // Ruxsat BIR MARTALIK: test ochilgach so'rov "ishlatilgan" ga o'tadi.
+  // Chiqib yana kelsa — yangi ruxsat so'raydi.
+  useEffect(() => {
+    if (accessState !== "approved" || !accessRequestId) return;
+    fetch(`/api/tests/${id}/access/consume`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ requestId: accessRequestId }),
+    }).catch(() => {});
+  }, [accessState, accessRequestId, id]);
+
+  // Rad etilgan -> bosh sahifaga chiqarish + ogohlantirish
+  useEffect(() => {
+    if (accessState === "rejected") {
+      try { sessionStorage.setItem("akela:test-rejected", "1"); } catch {}
+      router.push("/");
+    }
+  }, [accessState, router]);
+
   const total = test?.questions?.length ?? 0;
   const answered = useMemo(() => {
     if (!test) return 0;
@@ -177,7 +293,7 @@ export default function TestTakePage() {
       const res = await fetch(`/api/tests/${id}/submit`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        // `questionIds` вЂ” test topshiruvchiga ko'rsatilgan savollar (cheklov/random
+        // `questionIds` — test topshiruvchiga ko'rsatilgan savollar (cheklov/random
         // hisobga olingan). Server ballni faqat shu savollar asosida hisoblaydi.
         body: JSON.stringify({ answers, questionIds: (test?.questions ?? []).map((q: any) => q.id) }),
       });
@@ -190,7 +306,7 @@ export default function TestTakePage() {
       setSubmitted(true);
       setTimeLeft(null);
       await loadHistory();
-      // Natijani majburiy ko'rsatish вЂ” test tugaganda darhol review ochiladi
+      // Natijani majburiy ko'rsatish — test tugaganda darhol review ochiladi
       setTimeout(() => { void openReview(data.result?.id); }, 450);
       if (data.result?.passed) {
         try {
@@ -200,20 +316,20 @@ export default function TestTakePage() {
       }
       showToast("ok", "Natija tarixga yozildi");
     } catch {
-      showToast("err", "Tarmoq xatosi вЂ” qayta urinib ko'ring");
+      showToast("err", "Tarmoq xatosi — qayta urinib ko'ring");
     } finally {
       setSaving(false);
       submittingRef.current = false;
     }
   }, [test, answers, total, id, loadHistory, showToast]);
 
-  // Countdown timer вЂ” vaqt tugasa avtomatik topshirish
+  // Countdown timer — vaqt tugasa avtomatik topshirish
   useEffect(() => {
     if (timeLeft === null || submitted || !test) return;
     if (timeLeft <= 0) {
       if (!autoSubmittedRef.current) {
         autoSubmittedRef.current = true;
-        showToast("err", "Vaqt tugadi вЂ” javoblar avtomatik topshirildi");
+        showToast("err", "Vaqt tugadi — javoblar avtomatik topshirildi");
         void doSubmit(true);
       }
       return;
@@ -304,10 +420,54 @@ export default function TestTakePage() {
             <Shield className="mx-auto mb-3 h-10 w-10 text-amber-500" />
             <h1 className="text-xl font-bold text-neutral-900">{blocked ? "Urinishlar tugadi" : "Test mavjud emas"}</h1>
             <p className="mt-2 text-sm text-neutral-600">{error}</p>
+
+            {/* ===== Qayta topshirish: Telegram bot orqali ruxsat so'raydi ===== */}
+            {blocked && (
+              <div className="mt-6">
+                {retakeState === "approved" ? (
+                  <div data-testid="retake-approved">
+                    <p className="mb-3 inline-flex items-center gap-2 rounded-full bg-emerald-50 px-3 py-1.5 text-xs font-bold text-emerald-700">
+                      <CheckCircle2 className="h-3.5 w-3.5" /> Qayta topshirishga ruxsat berildi
+                    </p>
+                    <button
+                      type="button"
+                      onClick={() => { setRetakeState("none"); setError(null); setBlocked(false); window.location.reload(); }}
+                      data-testid="retake-start-btn"
+                      className="mx-auto flex items-center gap-2 rounded-xl bg-emerald-600 px-5 py-2.5 text-sm font-bold text-white hover:bg-emerald-700"
+                    >
+                      <RotateCcw className="h-4 w-4" /> Qayta topshirishni boshlash
+                    </button>
+                  </div>
+                ) : retakeState === "rejected" ? (
+                  <div data-testid="retake-rejected" className="rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-semibold text-rose-700">
+                    Qayta topshirishga ruxsat berilmadi. HR bilan bog&apos;laning.
+                  </div>
+                ) : retakeState === "pending" || retakeState === "checking" ? (
+                  <div data-testid="retake-waiting" className="rounded-2xl border border-amber-200 bg-amber-50 px-5 py-4">
+                    <div className="flex items-center justify-center gap-2 text-sm font-bold text-amber-800">
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                      Qayta topshirishga so&apos;rov yuborildi — ruxsat kutilmoqda
+                    </div>
+                    <p className="mt-1 text-center text-xs text-amber-700">
+                      Telegram orqali xabar yuborildi. Ruxsat berilgach test qayta ochiladi.
+                    </p>
+                  </div>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={requestRetake}
+                    data-testid="retake-request-btn"
+                    className="mx-auto flex items-center gap-2 rounded-xl bg-neutral-900 px-5 py-2.5 text-sm font-bold text-white hover:bg-black"
+                  >
+                    <RotateCcw className="h-4 w-4" /> Qayta topshirish
+                  </button>
+                )}
+              </div>
+            )}
             {history.length > 0 && (
               <div className="mt-6 text-left">
                 <h3 className="flex items-center gap-2 text-sm font-bold"><History className="h-4 w-4" /> Sizning tarixingiz</h3>
-                <p className="mt-1 text-xs text-neutral-500">Natijani bosing вЂ” barcha savollar, tanlangan va to'g'ri javoblar ko'rinadi</p>
+                <p className="mt-1 text-xs text-neutral-500">Natijani bosing — barcha savollar, tanlangan va to'g'ri javoblar ko'rinadi</p>
                 <div className="mt-3 max-h-72 space-y-2 overflow-y-auto pr-1" data-testid="history-list">
                   {history.map((r: any) => (
                     <button
@@ -319,7 +479,7 @@ export default function TestTakePage() {
                     >
                       <span className={`grid h-8 w-8 place-items-center rounded-full text-xs font-bold text-white ${r.passed ? "bg-indigo-500" : "bg-rose-500"}`}>{r.score ?? 0}%</span>
                       <span className="text-xs text-neutral-600">
-                        {new Date(r.completedAt || r.createdAt).toLocaleString()} вЂ” {r.passed ? "O'tdi" : "Yiqildi"}
+                        {new Date(r.completedAt || r.createdAt).toLocaleString()} — {r.passed ? "O'tdi" : "Yiqildi"}
                       </span>
                       <span className="ml-auto rounded-lg bg-neutral-100 px-2 py-1 text-[11px] font-bold text-neutral-700">Ko'rish</span>
                     </button>
@@ -342,7 +502,7 @@ export default function TestTakePage() {
           </div>
         </div>
 
-        {/* Review modal вЂ” blocked ekranda ham majburiy */}
+        {/* Review modal — blocked ekranda ham majburiy */}
         <AnimatePresence>
           {reviewOpen && (
             <motion.div
@@ -391,9 +551,69 @@ export default function TestTakePage() {
 
   if (!test) return null;
 
+  // ====== Ruxsat kutilmoqda (Telegram bot javobini kutadi) ======
+  if (accessState === "checking" || accessState === "pending") {
+    const secs = accessReqAt ? Math.max(0, Math.floor((Date.now() - new Date(accessReqAt).getTime()) / 1000)) : accessTick;
+    return (
+      <main className="min-h-screen grid place-items-center bg-background px-6" data-testid="access-waiting">
+        <LiquidBackground />
+        <motion.div
+          initial={{ opacity: 0, y: 16, scale: 0.98 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          className="glass-card w-full max-w-md rounded-3xl p-8 text-center"
+        >
+          <div className="relative mx-auto mb-6 h-20 w-20">
+            <span className="absolute inset-0 rounded-full border-4 border-violet-200" />
+            <span className="absolute inset-0 animate-ping rounded-full bg-violet-400/30 motion-reduce:animate-none" />
+            <span className="absolute inset-0 grid place-items-center rounded-full bg-violet-600/10">
+              <Loader2 className="h-9 w-9 animate-spin text-violet-600 motion-reduce:animate-none" />
+            </span>
+          </div>
+          <h1 className="text-lg font-black text-neutral-900">Ruxsat so&apos;rovi yuborildi</h1>
+          <p className="mt-2 text-sm leading-relaxed text-neutral-600">
+            Testni boshlashingiz uchun ruxsat so&apos;rovi yuborildi. Iltimos <b>kutib turing</b> — ruxsat berilgach
+            test avtomatik ochiladi.
+          </p>
+          <div className="mt-5 inline-flex items-center gap-2 rounded-full bg-amber-50 px-3 py-1.5 text-xs font-bold text-amber-700">
+            <span className="h-2 w-2 animate-pulse rounded-full bg-amber-500 motion-reduce:animate-none" />
+            Kutish vaqti: {String(Math.floor(secs / 60)).padStart(2, "0")}:{String(secs % 60).padStart(2, "0")}
+          </div>
+          <p className="mt-4 text-[11px] text-neutral-400">Test: {test.title}</p>
+        </motion.div>
+      </main>
+    );
+  }
+
+  // Ruxsat rad etildi -> router /my ga olib ketadi; shu bosqichda ogohlantirish
+  if (accessState === "rejected" || accessState === "expired") {
+    return (
+      <main className="min-h-screen grid place-items-center bg-background px-6" data-testid="access-rejected">
+        <LiquidBackground />
+        <div className="glass-card w-full max-w-md rounded-3xl p-8 text-center">
+          <Shield className="mx-auto mb-4 h-12 w-12 text-rose-500" />
+          <h1 className="text-lg font-black text-neutral-900">
+            {accessState === "rejected" ? "Ruxsat berilmadi" : "So'rov vaqti tugadi"}
+          </h1>
+          <p className="mt-2 text-sm leading-relaxed text-neutral-600">
+            {accessState === "rejected"
+              ? "Sizga hozirda testni topshirishga ruxsat etilmadi. HR bilan bog'laning."
+              : "Ruxsat so'rovi vaqti tugadi. Qayta urinish uchun HR bilan bog'laning."}
+          </p>
+          <button
+            type="button"
+            onClick={() => router.push("/")}
+            className="mt-6 rounded-xl bg-neutral-900 px-5 py-2.5 text-sm font-bold text-white"
+          >
+            Bosh sahifaga
+          </button>
+        </div>
+      </main>
+    );
+  }
+
   const attemptsUsed = history.length;
   const maxAttempts = test.maxAttempts ?? 0;
-  // Admin qayta topshirish bergan bo'lsa (retakePending) вЂ” qo'shimcha urinish ochiq
+  // Admin qayta topshirish bergan bo'lsa (retakePending) — qo'shimcha urinish ochiq
   const retakePending = (test as any).retakePending === true;
   const canRetake = maxAttempts === 0 || attemptsUsed < maxAttempts || retakePending;
   const timerDanger = timeLeft !== null && timeLeft <= 60;
@@ -441,7 +661,7 @@ export default function TestTakePage() {
         </div>
       )}
 
-      {/* Toast вЂ” nav bor/yo'qqa qarab balandlik */}
+      {/* Toast — nav bor/yo'qqa qarab balandlik */}
       <AnimatePresence>
         {toast && (
           <motion.div
@@ -498,7 +718,7 @@ export default function TestTakePage() {
               })}
             </div>
 
-            {/* Joriy savol вЂ” markazda, katta shrift */}
+            {/* Joriy savol — markazda, katta shrift */}
             {(() => {
               const q = test.questions[currentQIdx];
               if (!q) return null;
@@ -519,7 +739,7 @@ export default function TestTakePage() {
                     </span>
                     <p className="text-lg font-bold leading-snug text-neutral-900 sm:text-xl md:text-2xl">{q.text}</p>
                     <span className={`ml-auto shrink-0 self-start text-xs font-bold uppercase ${isAnswered ? "text-emerald-600" : "text-neutral-400"}`}>
-                      {isAnswered ? "вњ“" : "вЂ”"}
+                      {isAnswered ? "✓" : "—"}
                     </span>
                   </div>
                   {q.type === "written" ? (
@@ -533,7 +753,7 @@ export default function TestTakePage() {
                         placeholder="Javobingizni yozing..."
                         className="w-full resize-none rounded-2xl border-2 border-neutral-200 px-5 py-4 text-base transition-colors focus:border-violet-400 focus:outline-none"
                       />
-                      <p className="mt-1 text-sm text-neutral-400">Yozma javob вЂ” nazoratchi tomonidan tekshiriladi</p>
+                      <p className="mt-1 text-sm text-neutral-400">Yozma javob — nazoratchi tomonidan tekshiriladi</p>
                     </div>
                   ) : (
                     <div className="space-y-3">
@@ -549,7 +769,7 @@ export default function TestTakePage() {
                             }`}
                           >
                             <span className={`grid h-8 w-8 shrink-0 place-items-center rounded-full border text-sm font-bold ${selected ? "border-white bg-white text-violet-700" : "border-neutral-200 bg-neutral-100 text-neutral-600"}`}>
-                              {c.order !== undefined ? String.fromCharCode(65 + c.order) : "вЂў"}
+                              {c.order !== undefined ? String.fromCharCode(65 + c.order) : "•"}
                             </span>
                             <span className="flex-1 font-medium">{c.text}</span>
                             {selected && <CheckCircle2 className="h-5 w-5" />}
@@ -570,7 +790,7 @@ export default function TestTakePage() {
                     >
                       <ChevronLeft className="h-5 w-5" /> Oldingi
                     </button>
-                    {/* Barcha savollar javoblangan bo'lsa вЂ” qaysi savolda bo'lishidan
+                    {/* Barcha savollar javoblangan bo'lsa — qaysi savolda bo'lishidan
                         qat'i nazar topshirish tugmasi chiqadi. Aks holda Keyingi. */}
                     {answered >= total ? (
                       <button
@@ -599,7 +819,7 @@ export default function TestTakePage() {
                     )}
                   </div>
 
-                  {/* Barcha javoblar tayyor вЂ” qaysi savolda bo'lishidan qat'i nazar
+                  {/* Barcha javoblar tayyor — qaysi savolda bo'lishidan qat'i nazar
                       markazda ham topshirish tugmasi ko'rinadi */}
                   {answered >= total && (
                     <button
@@ -677,7 +897,7 @@ export default function TestTakePage() {
               {result?.score ?? 0}%
             </div>
             <h2 className="mt-3 text-xl font-black text-neutral-900">
-              {result?.passed ? "Tabriklaymiz! O'tdingiz рџЋ‰" : "Afsus, qayta urinib ko'ring"}
+              {result?.passed ? "Tabriklaymiz! O'tdingiz 🎉" : "Afsus, qayta urinib ko'ring"}
             </h2>
             <p className="mt-1 text-sm text-neutral-600">
               Natija tarixda saqlandi.{" "}
@@ -687,6 +907,50 @@ export default function TestTakePage() {
               <span className="flex items-center gap-1"><Circle className="h-3 w-3 fill-indigo-500 text-indigo-500" /> Siz: {result?.score ?? 0}%</span>
               <span className="flex items-center gap-1"><Circle className="h-3 w-3 fill-neutral-300 text-neutral-300" /> O'tish: {test.passScore}%</span>
             </div>
+
+            {/* To'g'ri / xato soni va foizlari */}
+            {result && (result.autoGradedCount ?? 0) > 0 && (
+              <div className="mx-auto mt-6 grid max-w-lg grid-cols-2 gap-3" data-testid="result-breakdown">
+                <div className="rounded-2xl border border-emerald-200 bg-emerald-50/70 px-4 py-3">
+                  <p className="text-[10px] font-bold uppercase tracking-wide text-emerald-700">To'g'ri javoblar</p>
+                  <p className="mt-1 text-2xl font-black text-emerald-700">
+                    {result.correctCount ?? 0}
+                    <span className="ml-1 text-sm font-bold text-emerald-600">
+                      ({Math.round(((result.correctCount ?? 0) / (result.autoGradedCount || 1)) * 100)}%)
+                    </span>
+                  </p>
+                </div>
+                <div className="rounded-2xl border border-rose-200 bg-rose-50/70 px-4 py-3">
+                  <p className="text-[10px] font-bold uppercase tracking-wide text-rose-700">Xato javoblar</p>
+                  <p className="mt-1 text-2xl font-black text-rose-700">
+                    {result.wrongCount ?? 0}
+                    <span className="ml-1 text-sm font-bold text-rose-600">
+                      ({Math.round(((result.wrongCount ?? 0) / (result.autoGradedCount || 1)) * 100)}%)
+                    </span>
+                  </p>
+                </div>
+                <div className="col-span-2 rounded-2xl border border-neutral-200 bg-white/70 px-4 py-3">
+                  <div className="flex items-center justify-between text-xs font-bold text-neutral-600">
+                    <span>Jami avto-baholangan savollar</span>
+                    <span data-testid="result-total">{result.autoGradedCount}</span>
+                  </div>
+                  <div className="mt-2 flex h-2.5 overflow-hidden rounded-full bg-neutral-100">
+                    <div
+                      className="h-full bg-emerald-500 transition-all"
+                      style={{ width: `${((result.correctCount ?? 0) / (result.autoGradedCount || 1)) * 100}%` }}
+                    />
+                    <div
+                      className="h-full bg-rose-400 transition-all"
+                      style={{ width: `${((result.wrongCount ?? 0) / (result.autoGradedCount || 1)) * 100}%` }}
+                    />
+                  </div>
+                  <p className="mt-2 text-[11px] text-neutral-500">
+                    To'g'ri: {result.correctCount ?? 0} · Xato: {result.wrongCount ?? 0}
+                    {result.hasWritten ? " · Yozma javoblar baholash kutilmoqda" : ""}
+                  </p>
+                </div>
+              </div>
+            )}
 
             <div className="mt-6 flex flex-wrap justify-center gap-2">
               {canRetake ? (
@@ -703,7 +967,7 @@ export default function TestTakePage() {
                   Urinishlar tugadi ({maxAttempts}/{maxAttempts})
                 </span>
               )}
-              {/* Topshirilgan testni har doim ko'rish mumkin вЂ” urinish bor-yo'qligidan qat'i nazar */}
+              {/* Topshirilgan testni har doim ko'rish mumkin — urinish bor-yo'qligidan qat'i nazar */}
               <button
                 type="button"
                 data-testid="open-review-from-result"
@@ -747,7 +1011,7 @@ export default function TestTakePage() {
         </div>
       )}
 
-      {/* Oldingi urinish review вЂ” scroll panel (savollar + tanlangan + to'g'ri javob) */}
+      {/* Oldingi urinish review — scroll panel (savollar + tanlangan + to'g'ri javob) */}
       <AnimatePresence>
         {reviewOpen && (
           <motion.div

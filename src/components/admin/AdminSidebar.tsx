@@ -1,8 +1,10 @@
-"use client";
+﻿"use client";
 
 import Link from "next/link";
+import { useEffect } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { useSession, signOut } from "next-auth/react";
+import { installAdminCacheInvalidation } from "@/lib/admin-cache";
 import {
   BookOpen,
   GraduationCap,
@@ -19,7 +21,6 @@ import {
   Award,
   Building2,
 } from "lucide-react";
-import { motion } from "framer-motion";
 
 const NAV_ITEMS = [
   { href: "/admin/lms", label: "Kurslar", icon: BookOpen, exact: true },
@@ -38,6 +39,11 @@ export function AdminSidebar() {
   const pathname = usePathname();
   const { data: session } = useSession();
   const router = useRouter();
+
+  // Boshqa bo'limda o'zgartirish bo'lsa, bu sahifa ma'lumotlari keshini tozalash
+  useEffect(() => {
+    installAdminCacheInvalidation();
+  }, []);
 
   const isActive = (href: string, exact?: boolean) => {
     if (exact) return pathname === href;
@@ -66,6 +72,7 @@ export function AdminSidebar() {
       <div className="px-3 pt-3">
         <Link
           href="/dashboard"
+          prefetch
           className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-neutral-600 hover:bg-neutral-100 transition-colors"
         >
           <Home className="w-4 h-4" />
@@ -82,7 +89,9 @@ export function AdminSidebar() {
             <Link
               key={item.href}
               href={item.href}
-              className={`relative flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all ${
+              prefetch
+              scroll={false}
+              className={`relative flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
                 active
                   ? "bg-gradient-to-br from-blue-700 to-indigo-600 text-white shadow-lg shadow-blue-900/20"
                   : "text-neutral-700 hover:bg-blue-100/70"
@@ -91,12 +100,9 @@ export function AdminSidebar() {
               <Icon className="w-[18px] h-[18px] shrink-0" />
               <span className="flex-1">{item.label}</span>
               {active && (
-                <motion.div
-                  layoutId="admin-nav-indicator"
-                  className="absolute right-2"
-                >
+                <span className="absolute right-2" aria-hidden="true">
                   <ChevronRight className="w-3.5 h-3.5" />
-                </motion.div>
+                </span>
               )}
             </Link>
           );

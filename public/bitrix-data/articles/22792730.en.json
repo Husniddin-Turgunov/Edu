@@ -1,0 +1,309 @@
+{
+ "id": "22792730",
+ "title": "How to record a HAR file",
+ "sectionId": "148410",
+ "section": "For technical specialists",
+ "parent": null,
+ "order": 50,
+ "short": null,
+ "toc": [],
+ "breadcrumb": [
+  "Новые статьи",
+  "С чего начать",
+  "Написать в чат",
+  "Лента Новостей",
+  "Приложение Битрикс24",
+  "Общие вопросы"
+ ],
+ "articleMeta": [],
+ "related": [
+  {
+   "id": "22792730",
+   "t": "Открыть в новой вкладке"
+  },
+  {
+   "id": "22540324",
+   "t": "Как узнать IP-адрес и выполнить трассировку маршрута"
+  },
+  {
+   "id": "22800538",
+   "t": "Как выполнить MTR-диагностику"
+  }
+ ],
+ "blocks": [
+  {
+   "k": "P",
+   "t": "HAR-файл — это архив данных сеанса в браузере: время загрузки страниц, запросы браузера к серверу и ответы. HAR-файл нужен поддержке, чтобы выяснить причину медленной работы веб-версии Битрикс24 и решить проблему."
+  },
+  {
+   "k": "P",
+   "t": "В статье расскажем, как записать HAR-файл в разных браузерах."
+  },
+  {
+   "k": "P",
+   "t": "Откройте консоль разработчика, нажмите F12 или Fn+F12 на клавиатуре."
+  },
+  {
+   "k": "P",
+   "t": "Чтобы записать HAR-файл в приложении Битрикс24, нажмите CTRL SHIFT D или CMD SHIFT D."
+  },
+  {
+   "k": "P",
+   "t": "1. Выберите Network. 2. Включите запись лога — нажмите на кнопку . Кнопка красная — запись включена. 3. Очистите лог — нажмите на кнопку . 4. Включите непрерывную запись логов и отключите кэш — поставьте галочки рядом с Preserve log и Disable cache."
+  },
+  {
+   "k": "IMG",
+   "n": 1,
+   "src": "/upload/medialibrary/eea/38px9se8was70cjsfi3tewy2wwmfxhj2/запись сетевого журнала.jpg",
+   "local": "/bitrix-img/22792730__01.jpg"
+  },
+  {
+   "k": "IMG",
+   "n": 2,
+   "src": "/upload/medialibrary/e42/8uqhywqc6cuxrxla2w72mad3oteodh8f/очистить.jpg",
+   "local": "/bitrix-img/22792730__02.jpg"
+  },
+  {
+   "k": "P",
+   "t": "Повторите действия, при которых Битрикс24 медленно работает."
+  },
+  {
+   "k": "P",
+   "t": "Сначала выйдите из Битрикс24 и войдите заново, затем отправьте файл в чат поддержки Битрикс24."
+  },
+  {
+   "k": "IMG",
+   "n": 3,
+   "src": "/upload/medialibrary/948/ctq190m1nn3s7i78aoc3ovokh4mq0ljg/har.jpg",
+   "local": "/bitrix-img/22792730__03.jpg"
+  },
+  {
+   "k": "IMG",
+   "n": 4,
+   "src": "/upload/medialibrary/628/i0u10ddm9pc5jwndjfrujwpfail2rzkl/настройки хара.jpg",
+   "local": "/bitrix-img/22792730__04.jpg"
+  },
+  {
+   "k": "IMG",
+   "n": 5,
+   "src": "/upload/medialibrary/e97/cs3bcjqjifiwmygbd4u2r0f94e542psi/экспорт хара.jpg",
+   "local": "/bitrix-img/22792730__05.jpg"
+  },
+  {
+   "k": "P",
+   "t": "Откройте консоль разработчика, нажмите F12 или Fn+F12 на клавиатуре."
+  },
+  {
+   "k": "P",
+   "t": "1. В верхней панели выберите Сеть. 2. Очистите лог — нажмите на корзину. 3. Включите запись лога — нажмите на кнопку . Отображается — запись включена. 4. Поставьте галочку рядом с Отключить кэш."
+  },
+  {
+   "k": "IMG",
+   "n": 6,
+   "src": "/upload/medialibrary/3b1/qt59izi0h5yuz7ji8adpspe1q4x5cyyh/play.jpg",
+   "local": "/bitrix-img/22792730__06.jpg"
+  },
+  {
+   "k": "IMG",
+   "n": 7,
+   "src": "/upload/medialibrary/e5b/sj94fmdqd2pl9odxk2a2b9sj0vo848tp/пауза.jpg",
+   "local": "/bitrix-img/22792730__07.jpg"
+  },
+  {
+   "k": "P",
+   "t": "Повторите действия, при которых Битрикс24 медленно работает."
+  },
+  {
+   "k": "P",
+   "t": "Сначала выйдите из Битрикс24 и войдите заново, затем отправьте файл в чат поддержки Битрикс24."
+  },
+  {
+   "k": "IMG",
+   "n": 8,
+   "src": "/upload/medialibrary/e28/q38o56ayg3rge89x7qn2wgke7pvqywm1/har (3).jpg",
+   "local": "/bitrix-img/22792730__08.jpg"
+  },
+  {
+   "k": "IMG",
+   "n": 9,
+   "src": "/upload/medialibrary/cc9/6bsxwy7ezgk1qdmnwcumy70b0z2vz2aj/har (3).jpg",
+   "local": "/bitrix-img/22792730__09.jpg"
+  },
+  {
+   "k": "P",
+   "t": "Откройте консоль разработчика, нажмите F12 или Fn+F12 на клавиатуре."
+  },
+  {
+   "k": "P",
+   "t": "1. Нажмите Сеть. 2. Включите запись сетевого журнала — нажмите кнопку . Кнопка красная — запись включена."
+  },
+  {
+   "k": "IMG",
+   "n": 10,
+   "src": "/upload/medialibrary/eea/38px9se8was70cjsfi3tewy2wwmfxhj2/запись сетевого журнала.jpg",
+   "local": "/bitrix-img/22792730__10.jpg"
+  },
+  {
+   "k": "IMG",
+   "n": 11,
+   "src": "/upload/medialibrary/e42/8uqhywqc6cuxrxla2w72mad3oteodh8f/очистить.jpg",
+   "local": "/bitrix-img/22792730__11.jpg"
+  },
+  {
+   "k": "P",
+   "t": "Повторите действия, при которых Битрикс24 медленно работает."
+  },
+  {
+   "k": "P",
+   "t": "Сначала выйдите из Битрикс24 и войдите заново, затем отправьте файл в чат поддержки Битрикс24."
+  },
+  {
+   "k": "IMG",
+   "n": 12,
+   "src": "/upload/medialibrary/981/3i6kcbdezu30ozhszuqxbwgl011ylj08/har (1).jpg",
+   "local": "/bitrix-img/22792730__12.jpg"
+  },
+  {
+   "k": "IMG",
+   "n": 13,
+   "src": "/upload/medialibrary/22c/a5wlycgg3et4n5q2w239mw36zad4mrlq/edge.jpg",
+   "local": "/bitrix-img/22792730__13.jpg"
+  },
+  {
+   "k": "P",
+   "t": "1–2. Нажмите Разработка > Показать веб-инспектор. 3. Выберите Сеть. 4. Выключите кэш — поставьте галочку в чекбокс. 5. Очистите сетевой журнал — нажмите на корзину. 6–7. Нажмите > Сохранить журнал."
+  },
+  {
+   "k": "IMG",
+   "n": 14,
+   "src": "/upload/medialibrary/b53/9qyz50uishjz0po2tqkjeqdmh0l3r2ta/1.jpg",
+   "local": "/bitrix-img/22792730__14.jpg"
+  },
+  {
+   "k": "P",
+   "t": "Повторите действия, при которых Битрикс24 медленно работает."
+  },
+  {
+   "k": "P",
+   "t": "Сначала выйдите из Битрикс24 и войдите заново, затем отправьте файл в чат поддержки Битрикс24."
+  },
+  {
+   "k": "IMG",
+   "n": 15,
+   "src": "/upload/medialibrary/591/yrybhvb3ekstq9bjqvyqqoxub1fgm178/har (4).jpg",
+   "local": "/bitrix-img/22792730__15.jpg"
+  },
+  {
+   "k": "IMG",
+   "n": 16,
+   "src": "/upload/medialibrary/cdc/56ry6ucu6wnwv9xivck45vm96gtjkuit/har (5).jpg",
+   "local": "/bitrix-img/22792730__16.jpg"
+  },
+  {
+   "k": "IMG",
+   "n": 17,
+   "src": "/upload/medialibrary/7ce/247w6ct06vx810smr469d0cqz1gpapgf/har (6).jpg",
+   "local": "/bitrix-img/22792730__17.jpg"
+  },
+  {
+   "k": "IMG",
+   "n": 18,
+   "src": "/upload/medialibrary/d3a/ulbewfzzoxm2zpw9u52xv2g3s14ouz37/2024-09-05_14-27-36.jpg",
+   "local": "/bitrix-img/22792730__18.jpg"
+  }
+ ],
+ "images": [
+  {
+   "n": 1,
+   "local": "/bitrix-img/22792730__01.jpg",
+   "bytes": 943
+  },
+  {
+   "n": 2,
+   "local": "/bitrix-img/22792730__02.jpg",
+   "bytes": 948
+  },
+  {
+   "n": 3,
+   "local": "/bitrix-img/22792730__03.jpg",
+   "bytes": 470647
+  },
+  {
+   "n": 4,
+   "local": "/bitrix-img/22792730__04.jpg",
+   "bytes": 351730
+  },
+  {
+   "n": 5,
+   "local": "/bitrix-img/22792730__05.jpg",
+   "bytes": 336663
+  },
+  {
+   "n": 6,
+   "local": "/bitrix-img/22792730__06.jpg",
+   "bytes": 888
+  },
+  {
+   "n": 7,
+   "local": "/bitrix-img/22792730__07.jpg",
+   "bytes": 886
+  },
+  {
+   "n": 8,
+   "local": "/bitrix-img/22792730__08.jpg",
+   "bytes": 156917
+  },
+  {
+   "n": 9,
+   "local": "/bitrix-img/22792730__09.jpg",
+   "bytes": 135666
+  },
+  {
+   "n": 10,
+   "local": "/bitrix-img/22792730__10.jpg",
+   "bytes": 943
+  },
+  {
+   "n": 11,
+   "local": "/bitrix-img/22792730__11.jpg",
+   "bytes": 948
+  },
+  {
+   "n": 12,
+   "local": "/bitrix-img/22792730__12.jpg",
+   "bytes": 389463
+  },
+  {
+   "n": 13,
+   "local": "/bitrix-img/22792730__13.jpg",
+   "bytes": 204145
+  },
+  {
+   "n": 14,
+   "local": "/bitrix-img/22792730__14.jpg",
+   "bytes": 879
+  },
+  {
+   "n": 15,
+   "local": "/bitrix-img/22792730__15.jpg",
+   "bytes": 728975
+  },
+  {
+   "n": 16,
+   "local": "/bitrix-img/22792730__16.jpg",
+   "bytes": 184624
+  },
+  {
+   "n": 17,
+   "local": "/bitrix-img/22792730__17.jpg",
+   "bytes": 180084
+  },
+  {
+   "n": 18,
+   "local": "/bitrix-img/22792730__18.jpg",
+   "bytes": 17774
+  }
+ ],
+ "sectionKey": "Для технических специалистов",
+ "lang": "en"
+}

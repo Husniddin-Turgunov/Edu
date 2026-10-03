@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getSession } from "@/lib/auth";
 import { onboardingStorage } from "@/lib/onboarding-storage";
+import { apiCacheClear, CACHE_KEYS } from "@/lib/api-cache";
 
 export const dynamic = "force-dynamic";
 
@@ -17,6 +18,8 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
       description: body.description,
     });
     return NextResponse.json({ ok: true, module: mod });
+    apiCacheClear(CACHE_KEYS.adminOnboarding);
+    apiCacheClear(CACHE_KEYS.adminTests);
   } catch (e) {
     console.error("PATCH /api/admin/onboarding/modules/[id] error:", e);
     return NextResponse.json({ ok: false, error: "Failed to update module" }, { status: 500 });
@@ -32,6 +35,8 @@ export async function DELETE(_req: NextRequest, { params }: { params: Promise<{ 
     const { id } = await params;
     await onboardingStorage.deleteModule(id);
     return NextResponse.json({ ok: true });
+    apiCacheClear(CACHE_KEYS.adminOnboarding);
+    apiCacheClear(CACHE_KEYS.adminTests);
   } catch (e) {
     console.error("DELETE /api/admin/onboarding/modules/[id] error:", e);
     return NextResponse.json({ ok: false, error: "Failed to delete module" }, { status: 500 });

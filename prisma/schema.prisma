@@ -30,16 +30,32 @@ model Position {
   departmentId   String
   name           String
   description    String?
-  normativeUrl   String?
+  normativeUrl   String?  // eski (bitta) fayl — yangi ro'yxatga ko'chirildi
   normativeDesc  String?
   order          Int      @default(0)
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
 
   department     Department @relation(fields: [departmentId], references: [id], onDelete: Cascade)
+  normatives     PositionNormative[]
 
   @@index([departmentId])
   @@index([order])
+}
+
+// ====== Lavozimga biriktirilgan normativ fayllar (bir nechta) ======
+model PositionNormative {
+  id         String   @id @default(cuid())
+  positionId String
+  name       String   @db.Text // fayl nomi
+  url        String   @db.Text // yuklangan fayl manzili
+  size       Int      @default(0) // bayt
+  note       String?  @db.Text // izoh ("Batafsil")
+  createdAt  DateTime @default(now())
+
+  position Position @relation(fields: [positionId], references: [id], onDelete: Cascade)
+
+  @@index([positionId])
 }
 
 model User {
@@ -66,6 +82,7 @@ model User {
   jobDayProgress  JobDayProgress[]
   testResults     TestResult[]
   jobTestResults  JobTestResult[]
+  testAccessRequests TestAccessRequest[]
 }
 
 // ====== Telegram bot obunachilari ======
@@ -193,6 +210,7 @@ model Test {
   module      Module?  @relation(fields: [moduleId], references: [id], onDelete: SetNull)
   questions   Question[]
   results     TestResult[]
+  accessRequests TestAccessRequest[]
 
   @@index([moduleId])
   @@index([courseId])
@@ -279,6 +297,34 @@ model TestResult {
   @@index([userId])
   @@index([testId])
   @@index([gradingStatus])
+}
+
+// ====== Testga kirish uchun ruxsat so'rovi ======
+// Xodim testni boshlashdan oldin Telegram botga so'rov yuboradi.
+// Botdagi "Ruxsat berish" / "Rad etish" tugmalari shu yozuvni yangilaydi.
+
+model TestAccessRequest {
+  id          String    @id @default(cuid())
+  userId      String
+  testId      String? // LMS test (agar bo'lsa)
+  targetType  String    @default("test") // test | lesson (dars testi)
+  targetLabel String    @default("") @db.Text // ko'rsatiladigan nom
+  targetMeta  String?   @db.Text // JSON: {slug, mi, li}
+  status      String    @default("pending") // pending | approved | rejected | expired
+  note        String?   @db.Text
+  telegramChats String? @db.Text // JSON: [{chatId,messageId}] — xabar qaysi chatlarga yuborilgani
+  requestedAt DateTime  @default(now())
+  decidedAt   DateTime?
+  decidedBy   String? // telegram id yoki "admin"
+
+  user User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  test Test? @relation(fields: [testId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([testId])
+  @@index([targetType])
+  @@index([status])
+  @@index([requestedAt])
 }
 
 // ====== Video darslar kutubxonasi ======

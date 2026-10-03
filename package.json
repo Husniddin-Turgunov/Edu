@@ -7,6 +7,8 @@
     "build": "prisma generate && next build",
     "start": "next start -p ${PORT:-3000} -H 0.0.0.0",
     "lint": "eslint .",
+    "check:encoding": "node scripts/check-encoding.cjs",
+    "verify": "npm run check:encoding && tsc --noEmit",
     "db:push": "prisma db push --accept-data-loss",
     "db:generate": "prisma generate",
     "db:migrate": "prisma migrate dev",

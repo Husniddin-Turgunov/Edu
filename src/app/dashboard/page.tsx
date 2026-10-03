@@ -20,6 +20,8 @@ import {
   Target,
   Sparkles,
   Lock,
+  ShieldAlert,
+  X,
 } from "lucide-react";
 import { UI_STRINGS, type Locale } from "@/lib/akela-content";
 import { usePlacedVideos } from "@/components/akela/RelatedVideos";
@@ -81,11 +83,23 @@ export default function DashboardPage() {
   const strings = UI_STRINGS[locale];
   const [stats, setStats] = useState<MyStats | null>(null);
   const [loadingStats, setLoadingStats] = useState(true);
+  // Testga kirishga ruxsat rad etilgan bo'lsa — ogohlantirish banneri
+  const [testRejected, setTestRejected] = useState(false);
   const { dashboard: dashVideos } = usePlacedVideos();
 
   useEffect(() => {
     if (status === "unauthenticated") router.push("/login");
   }, [status, router]);
+
+  // Rad etilgan testdan keyin kelganda — ogohlantirishni ko'rsat
+  useEffect(() => {
+    try {
+      if (window.sessionStorage.getItem("akela:test-rejected") === "1") {
+        setTestRejected(true);
+        window.sessionStorage.removeItem("akela:test-rejected");
+      }
+    } catch {}
+  }, []);
 
   useEffect(() => {
     if (status !== "authenticated") return;
@@ -125,6 +139,31 @@ export default function DashboardPage() {
       <Navbar locale={locale} strings={strings} onLocaleChange={setLocale} />
 
       <div className="mx-auto max-w-6xl px-6 pt-28 pb-12 space-y-6">
+        {/* Testga kirishga ruxsat rad etilganligi haqida ogohlantirish */}
+        {testRejected && (
+          <motion.div
+            initial={{ opacity: 0, y: -12 }}
+            animate={{ opacity: 1, y: 0 }}
+            data-testid="test-rejected-banner"
+            className="flex items-start gap-3 rounded-2xl border border-rose-200 bg-rose-50 px-5 py-4 text-rose-800 shadow-sm"
+          >
+            <ShieldAlert className="mt-0.5 h-5 w-5 shrink-0 text-rose-600" />
+            <div className="min-w-0 flex-1">
+              <p className="text-sm font-black">Testni topshirishga ruxsat etilmadi</p>
+              <p className="mt-0.5 text-xs leading-relaxed text-rose-700">
+                Sizga hozirda testni topshirishga ruxsat etilmadi. Savollaringiz uchun HR bo'limi bilan bog&apos;laning.
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={() => setTestRejected(false)}
+              aria-label="Yopish"
+              className="shrink-0 rounded-lg p-1 text-rose-500 hover:bg-rose-100"
+            >
+              <X className="h-4 w-4" />
+            </button>
+          </motion.div>
+        )}
         {/* ===== Hero: profil + umumiy progress ===== */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}

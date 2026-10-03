@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useEffect, useState, useCallback } from "react";
 import { useParams, useRouter } from "next/navigation";
@@ -69,12 +69,14 @@ export default function AdminTestDetailPage() {
 
   useEffect(() => {
     if (status === "unauthenticated") router.push("/login");
-    if (status === "authenticated" && (session?.user as any)?.role !== "admin") router.push("/dashboard");
+    if (status === "authenticated" && (session?.user as any)?.role === "user") router.push("/dashboard");
   }, [status, session, router]);
 
-  const load = useCallback(async () => {
+  const load = useCallback(async (opts?: { silent?: boolean }) => {
     if (!id || status !== "authenticated") return;
-    setLoading(true); setErr(null);
+    const silent = !!opts?.silent;
+    if (!silent) setLoading(true);
+    setErr(null);
     try {
       const res = await fetch(`/api/admin/tests/${id}`, { cache: "no-store" });
       const data = await res.json();
@@ -86,7 +88,7 @@ export default function AdminTestDetailPage() {
         if (h?.ok) setHistory(h.results || []);
       } catch {}
     } catch { setErr("Yuklashda xato"); }
-    finally { setLoading(false); }
+    finally { if (!silent) setLoading(false); }
   }, [id, status]);
 
   useEffect(() => { load(); }, [load]);
@@ -118,17 +120,30 @@ export default function AdminTestDetailPage() {
       if (payload.visibility === "all") payload.assignedUserIds = [];
       const res = await fetch(`/api/admin/tests/${test.id}`, { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });
       const data = await res.json();
-      if (data.ok) { setShowEdit(false); load(); showToast("ok", "Saqlandi"); } else showToast("err", data.error || "Xato");
+      if (data.ok) { setShowEdit(false); load({ silent: true }); showToast("ok", "Saqlandi"); } else showToast("err", data.error || "Xato");
     } finally { setSaving(false); }
+  };
+
+  // O'chirilgan savollarni darhol UI dan olib tashlash — reload kerak emas, kechikish bo'lmaydi
+  const removeQuestionsFromState = (ids: string[]) => {
+    const removed = new Set(ids);
+    setTest((current: any) => current ? { ...current, questions: (current.questions || []).filter((q: any) => !removed.has(q.id)) } : current);
+    setSelectedQuestionIds((current) => current.filter((qid) => !removed.has(qid)));
+    setExpandedQuestionIds((current) => current.filter((qid) => !removed.has(qid)));
+    setEditingQuestionId((current) => (current && removed.has(current) ? null : current));
+    setQuestionDraft((current) => (editingQuestionId && removed.has(editingQuestionId) ? null : current));
   };
 
   const deleteQuestion = async (qid: string) => {
     if (!confirm("Savolni o'chirish?")) return;
+    const snapshot: Question[] = test?.questions || [];
+    removeQuestionsFromState([qid]); // optimistik: darhol yo'qoladi
     const res = await fetch(`/api/admin/questions/${qid}`, { method: "DELETE" });
-    if (!res.ok) { showToast("err", "Savolni o'chirib bo'lmadi"); return; }
-    setSelectedQuestionIds((current) => current.filter((id) => id !== qid));
-    setExpandedQuestionIds((current) => current.filter((id) => id !== qid));
-    load();
+    if (!res.ok) {
+      setTest((current: any) => current ? { ...current, questions: snapshot } : current);
+      showToast("err", "Savolni o'chirib bo'lmadi");
+      return;
+    }
     showToast("ok", "Savol o'chirildi");
   };
 
@@ -165,7 +180,7 @@ export default function AdminTestDetailPage() {
     if (data.ok) {
       setEditingQuestionId(null);
       setQuestionDraft(null);
-      await load();
+      await load({ silent: true });
       showToast("ok", "Savol va variantlar saqlandi");
     } else {
       showToast("err", data.error || "Saqlab bo'lmadi");
@@ -211,6 +226,32 @@ export default function AdminTestDetailPage() {
     await Promise.all(selected.map(loadHistoryReview));
   };
 
+  // Tanlangan savollarni o'chirish (bir tugma bilan)
+  const [deletingQuestions, setDeletingQuestions] = useState(false);
+  const deleteSelectedQuestions = async () => {
+    if (!selectedQuestionIds.length || deletingQuestions) return;
+    const ids = [...selectedQuestionIds];
+    if (!confirm(`${ids.length} ta savolni butunlay o'chirishni xohlaysizmi? Bu amalni qaytarib bo'lmaydi.`)) return;
+    setDeletingQuestions(true);
+    const snapshot: Question[] = test?.questions || [];
+    removeQuestionsFromState(ids); // optimistik: darhol ro'yxatdan va ochilganlardan yo'qoladi
+    try {
+      const res = await fetch("/api/admin/questions", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ids }),
+      });
+      const data = await res.json().catch(() => ({} as any));
+      if (!res.ok || !data.ok) throw new Error(data?.error || "O'chirishda xato");
+      showToast("ok", `${data.deleted ?? ids.length} ta savol o'chirildi`);
+    } catch (e: any) {
+      setTest((current: any) => current ? { ...current, questions: snapshot } : current); // xatoda qaytarish
+      showToast("err", e?.message || "O'chirishda xato");
+    } finally {
+      setDeletingQuestions(false);
+    }
+  };
+
   // Tanlangan natijalarni o'chirish (bir tugma bilan)
   const [deletingHistory, setDeletingHistory] = useState(false);
   const deleteSelectedHistory = async () => {
@@ -254,7 +295,7 @@ export default function AdminTestDetailPage() {
           <span className="text-sm font-bold truncate">{test.title}</span>
           <span className={`ml-2 rounded-full px-2 py-0.5 text-[10px] font-bold ${isActive ? "bg-emerald-100 text-emerald-700" : "bg-neutral-100 text-neutral-600"}`}>{isActive ? "KO'RINADI" : "YASHIRIN"}</span>
           <div className="ml-auto flex gap-2">
-            <a href={`/tests/${test.id}`} target="_blank" className="flex items-center gap-1.5 rounded-xl border bg-white px-3 py-1.5 text-xs font-bold hover:bg-neutral-50"><Eye className="h-3.5 w-3.5" /> Talaba ko'rishi <ExternalLink className="h-3 w-3 opacity-60" /></a>
+            <a href={`/tests/${test.id}`} className="flex items-center gap-1.5 rounded-xl border bg-white px-3 py-1.5 text-xs font-bold hover:bg-neutral-50"><Eye className="h-3.5 w-3.5" /> Talaba ko'rishi <ExternalLink className="h-3 w-3 opacity-60" /></a>
             <button onClick={toggleStatus} disabled={toggling} className={`flex items-center gap-1.5 rounded-xl px-3 py-1.5 text-xs font-bold border ${isActive ? "bg-white text-amber-700 border-amber-200 hover:bg-amber-50" : "bg-emerald-600 text-white border-emerald-600 hover:bg-emerald-700"} disabled:opacity-50`}>{toggling ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : isActive ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}{isActive ? "Yashirish" : "Ko'rsatish"}</button>
             <button onClick={openEdit} className="flex items-center gap-1.5 rounded-xl bg-neutral-900 px-3 py-1.5 text-xs font-bold text-white hover:bg-black"><Settings className="h-3.5 w-3.5" /> Tahrirlash</button>
           </div>
@@ -286,10 +327,19 @@ export default function AdminTestDetailPage() {
                 <label className="flex cursor-pointer items-center gap-2 text-xs font-bold text-neutral-600"><input type="checkbox" checked={!!test.questions?.length && selectedQuestionIds.length === test.questions.length} onChange={(e) => setSelectedQuestionIds(e.target.checked ? test.questions.map((q: Question) => q.id) : [])} className="h-4 w-4 accent-violet-600" /> Hammasini tanlash</label>
                 <button disabled={!selectedQuestionIds.length} onClick={() => setExpandedQuestionIds(Array.from(new Set([...expandedQuestionIds, ...selectedQuestionIds])))} className="rounded-lg border border-violet-200 bg-violet-50 px-3 py-1.5 text-xs font-bold text-violet-700 disabled:opacity-40">Tanlanganlarni ochish ({selectedQuestionIds.length})</button>
                 <button disabled={!expandedQuestionIds.length} onClick={() => setExpandedQuestionIds([])} className="rounded-lg border px-3 py-1.5 text-xs font-bold text-neutral-600 disabled:opacity-40">Hammasini yopish</button>
+                <button
+                  type="button"
+                  disabled={!selectedQuestionIds.length || deletingQuestions}
+                  onClick={deleteSelectedQuestions}
+                  title="Tanlangan savollarni o'chirish"
+                  className="flex items-center gap-1.5 rounded-lg border border-rose-200 bg-rose-50 px-3 py-1.5 text-xs font-bold text-rose-600 transition hover:bg-rose-100 disabled:cursor-not-allowed disabled:opacity-40"
+                >
+                  {deletingQuestions ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Trash2 className="h-3.5 w-3.5" />} O'chirish ({selectedQuestionIds.length})
+                </button>
                 <Link href="/admin/lms/tests" className="text-xs font-bold text-neutral-600 hover:text-neutral-900">← Ro'yxatga qaytish</Link>
               </div>
             </div>
-            {selectedQuestionIds.length > 0 && <div className="flex items-center gap-2 border-b border-violet-100 bg-violet-50 px-5 py-2 text-xs font-bold text-violet-800"><Check className="h-4 w-4" /> {selectedQuestionIds.length} ta savol tanlandi — bir tugma bilan ochib, alohida tahrirlang.</div>}
+            {selectedQuestionIds.length > 0 && <div className="flex flex-wrap items-center gap-2 border-b border-violet-100 bg-violet-50 px-5 py-2 text-xs font-bold text-violet-800"><Check className="h-4 w-4 shrink-0" /> {selectedQuestionIds.length} ta savol tanlandi — “Ochish” bilan bir vaqtda tahrirlang yoki o'chirib tashlang.</div>}
             {(!test.questions || test.questions.length === 0) ? (
               <div className="py-10 text-center text-sm text-neutral-500">Savollar yo'q — Testlar ro'yxatidan “Savol” bilan qo'shing</div>
             ) : (

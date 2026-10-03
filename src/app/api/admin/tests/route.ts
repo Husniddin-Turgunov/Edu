@@ -1,9 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getSession } from "@/lib/auth";
 import { lmsStorage } from "@/lib/lms-storage";
+import { apiCacheClear, apiCacheGet, apiCacheSet, CACHE_KEYS } from "@/lib/api-cache";
 
 export const dynamic = "force-dynamic";
 
+// Uzoq MySQL bo'ylab getAllTests() sekin (1 s+). Qisqa server keshi bo'limlar
+// orasida qayta o'tishni tezlashtiradi (registry umumiy modulda).
 export async function GET(_req: NextRequest) {
   try {
     const session = await getSession();
@@ -11,7 +14,12 @@ export async function GET(_req: NextRequest) {
       return NextResponse.json({ ok: false, error: "Unauthorized" }, { status: 401 });
     }
     try {
+      const cached = apiCacheGet<unknown>(CACHE_KEYS.adminTests);
+      if (cached !== undefined) {
+        return NextResponse.json({ ok: true, tests: cached });
+      }
       const tests = await lmsStorage.getAllTests();
+      apiCacheSet(CACHE_KEYS.adminTests, tests);
       return NextResponse.json({ ok: true, tests });
     } catch (e: any) {
       const msg = e?.message || "";
@@ -39,6 +47,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ ok: false, error: "Title is required" }, { status: 400 });
     }
     const test = await lmsStorage.createTest({ title, description, language, timeLimit, passScore, moduleId, courseId, order, maxAttempts, questionCount, shuffleQuestions, shuffleChoices, visibility, assignedUserIds });
+    apiCacheClear(CACHE_KEYS.adminTests);
     return NextResponse.json({ ok: true, test });
   } catch (error) {
     console.error("POST /api/admin/tests error:", error);

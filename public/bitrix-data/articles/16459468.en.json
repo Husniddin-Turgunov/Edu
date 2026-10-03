@@ -1,0 +1,140 @@
+{
+ "id": "16459468",
+ "title": "How to add a category to meeting rooms",
+ "sectionId": "143826",
+ "section": "Calendar settings",
+ "parent": null,
+ "order": 15,
+ "short": null,
+ "toc": [],
+ "breadcrumb": [
+  "Новые статьи",
+  "С чего начать",
+  "Написать в чат",
+  "Лента Новостей",
+  "Приложение Битрикс24",
+  "Общие вопросы"
+ ],
+ "articleMeta": [],
+ "related": [
+  {
+   "id": "16459468",
+   "t": "Открыть в новой вкладке"
+  },
+  {
+   "id": "26366156",
+   "t": "Календарь Битрикс24: как настроить права доступа"
+  },
+  {
+   "id": "22564754",
+   "t": "Переговорные комнаты: как создать и забронировать"
+  }
+ ],
+ "blocks": [
+  {
+   "k": "P",
+   "t": "Категории в инструменте «Занятость переговорных» сортируют места для проведения событий календаря. Например, если у вас несколько офисов в разных городах – распределите их в отдельные категории и легко выбирайте нужное место проведения при создании события."
+  },
+  {
+   "k": "IMG",
+   "n": 1,
+   "src": "/images/helpdesk/screenshots/ru/au/calendar/kategorii/1.jpg",
+   "local": "/bitrix-img/16459468__01.jpg"
+  },
+  {
+   "k": "P",
+   "t": "Зайдите в раздел Занятость переговорных и нажмите Переговорные."
+  },
+  {
+   "k": "IMG",
+   "n": 2,
+   "src": "/images/helpdesk/screenshots/ru/au/calendar/kategorii/2.jpg",
+   "local": "/bitrix-img/16459468__02.jpg"
+  },
+  {
+   "k": "IMG",
+   "n": 3,
+   "src": "/images/helpdesk/screenshots/ru/au/calendar/kategorii/3.jpg",
+   "local": "/bitrix-img/16459468__03.jpg"
+  },
+  {
+   "k": "P",
+   "t": "Нажмите на меню кнопки Добавить и выберите Добавить категорию."
+  },
+  {
+   "k": "IMG",
+   "n": 4,
+   "src": "/images/helpdesk/screenshots/ru/au/calendar/kategorii/4.jpg",
+   "local": "/bitrix-img/16459468__04.jpg"
+  },
+  {
+   "k": "P",
+   "t": "Придумайте название категории и добавьте к ней нужные переговорные для их объединения в раздел. Нажмите Сохранить."
+  },
+  {
+   "k": "IMG",
+   "n": 5,
+   "src": "/images/helpdesk/screenshots/ru/au/calendar/kategorii/6.jpg",
+   "local": "/bitrix-img/16459468__05.jpg"
+  },
+  {
+   "k": "P",
+   "t": "Теперь в списке переговорных будут отображаться раздельные категории и раздельные места проведения событий."
+  },
+  {
+   "k": "IMG",
+   "n": 6,
+   "src": "/images/helpdesk/screenshots/ru/au/calendar/kategorii/7.jpg",
+   "local": "/bitrix-img/16459468__06.jpg"
+  },
+  {
+   "k": "P",
+   "t": "Для изменения категории нажмите на «...» и выберите пункт Редактировать. При Удалении категории все переговорные будут перенесены в общий список, вне категорий."
+  },
+  {
+   "k": "IMG",
+   "n": 7,
+   "src": "/images/helpdesk/screenshots/ru/au/calendar/kategorii/8.jpg",
+   "local": "/bitrix-img/16459468__07.jpg"
+  }
+ ],
+ "images": [
+  {
+   "n": 1,
+   "local": "/bitrix-img/16459468__01.jpg",
+   "bytes": 235395
+  },
+  {
+   "n": 2,
+   "local": "/bitrix-img/16459468__02.jpg",
+   "bytes": 401861
+  },
+  {
+   "n": 3,
+   "local": "/bitrix-img/16459468__03.jpg",
+   "bytes": 286961
+  },
+  {
+   "n": 4,
+   "local": "/bitrix-img/16459468__04.jpg",
+   "bytes": 246553
+  },
+  {
+   "n": 5,
+   "local": "/bitrix-img/16459468__05.jpg",
+   "bytes": 215226
+  },
+  {
+   "n": 6,
+   "local": "/bitrix-img/16459468__06.jpg",
+   "bytes": 237583
+  },
+  {
+   "n": 7,
+   "local": "/bitrix-img/16459468__07.jpg",
+   "bytes": 206478
+  }
+ ],
+ "sectionKey": "Настройки календарей",
+ "lang": "en"
+}

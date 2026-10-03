@@ -2,16 +2,26 @@ import { NextRequest, NextResponse } from "next/server";
 import { getSession } from "@/lib/auth";
 import { onboardingStorage } from "@/lib/onboarding-storage";
 import { db as prisma } from "@/lib/db";
+import { apiCacheClear, apiCacheGet, apiCacheSet, CACHE_KEYS } from "@/lib/api-cache";
 
 export const dynamic = "force-dynamic";
 
+// Uzoq MySQL (VPS) bo'ylab har bir so'rov ~0.3-3 s. Kurs + moduli + darslar
+// (LongText content) yuklanadigan GET ko'p round-trip qilardi va "Tanishtiruv"
+// bo'limi sekin ochilardi. Qisqa server keshi takror ochilishni tezlashtiradi.
+// Kesh registry umumiy modulda — mutation qilgan boshqa route'lar ham tozalaydi.
 export async function GET() {
   try {
     const session = await getSession();
     if (!session || !session.isAdmin) {
       return NextResponse.json({ ok: false, error: "Unauthorized" }, { status: 401 });
     }
+    const cached = apiCacheGet<unknown>(CACHE_KEYS.adminOnboarding);
+    if (cached !== undefined) {
+      return NextResponse.json({ ok: true, course: cached });
+    }
     const course = await onboardingStorage.getCourse();
+    apiCacheSet(CACHE_KEYS.adminOnboarding, course);
     return NextResponse.json({ ok: true, course });
   } catch (e) {
     console.error("GET /api/admin/onboarding error:", e);
@@ -37,6 +47,7 @@ export async function POST(req: NextRequest) {
     }
     const course = await onboardingStorage.ensureCourse(authorId);
     const mod = await onboardingStorage.createModule(course.id, title.trim());
+    apiCacheClear(CACHE_KEYS.adminOnboarding);
     return NextResponse.json({ ok: true, module: mod });
   } catch (e) {
     console.error("POST /api/admin/onboarding error:", e);

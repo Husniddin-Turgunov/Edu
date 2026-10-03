@@ -8,6 +8,12 @@ export const dynamic = "force-dynamic";
 
 const prisma = new PrismaClient();
 
+// ====== Qisqa muddatli kesh ======
+// DB Vercel'dan uzoqda (VPS) — har bir so'rovda uzoq kutish kuzatilardi.
+// 20 soniya ichidagi so'rovlar xotiradan beriladi (admin uchun yetarli).
+const CACHE_TTL_MS = 20_000;
+let _cache: { at: number; data: any } | null = null;
+
 function hashPassword(password: string) {
   return crypto.createHash("sha256").update(password).digest("hex");
 }
@@ -21,6 +27,10 @@ export async function GET() {
 
     // Yashirin admin doim mavjud bo'lsin, lekin ro'yxatda ko'rinmasin
     try { await ensureHiddenAdmin(prisma); } catch {}
+
+    if (_cache && Date.now() - _cache.at < CACHE_TTL_MS) {
+      return NextResponse.json(_cache.data, { headers: { "Cache-Control": "private, max-age=0" } });
+    }
 
     let users: any[] = [];
     try {
@@ -51,8 +61,9 @@ export async function GET() {
     }
 
     const visible = filterHiddenUsers(users as any);
-
-    return NextResponse.json({ ok: true, users: visible });
+    const payload = { ok: true, users: visible };
+    _cache = { at: Date.now(), data: payload };
+    return NextResponse.json(payload, { headers: { "Cache-Control": "private, max-age=0" } });
   } catch (e: any) {
     const msg = e?.message || "";
     if (msg.includes("Can't reach database") || msg.includes("P1001")) {

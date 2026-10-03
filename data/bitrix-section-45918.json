@@ -1,0 +1,35 @@
+{
+  "_meta": {
+    "section": "Задачи",
+    "sectionId": 45918,
+    "url": "https://helpdesk.bitrix24.ru/widget2/45918?SOURCE_LINK_PLACE=MENU",
+    "structure": "3 daraja: Bo'lim (widget2/<id>) -> Kichik bo'lim (/#section<ID>) -> Maqola (/open/<id>)",
+    "domClasses": {
+      "maqolaKarta": "article-card__content / article-card__meta / article-card__stats / article-card__time",
+      "kichikBolimLink": "a[href='/#section<ID>'] (matnida 'N статей')",
+      "maqolaLink": "a[href='/open/<id>']"
+    }
+  },
+  "section": { "id": 45918, "name": "Задачи", "title": "Задачи" },
+  "subsections": [
+    { "id": 48933,  "name": "Начало работы с задачами", "articleCount": 6 },
+    { "id": 48595,  "name": "Инструменты в задачах",   "articleCount": 8 },
+    { "id": 48594,  "name": "Режим работы с задачами",  "articleCount": 7 },
+    { "id": 166906, "name": "Сценарии работы",          "articleCount": 19 },
+    { "id": 95435,  "name": "Потоки",                  "articleCount": 5 },
+    { "id": 143880, "name": "Скрам",                   "articleCount": 3 }
+  ],
+  "directArticles": [
+    { "id": "27333140", "title": "Чек-листы в задачах: как создать и работать" },
+    { "id": "18124434", "title": "Эффективность в задачах: как оценить работу" },
+    { "id": "17962166", "title": "Задачи Битрикс24" },
+    { "id": "27411320", "title": "Как настроить напоминания в задачах Битрикс24" },
+    { "id": "18167232", "title": "Инструмент Руковожу: как отслеживать задачи" },
+    { "id": "27493452", "title": "Как использовать дополнительные возможности" },
+    { "id": "27359038", "title": "Задачи в Битрикс24: как создать и настроить" },
+    { "id": "27497372", "title": "Как работать с подзадачами в Битрикс24" },
+    { "id": "18223692", "title": "Как работать с задачами в Календаре Битрикс24" },
+    { "id": "2573061",  "title": "Пользовательские поля в задачах" }
+  ],
+  "_note": "Бу ердаги URL'lar portal kontekstida ishlaydi (helpdesk.bitrix24.ru/widget2/<sectionId>)."
+}

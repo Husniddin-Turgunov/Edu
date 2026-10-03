@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getSession } from "@/lib/auth";
 import { lmsStorage } from "@/lib/lms-storage";
+import { apiCacheClear, CACHE_KEYS } from "@/lib/api-cache";
 
 export const dynamic = "force-dynamic";
 
@@ -29,6 +30,8 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     try {
       const test = await lmsStorage.updateTest(id, body);
       return NextResponse.json({ ok: true, test });
+    apiCacheClear(CACHE_KEYS.adminOnboarding);
+    apiCacheClear(CACHE_KEYS.adminTests);
     } catch (e: any) {
       const msg = e?.message || "";
       if (msg.includes("Can't reach database") || msg.includes("P1001") || msg.includes("connect")) {
@@ -52,6 +55,8 @@ export async function DELETE(_req: NextRequest, { params }: { params: Promise<{ 
     const { id } = await params;
     await lmsStorage.deleteTest(id);
     return NextResponse.json({ ok: true });
+    apiCacheClear(CACHE_KEYS.adminOnboarding);
+    apiCacheClear(CACHE_KEYS.adminTests);
   } catch (error) {
     console.error("DELETE /api/admin/tests/[id] error:", error);
     return NextResponse.json({ ok: false, error: "Failed to delete test" }, { status: 500 });

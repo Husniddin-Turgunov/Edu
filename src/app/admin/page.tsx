@@ -36,6 +36,7 @@ import {
   Pencil,
   Activity,
   Zap,
+  FileSpreadsheet,
 } from "lucide-react";
 import { UI_STRINGS, type Locale } from "@/lib/akela-content";
 
@@ -52,6 +53,56 @@ type User = {
   isActive: boolean;
   createdAt: string;
 };
+
+// Excel yuklab olish popup'idagi bitta variant
+function ExportOption({
+  index,
+  count,
+  title,
+  hint,
+  icon,
+  tone = "indigo",
+  disabled,
+  onClick,
+}: {
+  index: number;
+  count: number;
+  title: string;
+  hint: string;
+  icon: React.ReactNode;
+  tone?: "indigo" | "emerald" | "rose";
+  disabled?: boolean;
+  onClick: () => void;
+}) {
+  const toneCls =
+    tone === "emerald"
+      ? "hover:border-emerald-500 hover:bg-emerald-50/60"
+      : tone === "rose"
+        ? "hover:border-rose-400 hover:bg-rose-50/60"
+        : "hover:border-indigo-500 hover:bg-indigo-50/60";
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      disabled={disabled}
+      className={`flex w-full items-center gap-3 rounded-2xl border border-black/10 bg-white p-4 text-left transition-colors disabled:cursor-not-allowed disabled:opacity-60 ${toneCls}`}
+    >
+      <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-black/[0.05] text-[color:var(--emerald-deep)]" aria-hidden="true">
+        {icon}
+      </span>
+      <span className="min-w-0 flex-1">
+        <span className="block text-sm font-extrabold text-[color:var(--emerald-deep)]">
+          {index}. {title}
+        </span>
+        <span className="block text-xs text-[color:var(--ink-soft)]">{hint}</span>
+      </span>
+      <span className="shrink-0 rounded-full bg-black/[0.06] px-2.5 py-1 text-xs font-bold text-[color:var(--ink-soft)]">
+        {count} ta
+      </span>
+      <FileSpreadsheet className="h-4 w-4 shrink-0 text-emerald-600" aria-hidden="true" />
+    </button>
+  );
+}
 
 type FilterStatus = "all" | "pending" | "approved" | "rejected";
 
@@ -94,10 +145,16 @@ export default function AdminPage() {
   const [deletingUser, setDeletingUser] = useState<User | null>(null);
   const [deleteLoading, setDeleteLoading] = useState(false);
 
+  // Ko'p tanlash (checkbox) + Excel eksport
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const [showExport, setShowExport] = useState(false);
+  const [exporting, setExporting] = useState(false);
+  const [editQueuePos, setEditQueuePos] = useState(0);
+
   // Redirect if not authenticated or not admin
   useEffect(() => {
     if (status === "unauthenticated") router.push("/login");
-    if (status === "authenticated" && (session?.user as any)?.role !== "admin") {
+    if (status === "authenticated" && (session?.user as any)?.role === "user") {
       router.push("/dashboard");
     }
   }, [status, session, router]);
@@ -322,6 +379,98 @@ export default function AdminPage() {
     setCurrentPage(1);
   }, [filter, search, activityFilter]);
 
+  // ---- Ko'p tanlash (checkbox) ----
+  const toggleSelect = useCallback((id: string) => {
+    setSelectedIds((cur) => (cur.includes(id) ? cur.filter((x) => x !== id) : [...cur, id]));
+  }, []);
+
+  const pageIds = useMemo(() => paginatedUsers.map((u) => u.id), [paginatedUsers]);
+  const allPageSelected = pageIds.length > 0 && pageIds.every((id) => selectedIds.includes(id));
+  const toggleSelectAllPage = useCallback(() => {
+    setSelectedIds((cur) =>
+      pageIds.every((id) => cur.includes(id))
+        ? cur.filter((id) => !pageIds.includes(id))
+        : Array.from(new Set([...cur, ...pageIds]))
+    );
+  }, [pageIds]);
+
+  // Tanlanganlar orasida modal ichida ketma-ket yurish (bir nechta odamni bir vaqtda ochish)
+  const openEditInQueue = useCallback((pos: number) => {
+    const ids = selectedIds;
+    if (!ids.length) return;
+    const safe = ((pos % ids.length) + ids.length) % ids.length;
+    const u = users.find((x) => x.id === ids[safe]);
+    if (!u) return;
+    setEditQueuePos(safe);
+    openEdit(u);
+  }, [selectedIds, users, openEdit]);
+
+  // ---- Excel eksport ----
+  const EXPORT_COLUMNS = [
+    { key: "name", header: "Ism", width: 16 },
+    { key: "surname", header: "Familiya", width: 18 },
+    { key: "email", header: "Email", width: 30 },
+    { key: "phone", header: "Telefon", width: 18 },
+    { key: "department", header: "Bolim", width: 20 },
+    { key: "position", header: "Lavozim", width: 22 },
+    { key: "role", header: "Rol", width: 16 },
+    { key: "status", header: "Holat", width: 16 },
+    { key: "isActive", header: "Ish faoliyatida", width: 18 },
+    { key: "createdAt", header: "Ro'yxatga olingan", width: 22 },
+  ] as const;
+
+  const handleExport = useCallback(async (scope: "all" | "active" | "inactive" | "selected") => {
+    setExporting(true);
+    try {
+      // Tanlangan bo'lmasa, joriy filtr/search qo'llangan ro'yxat asos qilinadi
+      const source = scope === "selected" ? users : filteredUsers;
+      const visibleRows = source.filter((u) => !isHiddenEmail(u.email));
+      const rows =
+        scope === "active" ? visibleRows.filter((u) => u.isActive)
+        : scope === "inactive" ? visibleRows.filter((u) => !u.isActive)
+        : scope === "selected" ? visibleRows.filter((u) => selectedIds.includes(u.id))
+        : visibleRows;
+
+      if (!rows.length) {
+        setError("Tanlangan shart bo'yicha foydalanuvchi topilmadi");
+        return;
+      }
+
+      const XLSX = await import("xlsx");
+      const STATUS_LABEL: Record<string, string> = {
+        approved: "Tasdiqlangan",
+        pending: "Kutilayotgan",
+        rejected: "Rad etilgan",
+      };
+      const data = rows.map((u) => {
+        const rec: Record<string, string> = {};
+        for (const col of EXPORT_COLUMNS) {
+          const raw = (u as any)[col.key];
+          if (col.key === "status") rec[col.header] = STATUS_LABEL[String(raw)] || String(raw ?? "");
+          else if (col.key === "isActive") rec[col.header] = u.isActive ? "Ha" : "Yo'q";
+          else if (col.key === "role") rec[col.header] = raw === "admin" ? "Admin" : "Foydalanuvchi";
+          else if (col.key === "createdAt") rec[col.header] = raw ? new Date(raw).toLocaleString("uz-UZ") : "";
+          else rec[col.header] = raw ? String(raw) : "";
+        }
+        return rec;
+      });
+
+      const ws = XLSX.utils.json_to_sheet(data);
+      ws["!cols"] = EXPORT_COLUMNS.map((c) => ({ wch: c.width }));
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, "Foydalanuvchilar");
+      const stamp = new Date().toISOString().slice(0, 10);
+      XLSX.writeFile(wb, `akela-foydalanuvchilar-${scope}-${stamp}.xlsx`);
+
+      setShowExport(false);
+      showSuccess(`${rows.length} ta foydalanuvchi Excel fayliga yuklab olindi`);
+    } catch {
+      setError("Excel faylni yaratishda xatolik yuz berdi");
+    } finally {
+      setExporting(false);
+    }
+  }, [users, filteredUsers, selectedIds, showSuccess]);
+
   // Stats
   const stats = useMemo(() => ({
     total: users.length,
@@ -362,7 +511,9 @@ export default function AdminPage() {
     }
   }, [showSuccess]);
 
-  if (status === "loading" || loading) {
+  // To'liq ekran loaderi faqat SESSIYA tekshirilayotganda chiqadi.
+  // Ma'lumot (users/departments) yuklanayotganda panel shelli darhol ko'rinadi.
+  if (status === "loading") {
     return (
       <main className="min-h-screen grid place-items-center bg-background">
         <LiquidBackground />
@@ -400,7 +551,7 @@ export default function AdminPage() {
                 className="flex items-center gap-2 rounded-xl bg-gradient-to-br from-neutral-900 to-neutral-800 px-4 py-2.5 text-sm font-bold text-white shadow-lg hover:scale-105 transition-transform"
                 data-ai-action="admin.lessons.manage"
               >
-                <BookOpen className="h-4 w-4" aria-hidden="true" /> LMS Kurslar
+                <BookOpen className="h-4 w-4" aria-hidden="true" /> Full Controll
               </Link>
 
             </div>
@@ -787,11 +938,21 @@ export default function AdminPage() {
 
         {/* Users Table */}
         <div className="glass-card rounded-3xl overflow-hidden">
-          <div className="p-6 border-b border-white/20">
-            <h2 className="text-lg font-extrabold text-[color:var(--emerald-deep)]">Foydalanuvchilar ro'yxati</h2>
-            <p className="text-sm text-[color:var(--ink-soft)] mt-1">
-              Jami {filteredUsers.length} foydalanuvchi topildi
-            </p>
+          <div className="flex flex-col gap-3 p-6 border-b border-white/20 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <h2 className="text-lg font-extrabold text-[color:var(--emerald-deep)]">Foydalanuvchilar ro'yxati</h2>
+              <p className="text-sm text-[color:var(--ink-soft)] mt-1">
+                Jami {filteredUsers.length} foydalanuvchi topildi
+              </p>
+            </div>
+            <button
+              onClick={() => setShowExport(true)}
+              className="flex shrink-0 items-center gap-2 self-start rounded-xl bg-gradient-to-br from-emerald-600 to-teal-600 px-4 py-2.5 text-sm font-bold text-white shadow-lg transition-transform hover:scale-[1.03] sm:self-auto"
+              data-ai-action="admin.users.export"
+              aria-haspopup="dialog"
+            >
+              <FileSpreadsheet className="h-4 w-4" aria-hidden="true" /> Yuklab olish
+            </button>
           </div>
           
           {filteredUsers.length === 0 ? (
@@ -808,6 +969,15 @@ export default function AdminPage() {
                 <table className="w-full" aria-label="Foydalanuvchilar jadvali">
                   <thead>
                     <tr className="border-b border-white/20">
+                      <th scope="col" className="w-10 p-4">
+                        <input
+                          type="checkbox"
+                          checked={allPageSelected}
+                          onChange={toggleSelectAllPage}
+                          className="h-4 w-4 cursor-pointer rounded accent-indigo-700"
+                          aria-label="Joriy sahifadagi barchasini tanlash"
+                        />
+                      </th>
                       <th scope="col" className="text-left p-4 text-xs font-bold text-[color:var(--ink-soft)] uppercase tracking-wider">Foydalanuvchi</th>
                       <th scope="col" className="text-left p-4 text-xs font-bold text-[color:var(--ink-soft)] uppercase tracking-wider hidden md:table-cell">Aloqa</th>
                       <th scope="col" className="text-left p-4 text-xs font-bold text-[color:var(--ink-soft)] uppercase tracking-wider hidden lg:table-cell">Bo'lim</th>
@@ -818,7 +988,16 @@ export default function AdminPage() {
                   </thead>
                   <tbody className="divide-y divide-white/10">
                     {paginatedUsers.map((u) => (
-                      <tr key={u.id} className="hover:bg-white/5 transition-colors">
+                      <tr key={u.id} className={`transition-colors ${selectedIds.includes(u.id) ? "bg-indigo-50/60" : "hover:bg-white/5"}`}>
+                        <td className="p-4">
+                          <input
+                            type="checkbox"
+                            checked={selectedIds.includes(u.id)}
+                            onChange={() => toggleSelect(u.id)}
+                            className="h-4 w-4 cursor-pointer rounded accent-indigo-700"
+                            aria-label={`${u.name} ${u.surname || ""} foydalanuvchisini tanlash`}
+                          />
+                        </td>
                         <td className="p-4">
                           <div className="flex items-center gap-3">
                             <div className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-gradient-to-br from-indigo-600 to-amber-500 text-white font-extrabold text-sm shadow-lg" aria-hidden="true">
@@ -942,7 +1121,7 @@ export default function AdminPage() {
                   <button
                     onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
                     disabled={currentPage === 1}
-                    className="flex items-center gap-1 rounded-xl glass-card px-3 py-2 text-xs font-bold text-[color:var(--ink-soft)] hover:text-[color:var(--emerald-deep)] disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="flex items-center gap-1 rounded-lg bg-black/[0.04] px-3 py-2 text-xs font-bold text-[color:var(--ink-soft)] transition-colors hover:bg-black/[0.09] hover:text-[color:var(--emerald-deep)] disabled:opacity-40 disabled:cursor-not-allowed"
                     data-ai-action="admin.pagination.prev"
                     aria-label="Oldingi sahifa"
                   >
@@ -965,10 +1144,10 @@ export default function AdminPage() {
                         <button
                           key={pageNum}
                           onClick={() => setCurrentPage(pageNum)}
-                          className={`w-8 h-8 rounded-lg text-xs font-bold transition-all ${
+                          className={`h-8 w-8 rounded-lg text-xs font-bold transition-colors ${
                             currentPage === pageNum
-                              ? "bg-gradient-to-br from-indigo-700 to-indigo-600 text-white shadow-lg"
-                              : "glass-card text-[color:var(--ink-soft)] hover:text-[color:var(--emerald-deep)]"
+                              ? "bg-gradient-to-br from-indigo-700 to-indigo-600 text-white shadow-md"
+                              : "bg-black/[0.04] text-[color:var(--ink-soft)] hover:bg-black/[0.09] hover:text-[color:var(--emerald-deep)]"
                           }`}
                           aria-label={`Sahifa ${pageNum}`}
                           aria-current={currentPage === pageNum ? "page" : undefined}
@@ -982,7 +1161,7 @@ export default function AdminPage() {
                   <button
                     onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
                     disabled={currentPage === totalPages}
-                    className="flex items-center gap-1 rounded-xl glass-card px-3 py-2 text-xs font-bold text-[color:var(--ink-soft)] hover:text-[color:var(--emerald-deep)] disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="flex items-center gap-1 rounded-lg bg-black/[0.04] px-3 py-2 text-xs font-bold text-[color:var(--ink-soft)] transition-colors hover:bg-black/[0.09] hover:text-[color:var(--emerald-deep)] disabled:opacity-40 disabled:cursor-not-allowed"
                     data-ai-action="admin.pagination.next"
                     aria-label="Keyingi sahifa"
                   >
@@ -990,10 +1169,147 @@ export default function AdminPage() {
                   </button>
                 </nav>
               )}
+
+              {/* ===== Bulk panel — bir nechta odamni bir vaqtda ochish ===== */}
+              {selectedIds.length > 0 && (
+                <div className="sticky bottom-3 z-20 mt-3 flex flex-wrap items-center gap-2 rounded-2xl border border-indigo-200 bg-white/95 p-3 shadow-xl backdrop-blur" role="region" aria-label="Tanlangan foydalanuvchilar bilan amallar">
+                  <span className="flex items-center gap-2 text-sm font-bold text-[color:var(--emerald-deep)]">
+                    <span className="grid h-6 min-w-6 place-items-center rounded-full bg-indigo-700 px-1.5 text-xs text-white" aria-hidden="true">{selectedIds.length}</span>
+                    ta tanlandi
+                  </span>
+
+                  <button
+                    onClick={() => openEditInQueue(0)}
+                    className="flex items-center gap-1.5 rounded-xl bg-gradient-to-br from-indigo-700 to-indigo-600 px-3 py-2 text-xs font-bold text-white shadow-md transition-transform hover:scale-[1.03]"
+                    data-ai-action="admin.users.openSelected"
+                  >
+                    <Pencil className="h-3.5 w-3.5" aria-hidden="true" /> Ochish
+                  </button>
+
+                  <button
+                    onClick={() => setShowExport(true)}
+                    className="flex items-center gap-1.5 rounded-xl bg-emerald-600 px-3 py-2 text-xs font-bold text-white shadow-md transition-colors hover:bg-emerald-700"
+                    data-ai-action="admin.users.exportSelected"
+                  >
+                    <FileSpreadsheet className="h-3.5 w-3.5" aria-hidden="true" /> Excel
+                  </button>
+
+                  <button
+                    onClick={() => setSelectedIds([])}
+                    className="ml-auto flex items-center gap-1.5 rounded-xl border border-black/10 bg-white px-3 py-2 text-xs font-bold text-[color:var(--ink-soft)] transition-colors hover:bg-neutral-100"
+                    data-ai-action="admin.users.clearSelection"
+                  >
+                    <XCircle className="h-3.5 w-3.5" aria-hidden="true" /> Bekor qilish
+                  </button>
+                </div>
+              )}
             </>
           )}
         </div>
       </div>
+
+      {/* ===== Excel yuklab olish popup ===== */}
+      <AnimatePresence>
+        {showExport && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 grid place-items-center bg-neutral-900/50 p-4 backdrop-blur-sm"
+            onClick={() => !exporting && setShowExport(false)}
+          >
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 12 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 12 }}
+              transition={{ duration: 0.2 }}
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="export-title"
+              className="w-full max-w-lg rounded-3xl border border-black/10 bg-white p-6 shadow-2xl"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="flex items-start gap-3">
+                <span className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-gradient-to-br from-emerald-600 to-teal-600 text-white shadow-lg" aria-hidden="true">
+                  <FileSpreadsheet className="h-5 w-5" />
+                </span>
+                <div>
+                  <h2 id="export-title" className="text-lg font-extrabold text-[color:var(--emerald-deep)]">
+                    Ishchilar ro'yxatini yuklab olish
+                  </h2>
+                  <p className="text-sm text-[color:var(--ink-soft)]">
+                    Qaysi turdagi ma'lumotni Excel (.xlsx) faylga yuklamoqchisiz?
+                  </p>
+                </div>
+              </div>
+
+              <div className="mt-5 space-y-2">
+                {selectedIds.length > 0 && (
+                  <ExportOption
+                    index={1}
+                    count={selectedIds.length}
+                    title="Faqat belgilanganlar"
+                    hint="Jadvalda checkbox orqali tanlangan foydalanuvchilar"
+                    icon={<Users className="h-4 w-4" aria-hidden="true" />}
+                    disabled={exporting}
+                    onClick={() => handleExport("selected")}
+                  />
+                )}
+                  <ExportOption
+                    index={selectedIds.length > 0 ? 2 : 1}
+                    count={stats.total}
+                    title="Umumiy — barchasi"
+                  hint="Barcha foydalanuvchilarning to'liq ma'lumoti"
+                  icon={<Users className="h-4 w-4" aria-hidden="true" />}
+                  disabled={exporting}
+                  onClick={() => handleExport("all")}
+                />
+                  <ExportOption
+                    index={selectedIds.length > 0 ? 3 : 2}
+                    count={stats.active}
+                    title="Faqat ishlayotganlar"
+                    hint="Ish faoliyatida belgilangan xodimlar"
+                    icon={<CheckCircle2 className="h-4 w-4" aria-hidden="true" />}
+                  tone="emerald"
+                  disabled={exporting}
+                  onClick={() => handleExport("active")}
+                />
+                  <ExportOption
+                    index={selectedIds.length > 0 ? 4 : 3}
+                    count={stats.inactive}
+                    title="Faqat ishlamayotganlar"
+                  hint="Ish faoliyatida belgi yo'q xodimlar"
+                  icon={<XCircle className="h-4 w-4" aria-hidden="true" />}
+                  tone="rose"
+                  disabled={exporting}
+                  onClick={() => handleExport("inactive")}
+                />
+              </div>
+
+              <div className="mt-6 flex items-center justify-between gap-3">
+                <p className="text-xs text-[color:var(--ink-soft)]">
+                  {exporting ? "Fayl tayyorlanmoqda..." : "Fayl 'Yuklab olishlar' papkasiga saqlanadi"}
+                </p>
+                <div className="flex gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setShowExport(false)}
+                    disabled={exporting}
+                    className="rounded-xl border border-black/10 bg-white px-4 py-2 text-sm font-bold text-[color:var(--ink-soft)] transition-colors hover:bg-neutral-100 disabled:opacity-50"
+                  >
+                    Yopish
+                  </button>
+                  {exporting && (
+                    <span className="flex items-center gap-2 rounded-xl bg-emerald-50 px-4 py-2 text-sm font-bold text-emerald-700">
+                      <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" /> Yuklanmoqda
+                    </span>
+                  )}
+                </div>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Edit modal */}
       <AnimatePresence>
@@ -1023,6 +1339,31 @@ export default function AdminPage() {
                   <XCircleIcon className="h-5 w-5" />
                 </button>
               </div>
+
+              {/* Tanlanganlar orasida ketma-ket yurish */}
+              {selectedIds.length > 1 && (
+                <div className="mt-3 flex items-center justify-between gap-2 rounded-2xl border border-indigo-200 bg-indigo-50/70 p-2" role="group" aria-label="Tanlangan foydalanuvchilar orasida yurish">
+                  <button
+                    type="button"
+                    onClick={() => openEditInQueue(editQueuePos - 1)}
+                    className="flex items-center gap-1 rounded-xl bg-white px-3 py-1.5 text-xs font-bold text-[color:var(--emerald-deep)] shadow-sm transition-colors hover:bg-neutral-100"
+                    data-ai-action="admin.users.prevSelected"
+                  >
+                    <ChevronLeft className="h-3.5 w-3.5" aria-hidden="true" /> Oldingi
+                  </button>
+                  <span className="text-xs font-bold text-[color:var(--emerald-deep)]" aria-live="polite">
+                    {editQueuePos + 1} / {selectedIds.length}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => openEditInQueue(editQueuePos + 1)}
+                    className="flex items-center gap-1 rounded-xl bg-white px-3 py-1.5 text-xs font-bold text-[color:var(--emerald-deep)] shadow-sm transition-colors hover:bg-neutral-100"
+                    data-ai-action="admin.users.nextSelected"
+                  >
+                    Keyingi <ChevronRight className="h-3.5 w-3.5" aria-hidden="true" />
+                  </button>
+                </div>
+              )}
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>

@@ -351,6 +351,14 @@ export const lmsStorage = {
     return prisma.question.delete({ where: { id } });
   },
 
+  // Bir nechat savolni BIRTA so'rovda o'chirish (tezroq).
+  // Variantlar Choice -> Question onDelete: Cascade orqali o'chadi.
+  async deleteQuestions(ids: string[]) {
+    const clean = Array.from(new Set(ids.filter(Boolean)));
+    if (!clean.length) return { count: 0 };
+    return prisma.question.deleteMany({ where: { id: { in: clean } } });
+  },
+
   // ====== TEST ATTEMPTS + RANDOMIZER + HISTORY ======
   shuffleArray<T>(arr: T[]): T[] {
     const a = [...arr];
@@ -600,7 +608,14 @@ export const lmsStorage = {
         },
       });
     }
-    return result;
+    // Natija ekrani uchun: nechta to'g'ri / nechta xato / jami (avto-baholangan savollar)
+    return {
+      ...result,
+      correctCount,
+      wrongCount: Math.max(0, mcqCount - correctCount),
+      autoGradedCount: mcqCount,
+      hasWritten,
+    } as any;
   },
 
   async getTestHistory(userId: string, testId?: string) {

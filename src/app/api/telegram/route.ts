@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from "next/server";
+﻿import { NextRequest, NextResponse } from "next/server";
 import { PrismaClient } from "@prisma/client";
 import {
   sendMessage,
@@ -17,6 +17,7 @@ import {
   registerSubscriber,
   subscriberCount,
   broadcast,
+  settleTestAccessRequest,
   type InlineButton,
 } from "@/lib/telegram-bot";
 import { renderResultCardPng, levelForScore } from "@/lib/result-card";
@@ -137,10 +138,7 @@ async function statsText(): Promise<string> {
   ]);
   const latest = await prisma.testResult.findFirst({
     orderBy: { startedAt: "desc" },
-    include: {
-      user: { select: { name: true, surname: true, email: true } },
-      test: { select: { title: true } },
-    },
+    include: { user: { select: { name: true, surname: true, email: true } }, test: { select: { title: true } } },
   });
   const latestLine = latest
     ? `Oxirgi natija: <b>${escapeHtml(latest.test?.title || "?")}</b> — ${escapeHtml(
@@ -630,23 +628,23 @@ async function handleMessage(msg: any) {
 
   // /start — inline klaviyatura (DOM menyusi) bilan, hamma buyruqlar shu tugmalardan
   if (text.startsWith("/start")) {
-    // Eski doimiy (reply) klaviatura bo'lsa — uni olib tashlaymiz
+    // Eski doimiy (reply) klaviatura bo'lsa - uni olib tashlaymiz
     await ensureNoOldKeyboard(chatId);
     const total = await subscriberCount();
     await sendMessage(
       chatId,
       [
-        `Salom, <b>${escapeHtml(firstName || "do'st")}</b>! 👋`,
+        `Salom, <b>${escapeHtml(firstName || "do'st")}</b>! ??`,
         "",
-        "🎓 Siz <b>AKELA GROUP</b> ta'lim portali botidasiz.",
+        "?? Siz <b>AKELA GROUP</b> ta'lim portali botidasiz.",
         "",
-        "📌 <b>Muhim:</b> botda admin yo'q — yangi ro'yxatdan o'tganlar va test",
+        "?? <b>Muhim:</b> botda admin yo'q - yangi ro'yxatdan o'tganlar va test",
         "natijalari haqidagi xabarlar <b>botga ulangan barcha</b> foydalanuvchilarga",
         "bir xil yuboriladi.",
         "",
-        `👥 Hozir botga ulanganlar: <b>${total}</b>`,
+        `?? Hozir botga ulanganlar: <b>${total}</b>`,
         "",
-        "📋 Hamma bo'limlar quyidagi <b>inline tugmalar</b> orqali ochiladi:",
+        "?? Hamma bo'limlar quyidagi <b>inline tugmalar</b> orqali ochiladi:",
       ].join("\n"),
       { reply_markup: mainMenu() },
     );
@@ -904,6 +902,93 @@ async function handleCallbackQuery(cq: any) {
       : { ok: false };
     if (!edited?.ok && !String(edited?.description || "").includes("not modified")) {
       await sendMessage(chatId, text, { reply_markup: buttons });
+    }
+    return;
+  }
+
+  // ====== Testga kirish ruxsati: "Ruxsat berish" / "Rad etish" ======
+  // callback_data: "testacc_yes:<requestId>" | "testacc_no:<requestId>"
+  if (data.startsWith("testacc_")) {
+    const [key, requestId] = data.split(":");
+    const approved = key === "testacc_yes";
+    const request = await prisma.testAccessRequest.findUnique({
+      where: { id: requestId },
+      include: { user: { select: { name: true, surname: true, email: true } }, test: { select: { title: true } } },
+    });
+    if (!request) {
+      await answerCallbackQuery(cq.id, "So'rov topilmadi");
+      return;
+    }
+    if (request.status !== "pending") {
+      await answerCallbackQuery(cq.id, `Bu so'rov allaqach hal qilingan (${request.status})`);
+      return;
+    }
+    await prisma.testAccessRequest.update({
+      where: { id: requestId },
+      data: {
+        status: approved ? "approved" : "rejected",
+        decidedAt: new Date(),
+        decidedBy: `telegram:${cq.from?.id ?? "unknown"}`,
+      },
+    });
+    const who = [request.user.surname, request.user.name].filter(Boolean).join(" ") || request.user.email;
+
+    // "Qayta topshirish" so'rovi tasdiqlansa — test qayta ochiladi (retake placeholder)
+    if (approved && request.targetType === "retake" && request.testId) {
+      const existing = await prisma.testResult.findFirst({
+        where: { userId: request.userId, testId: request.testId, gradingStatus: "retake", completedAt: null },
+      });
+      if (!existing) {
+        await prisma.testResult.create({
+          data: {
+            userId: request.userId,
+            testId: request.testId,
+            score: 0,
+            passed: false,
+            answers: "{}",
+            gradingStatus: "retake",
+            completedAt: null,
+          },
+        });
+      }
+
+      // Qayta topshirishga ruxsat berilganda — testga KIRISH uchun ham ruxsat beriladi,
+      // shunda xodim "Qayta topshirishni boshlash" desa yana so'rov yubormaydi.
+      const openAccess = await prisma.testAccessRequest.findFirst({
+        where: {
+          userId: request.userId,
+          testId: request.testId,
+          targetType: "test",
+          status: { in: ["pending", "approved"] },
+        },
+      });
+      if (!openAccess) {
+        await prisma.testAccessRequest.create({
+          data: {
+            userId: request.userId,
+            testId: request.testId,
+            targetType: "test",
+            targetLabel: request.test?.title || request.targetLabel || "Test",
+            status: "approved",
+            decidedAt: new Date(),
+            decidedBy: `telegram:${cq.from?.id ?? "unknown"} (qayta topshirish)`,
+          },
+        });
+      }
+    }
+
+    await answerCallbackQuery(cq.id, approved ? "✅ Ruxsat berildi" : "❌ Rad etildi");
+
+    // Barcha chatlarda tugmalar olib tashlanadi + botga ulangan hammaga bir xil natija yuboriladi
+    try {
+      await settleTestAccessRequest({
+        telegramChats: request.telegramChats,
+        approved,
+        fullName: who,
+        testTitle: request.test?.title || request.targetLabel || "Test",
+      });
+    } catch (e: any) {
+      console.error("settleTestAccessRequest error:", e?.message || e);
     }
     return;
   }

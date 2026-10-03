@@ -1,6 +1,7 @@
 ﻿"use client";
 
 import { useEffect, useState, useCallback, useRef } from "react";
+import { cachedFetch } from "@/lib/admin-cache";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -17,6 +18,7 @@ import {
   HelpCircle,
   Plus as PlusIcon,
   CheckCircle2,
+  XCircle,
   Save,
   Users,
   Shield,
@@ -62,6 +64,28 @@ const STATUS_LABELS: Record<string, { label: string; className: string }> = {
   active: { label: "FAOL", className: "bg-indigo-100 text-indigo-700" },
   archived: { label: "ARXIV", className: "bg-amber-100 text-amber-700" },
 };
+
+/**
+ * Ticket (chek) dizayni — /admin/lms va TicketCard uslubidagi perforatsiya.
+ * Rang o'zgar maydi: band bitta rang (bg-violet-900), gradient emas.
+ * Teshiklar band (h-28 = 112px) va tananing chegarasida joylashadi.
+ */
+const TICKET_NOTCH_Y = "112px";
+const TICKET_NOTCHES = [
+  `radial-gradient(circle 10px at 0 ${TICKET_NOTCH_Y}, transparent 10px, #000 10.5px)`,
+  `radial-gradient(circle 10px at 100% ${TICKET_NOTCH_Y}, transparent 10px, #000 10.5px)`,
+].join(", ");
+/**
+ * Chetlardagi teshik — shaffof cut-out, sahifa foniga bog'liq emas.
+ * `mask-composite: intersect` MUHIM: aks holda (add) har bir layer'ning opak
+ * qismi ikkinchisining teshigini to'ldirib yopadi — teshik umuman chiqmaydi.
+ */
+const TICKET_CARD_MASK = {
+  maskImage: TICKET_NOTCHES,
+  WebkitMaskImage: TICKET_NOTCHES,
+  maskComposite: "intersect",
+  WebkitMaskComposite: "source-in",
+} as unknown as React.CSSProperties;
 
 export default function AdminTestsPage() {
   const { data: session, status } = useSession();
@@ -111,6 +135,14 @@ export default function AdminTestsPage() {
   const excelInputRef = useRef<HTMLInputElement>(null);
   const testExcelInputRef = useRef<HTMLInputElement>(null);
   const [importingExcel, setImportingExcel] = useState(false);
+  // Jonli import hisobi: qancha yuklandi / qancha kiritib bo'lmadi
+  const [importProgress, setImportProgress] = useState<{
+    total: number;
+    done: number;
+    failed: number;
+    failures: { row: number; reason: string }[];
+    finished: boolean;
+  } | null>(null);
   const [pendingTestQuestions, setPendingTestQuestions] = useState<import("@/lib/job-test-excel").QuizItem[]>([]);
   const [toast, setToast] = useState<{ kind: "ok" | "err"; msg: string } | null>(null);
   const [togglingTestId, setTogglingTestId] = useState<string | null>(null);
@@ -164,8 +196,10 @@ export default function AdminTestsPage() {
     try {
       const items = await parseExcelFileToQuestions(file);
       setPendingTestQuestions(items);
+      setImportProgress({ total: items.length, done: items.length, failed: 0, failures: [], finished: true });
       showToast("ok", `${items.length} ta savol shablondan o'qildi — Test yaratilganda avto qo'shiladi, variantlar random`);
     } catch (err: any) {
+      setImportProgress(null);
       showToast("err", err.message || "Excel import xatosi");
     } finally {
       setImportingExcel(false);
@@ -179,21 +213,46 @@ export default function AdminTestsPage() {
     setImportingExcel(true);
     try {
       const items = await parseExcelFileToQuestions(file);
+      setImportProgress({ total: items.length, done: 0, failed: 0, failures: [], finished: false });
       // har bir savolni ketma-ket yaratish — variantlar allaqachon random aralashtirilgan
       let ok = 0;
-      for (const it of items) {
+      const failures: { row: number; reason: string }[] = [];
+      for (let i = 0; i < items.length; i++) {
+        const it = items[i];
         const choices = it.options.map((t, idx) => ({ text: t, isCorrect: idx === it.correct }));
-        const res = await fetch("/api/admin/questions", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ testId: addingQuestionTo, text: it.question, type: "single", points: 1, choices }),
+        try {
+          const res = await fetch("/api/admin/questions", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ testId: addingQuestionTo, text: it.question, type: "single", points: 1, choices }),
+          });
+          if (res.ok) {
+            ok++;
+          } else {
+            const data = await res.json().catch(() => ({}));
+            failures.push({ row: i + 1, reason: data.error || `HTTP ${res.status}` });
+          }
+        } catch (err: any) {
+          failures.push({ row: i + 1, reason: err?.message || "Tarmoq xatosi" });
+        }
+        // har bir savoldan keyin holatni yangila — foydalanuvchi progressni ko'radi
+        setImportProgress({
+          total: items.length,
+          done: ok,
+          failed: failures.length,
+          failures: [...failures],
+          finished: i === items.length - 1,
         });
-        if (res.ok) ok++;
       }
-      showToast("ok", `${ok}/${items.length} ta savol import qilindi — variantlar random aralashtirildi`);
+      showToast(
+        failures.length ? "err" : "ok",
+        `${ok}/${items.length} ta savol import qilindi` +
+          (failures.length ? ` — ${failures.length} tasi kiritib bo'lmadi` : " — variantlar random aralashtirildi")
+      );
       fetchTests();
     } catch (err: any) {
       showToast("err", err.message || "Excel import xatosi");
+      setImportProgress(null);
     } finally {
       setImportingExcel(false);
       if (excelInputRef.current) excelInputRef.current.value = "";
@@ -202,14 +261,14 @@ export default function AdminTestsPage() {
 
   useEffect(() => {
     if (status === "unauthenticated") router.push("/login");
-    if (status === "authenticated" && (session?.user as any)?.role !== "admin") router.push("/dashboard");
+    if (status === "authenticated" && (session?.user as any)?.role === "user") router.push("/dashboard");
   }, [status, session, router]);
 
   const fetchTests = useCallback(async (opts?: { background?: boolean }) => {
     const background = opts?.background === true;
     if (!background) setLoading(true);
     try {
-      const res = await fetch("/api/admin/tests", { cache: "no-store" });
+      const res = await cachedFetch("/api/admin/tests", { cache: "no-store" });
       const data = await res.json();
       if (data.ok) setTests(data.tests);
     } finally {
@@ -219,7 +278,7 @@ export default function AdminTestsPage() {
 
   const fetchUsers = useCallback(async () => {
     try {
-      const res = await fetch("/api/admin/users", { cache: "no-store" });
+      const res = await cachedFetch("/api/admin/users", { cache: "no-store" });
       const data = await res.json();
       if (data.ok) setUsers(data.users.map((u: any) => ({ id: u.id, email: u.email, name: u.name, surname: u.surname, department: u.department })));
     } catch {}
@@ -432,7 +491,7 @@ setTestForm({
     setViewHistory(test);
     setLoadingHistory(true);
     try {
-      const res = await fetch(`/api/tests/history?testId=${test.id}&all=1`, { cache: "no-store" });
+      const res = await cachedFetch(`/api/tests/history?testId=${test.id}&all=1`, { cache: "no-store" });
       const data = await res.json();
       if (data.ok) setHistory(data.results);
       else setHistory([]);
@@ -577,8 +636,15 @@ setTestForm({
                 const isLimited = (test as any).visibility === "selected";
                 const busy = togglingTestId === test.id;
                 return (
-                  <div key={test.id} className="group relative bg-white border border-neutral-200 rounded-2xl overflow-hidden hover:shadow-lg transition-shadow flex flex-col" data-testid="admin-test-card" data-visible={isActive ? "1" : "0"}>
-                    <div className="h-28 bg-gradient-to-br from-violet-900 to-purple-950 relative">
+                  <div
+                    key={test.id}
+                    style={TICKET_CARD_MASK}
+                    className="group relative flex flex-col overflow-hidden rounded-2xl border border-neutral-200 bg-white transition-[transform,box-shadow] duration-200 hover:-translate-y-0.5 hover:shadow-xl"
+                    data-testid="admin-test-card"
+                    data-visible={isActive ? "1" : "0"}
+                  >
+                    {/* ── Ticket bandi: bitta rang (violet-900), gradient emas ── */}
+                    <div className="relative h-28 shrink-0 bg-violet-900">
                       <div className="absolute top-3 left-3 flex gap-1.5 items-center">
                         {selectMode && (
                           <input
@@ -586,6 +652,7 @@ setTestForm({
                             checked={selectedIds.includes(test.id)}
                             onChange={() => toggleSelect(test.id)}
                             data-testid="test-select-checkbox"
+                            aria-label={`${test.title} — tanlash`}
                             className="w-4 h-4 rounded border-rose-300 text-rose-600 focus:ring-rose-400 cursor-pointer"
                           />
                         )}
@@ -618,7 +685,21 @@ setTestForm({
                         {(test as any).shuffleQuestions && <span className="px-1.5 py-0.5 text-[9px] font-bold rounded bg-white/20 text-white flex items-center gap-1"><Shuffle className="w-3 h-3" /> Q</span>}
                         {(test as any).shuffleChoices && <span className="px-1.5 py-0.5 text-[9px] font-bold rounded bg-white/20 text-white">V</span>}
                       </div>
+
+                      {/* Chipta kuponi: seriya raqami + shtrix-kod (TicketCard uslubida) */}
+                      <div className="absolute inset-x-3 bottom-2.5 flex items-end justify-between">
+                        <div className="font-mono text-[9px] font-bold uppercase tracking-[0.16em] text-violet-200/70">
+                          {LANG_LABELS[test.language] || test.language.toUpperCase()} · {test._count?.questions ?? 0} savol · {test.timeLimit ? `${test.timeLimit} min` : "cheklovsiz"} · ball {test.passScore}%
+                        </div>
+                        <div className="font-mono text-[15px] font-black leading-none tracking-tight text-white/20">№{test.id.slice(-6).toUpperCase()}</div>
+                      </div>
+                      <div className="pointer-events-none absolute inset-x-3 bottom-0 flex h-3.5 items-end gap-[2px] overflow-hidden">
+                        {Array.from({ length: 34 }).map((_, i) => (
+                          <div key={i} className={`bg-white/15 ${i % 5 === 0 ? "w-[3px]" : i % 3 === 0 ? "w-[2px]" : "w-px"}`} />
+                        ))}
+                      </div>
                     </div>
+
                     <div className="p-4 flex-1 flex flex-col">
                       <button onClick={() => router.push(`/admin/lms/tests/${test.id}`)} className="text-left group/title">
                         <h3 className="font-bold text-base text-neutral-900 mb-1.5 line-clamp-2 min-h-[3rem] group-hover/title:text-indigo-700 group-hover/title:underline decoration-2 underline-offset-2">{test.title}</h3>
@@ -627,13 +708,13 @@ setTestForm({
                       <div className="grid grid-cols-4 gap-2 mt-auto pt-3 border-t border-neutral-100">
                         <Stat icon={<Globe className="w-3 h-3" />} label="TILI" value={LANG_LABELS[test.language] || test.language.toUpperCase()} />
                         <Stat icon={<HelpCircle className="w-3 h-3" />} label="SAVOL" value={`${test._count?.questions ?? 0}/${test.questionCount ?? 10}`} />
-                        <Stat icon={<Clock className="w-3 h-3" />} label="VAQT" value={test.timeLimit ? `${test.timeLimit}m` : "в€ћ"} />
+                        <Stat icon={<Clock className="w-3 h-3" />} label="VAQT" value={test.timeLimit ? `${test.timeLimit}m` : "∞"} />
                         <Stat icon={<Target className="w-3 h-3" />} label="BALL" value={`${test.passScore}%`} />
                       </div>
                       <div className="grid grid-cols-3 gap-1.5 mt-3">
                         <div className="rounded-lg bg-neutral-50 border border-neutral-200 px-2 py-1.5 text-center">
                           <div className="text-[9px] font-bold text-neutral-400 uppercase">Urinish</div>
-                          <div className="text-xs font-bold text-neutral-900">{(test as any).maxAttempts === 0 ? "в€ћ" : (test as any).maxAttempts ?? 1}x</div>
+                          <div className="text-xs font-bold text-neutral-900">{(test as any).maxAttempts === 0 ? "∞" : (test as any).maxAttempts ?? 1}x</div>
                         </div>
                         <div className="rounded-lg bg-neutral-50 border border-neutral-200 px-2 py-1.5 text-center">
                           <div className="text-[9px] font-bold text-neutral-400 uppercase">Ko'rinish</div>
@@ -644,15 +725,18 @@ setTestForm({
                           <div className="text-xs font-bold text-violet-700">{(test as any).shuffleQuestions ? "Ha" : "Yo'q"}</div>
                         </div>
                       </div>
-                      <div className="flex gap-1.5 mt-4">
-                        <button onClick={() => router.push(`/admin/lms/tests/${test.id}`)} className="flex-1 flex items-center justify-center gap-1.5 px-3 py-1.5 text-xs font-bold text-white bg-neutral-900 rounded-md hover:bg-black">Ichiga kirish →</button>
-                        <button onClick={() => window.open(`/tests/${test.id}`, "_blank")} className="px-2.5 py-1.5 text-xs font-medium text-indigo-700 bg-indigo-50 border border-indigo-200 rounded-md hover:bg-indigo-100 flex items-center gap-1" title="Talaba qanday ko'radi — ko'rish joyi"><Eye className="w-3.5 h-3.5" /> Ko'rish</button>
-                      </div>
-                      <div className="flex gap-1.5 mt-1.5">
-                        <button onClick={() => setAddingQuestionTo(test.id)} className="flex-1 flex items-center justify-center gap-1 px-2 py-1 text-[11px] font-medium text-neutral-600 bg-neutral-100 rounded-md hover:bg-neutral-200"><PlusIcon className="w-3 h-3" /> Savol</button>
-                        <button onClick={() => openHistory(test)} className="px-2 py-1 text-[11px] font-medium text-violet-700 bg-violet-50 border border-violet-200 rounded-md hover:bg-violet-100 flex items-center gap-1"><History className="w-3 h-3" /> Tarix</button>
-                        <button onClick={() => openEdit(test)} className="p-1 text-neutral-600 hover:bg-neutral-100 rounded-md"><Settings className="w-3 h-3" /></button>
-                        {/* O'chirish kartochkadan olib tashlandi — faqat sarlavhadagi "Tanlab o'chirish" orqali */}
+                      {/* ── Ticket "stub": dashed chiziq bilan ajratilgan amallar qismi ── */}
+                      <div className="mt-4 pt-3.5 border-t border-dashed border-neutral-300">
+                        <div className="flex gap-1.5">
+                          <button onClick={() => router.push(`/admin/lms/tests/${test.id}`)} className="flex-1 flex items-center justify-center gap-1.5 px-3 py-1.5 text-xs font-bold text-white bg-neutral-900 rounded-md hover:bg-black">Ichiga kirish →</button>
+                          <button onClick={() => router.push(`/admin/preview?path=${encodeURIComponent(`/tests/${test.id}`)}`)} className="px-2.5 py-1.5 text-xs font-medium text-indigo-700 bg-indigo-50 border border-indigo-200 rounded-md hover:bg-indigo-100 flex items-center gap-1" title="Talaba qanday ko'radi — ko'rish joyi"><Eye className="w-3.5 h-3.5" /> Ko'rish</button>
+                        </div>
+                        <div className="flex gap-1.5 mt-1.5">
+                          <button onClick={() => setAddingQuestionTo(test.id)} className="flex-1 flex items-center justify-center gap-1 px-2 py-1 text-[11px] font-medium text-neutral-600 bg-neutral-100 rounded-md hover:bg-neutral-200"><PlusIcon className="w-3 h-3" /> Savol</button>
+                          <button onClick={() => openHistory(test)} className="px-2 py-1 text-[11px] font-medium text-violet-700 bg-violet-50 border border-violet-200 rounded-md hover:bg-violet-100 flex items-center gap-1"><History className="w-3 h-3" /> Tarix</button>
+                          <button onClick={() => openEdit(test)} title="Tahrirlash" aria-label="Testni tahrirlash" className="p-1 text-neutral-600 hover:bg-neutral-100 rounded-md"><Settings className="w-3 h-3" /></button>
+                          {/* O'chirish kartochkadan olib tashlandi — faqat sarlavhadagi "Tanlab o'chirish" orqali */}
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -695,6 +779,7 @@ setTestForm({
                 </div>
               )}
               <p className="text-[11px] text-neutral-500 mt-2">Shablonda <b>To'g'ri javob</b> ga <b>A/B/C/D</b> yozing (bitta joyda bo'lsa yetarli) — sayt avtomatik taniydi va variantlarni <b>random</b> aralashtiradi. {importingExcel && <span className="inline-flex items-center gap-1 text-violet-600"><Loader2 className="w-3 h-3 animate-spin" /> Import qilinmoqda...</span>}</p>
+              <ImportProgress data={importProgress} />
             </div>
             <div className="flex justify-end gap-2 mt-6">
               <button onClick={() => setShowCreate(false)} className="px-4 py-2 text-sm text-neutral-700 hover:bg-neutral-100 rounded-lg">Bekor qilish</button>
@@ -733,6 +818,7 @@ setTestForm({
                 </div>
               )}
               <p className="text-[11px] text-neutral-500 mt-2">Shablonda <b>To'g'ri javob</b> ga <b>A/B/C/D</b> yozing — sayt taniydi va <b>random</b> aralashtiradi. {importingExcel && <span className="inline-flex items-center gap-1 text-violet-600"><Loader2 className="w-3 h-3 animate-spin" /> Import qilinmoqda...</span>}</p>
+              <ImportProgress data={importProgress} />
             </div>
             <div className="flex justify-end gap-2 mt-6">
               <button onClick={() => setEditingTest(null)} className="px-4 py-2 text-sm text-neutral-700 hover:bg-neutral-100 rounded-lg">Bekor</button>
@@ -753,6 +839,7 @@ setTestForm({
                 <input ref={excelInputRef} type="file" accept=".xlsx,.xls" onChange={handleExcelImport} className="hidden" />
               </div>
               <p className="text-[11px] text-neutral-500 px-1">Shablonda <b>To'g'ri javob</b> ga <b>A/B/C/D</b> yozing (bitta joyda bo'lsa yetarli) — sayt avtomatik taniydi va variantlarni <b>random</b> aralashtiradi. {importingExcel && <span className="inline-flex items-center gap-1 text-violet-600 ml-1"><Loader2 className="w-3 h-3 animate-spin" /> Import qilinmoqda...</span>}</p>
+              <ImportProgress data={importProgress} />
               <Field label="Savol matni">
                 <textarea value={qForm.text} onChange={(e) => setQForm({ ...qForm, text: e.target.value })} rows={2} placeholder="Masalan: HTML nima?" className="w-full px-3 py-2 text-sm border border-neutral-200 rounded-lg resize-none" />
               </Field>
@@ -871,7 +958,7 @@ function TestForm({ testForm, setTestForm, users }: any) {
             <label className="text-xs font-bold text-violet-700 mb-1.5 block flex items-center gap-1"><History className="w-3 h-3" /> Urinish soni</label>
             <div className="flex items-center gap-2">
               <input type="number" min={0} value={testForm.maxAttempts} onChange={(e) => setTestForm({ ...testForm, maxAttempts: parseInt(e.target.value) || 0 })} className="flex-1 min-w-0 px-3 py-2.5 text-sm font-black text-center border-2 border-violet-300 rounded-xl bg-white focus:border-violet-500 focus:outline-none text-neutral-900 shadow-sm" />
-              <span className="shrink-0 text-xs font-bold text-violet-700 bg-white border-2 border-violet-200 rounded-full px-2.5 py-1.5 whitespace-nowrap">0 = в€ћ</span>
+              <span className="shrink-0 text-xs font-bold text-violet-700 bg-white border-2 border-violet-200 rounded-full px-2.5 py-1.5 whitespace-nowrap">0 = ∞</span>
             </div>
           </div>
           <div className="rounded-xl bg-neutral-50 border border-neutral-200 p-3">
@@ -931,6 +1018,53 @@ function TestForm({ testForm, setTestForm, users }: any) {
           </div>
           <p className="text-xs text-amber-700 flex items-center gap-1.5 bg-white rounded-lg px-3 py-2 border border-amber-200"><Shield className="w-3.5 h-3.5" /> Faqat tanlanganlar testni ko'radi, qolganlarga ko'rinmaydi</p>
         </div>
+      )}
+    </div>
+  );
+}
+
+// Excel import jonli progressi: yuklangan / kiritib bo'lmagan savollar
+function ImportProgress({ data }: { data: { total: number; done: number; failed: number; failures: { row: number; reason: string }[]; finished: boolean } | null }) {
+  if (!data) return null;
+  const pct = data.total ? Math.round((data.done / data.total) * 100) : 0;
+  return (
+    <div className="mt-2 rounded-xl border border-violet-200 bg-violet-50/70 p-3" role="status" aria-live="polite">
+      <div className="flex items-center justify-between gap-2 text-[11px] font-semibold">
+        <span className="inline-flex items-center gap-1.5 text-violet-700">
+          {data.finished ? (
+            <CheckCircle2 className="w-3.5 h-3.5" aria-hidden="true" />
+          ) : (
+            <Loader2 className="w-3.5 h-3.5 animate-spin" aria-hidden="true" />
+          )}
+          {data.finished ? "Import yakunlandi" : "Import qilinmoqda..."}
+        </span>
+        <span className="tabular-nums text-violet-900">
+          {data.done}/{data.total}
+        </span>
+      </div>
+
+      <div className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-violet-200" aria-hidden="true">
+        <div className="h-full rounded-full bg-gradient-to-r from-violet-600 to-indigo-600 transition-all duration-300" style={{ width: `${pct}%` }} />
+      </div>
+
+      <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px]">
+        <span className="inline-flex items-center gap-1 font-bold text-emerald-700">
+          <CheckCircle2 className="w-3 h-3" aria-hidden="true" /> Yuklandi: {data.done}
+        </span>
+        <span className={`inline-flex items-center gap-1 font-bold ${data.failed ? "text-rose-600" : "text-neutral-500"}`}>
+          <XCircle className="w-3 h-3" aria-hidden="true" /> Kiritib bo'lmadi: {data.failed}
+        </span>
+      </div>
+
+      {data.failures.length > 0 && (
+        <ul className="mt-2 max-h-24 space-y-1 overflow-y-auto text-[11px] text-rose-700" aria-label="Kiritib bo'lmagan savollar">
+          {data.failures.map((f) => (
+            <li key={f.row} className="flex gap-1.5">
+              <span className="shrink-0 font-bold tabular-nums">Qator {f.row}:</span>
+              <span className="truncate">{f.reason}</span>
+            </li>
+          ))}
+        </ul>
       )}
     </div>
   );
