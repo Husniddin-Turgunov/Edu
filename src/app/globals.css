@@ -1126,10 +1126,14 @@ html.lg-on .glass-panel::after {
 /* Liquid Glass "suv" qatlami: yaqin shakllar birlashadi (smin), chetlar yoritiladi */
 canvas.lg-layer {
   position: fixed;
-  inset: 0;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  /* contain: strict elementni 0x0 ga yopadi — ishlatilmaydi */
   z-index: 40;
   pointer-events: none;
-  contain: strict;
+  will-change: contents;
 }
 
 /* Rangli (gradient/solid) tugmalar: shaffofroq shisha + gradient saqlanadi.

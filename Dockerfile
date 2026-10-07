@@ -1,8 +1,15 @@
 ﻿# Akela EDU — bir xil production image (istalgan serverda bir xil natija)
 # Ishlatish:  docker compose up -d --build
+# ARM64 (Apple Silicon / ARM server) build:
+#   docker buildx build --platform linux/arm64 -t akela-edu:arm64 --load .
+#   docker compose up -d   (multi-arch: amd64 + arm64)
 # Runtime env compose/.env dan keladi — image ichida HECH qanday maxfiy qiymat yo'q.
 
 # ---- 1 bosqich: bog'liqliklar (dev ham, build uchun kerak) ----
+# Multi-arch image (amd64 + arm64) — TARGETPLATFORM buildx orqali beriladi
+ARG TARGETPLATFORM
+ARG TARGETARCH
+
 FROM node:24-bookworm-slim AS deps
 WORKDIR /app
 COPY package.json package-lock.json ./
@@ -20,6 +27,7 @@ ENV NEXT_TELEMETRY_DISABLED=1 \
     NEXTAUTH_SECRET=build-time-placeholder \
     NEXTAUTH_URL=http://localhost:3000 \
     DATABASE_URL=placeholder:mysql://build:build@127.0.0.1:3306/build
+# Prisma engine ARM64 uchun shu bosqichda avtomatik tanlanadi (linux/arm64)
 RUN npx prisma generate
 COPY . .
 # Turbopack Linux build'da dynamic import'ni uzatmaydi — webpack (netlify.toml bilan bir xil)

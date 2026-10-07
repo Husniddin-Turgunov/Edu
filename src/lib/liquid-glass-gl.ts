@@ -70,6 +70,7 @@ uniform vec2  u_cursor;
 uniform float u_cursorR;
 uniform float u_cursorOn;
 uniform float u_cursorK;
+uniform float u_viewH;
 
 uniform float u_refThickness;
 uniform float u_refDistance;
@@ -123,7 +124,7 @@ float mergedSDF(vec2 p, out float alpha) {
     vec4 sp = u_shapeP[i];
     // tezlik: shakl kvadratiga yaqin bo'lmasa tashlab ketamiz
     vec2 dc = abs(p - s.xy) - vec2(s.z, s.w);
-    if (dc.x > 26.0 && dc.y > 26.0) continue;
+    if (dc.x > 16.0 && dc.y > 16.0) continue;
     float dd = roundedRectSDF(p, s.xy, s.z * 2.0, s.w * 2.0, sp.x, sp.y);
     d = smin(d, dd, sp.z);
     alpha = max(alpha, sp.w);
@@ -142,10 +143,13 @@ float vec2ToAngle(vec2 v) {
 }
 
 void main() {
-  vec2 p = gl_FragCoord.xy / u_dpr;            // CSS px
-  float alpha;
-  float merged = mergedSDF(p, alpha);
-  if (merged > 0.6 || alpha <= 0.01) discard;
+  // gl_FragCoord.y pastdan yuqoriga hisoblanadi, DOM esa yuqoridan pastga
+  vec2 p = vec2(gl_FragCoord.x / u_dpr, u_viewH - gl_FragCoord.y / u_dpr);
+  float shapeAlpha;
+  float merged = mergedSDF(p, shapeAlpha);
+  // shakl tashqarisida — butunlay chizilmaydi
+  if (merged > 0.0) discard;
+  float alpha = shapeAlpha;
 
   float nmerged = -merged;                     // chekkadan ichkariga masofa (px)
 
@@ -160,8 +164,10 @@ void main() {
   }
 
   // repo: fresnelFactor / glareGeoFactor
-  float fresnel = clamp(pow(1.0 + merged / 1500.0 * pow(500.0 / max(u_refFresnelRange, 0.01), 2.0) + u_refFresnelHardness / 100.0, 5.0), 0.0, 1.0);
-  float glareGeo = clamp(pow(1.0 + merged / 1500.0 * pow(500.0 / max(u_glareRange, 0.01), 2.0) + u_glareHardness / 100.0, 5.0), 0.0, 1.0);
+  float fBase = max(0.0, 1.0 + merged / 60.0 * pow(500.0 / max(u_refFresnelRange, 1.0), 2.0) * 0.01 + u_refFresnelHardness / 100.0);
+  float fresnel = clamp(pow(fBase, 3.0), 0.0, 1.0);
+  float gBase = max(0.0, 1.0 + merged / 60.0 * pow(500.0 / max(u_glareRange, 1.0), 2.0) * 0.01 + u_glareHardness / 100.0);
+  float glareGeo = clamp(pow(gBase, 3.0), 0.0, 1.0);
 
   // normal faqat chekka yaqinlikda (ARM/Mali uchun arzon)
   vec2 nrm = vec2(0.0);
@@ -185,18 +191,22 @@ void main() {
   }
 
   // shisha terisi: tint + fresnel yorug'ligi + specular + chetda quyuqroq
-  float depth = clamp(1.0 - nmerged / 26.0, 0.0, 1.0);
-  float bodyA = u_tint.a * (0.10 + 0.55 * pow(depth, 0.55)) * alpha;
-  float fresnelA = fresnel * (u_refFresnelFactor / 100.0) * 0.75 * alpha;
-  float glareA = glare * 0.55 * alpha;
+  float depth = clamp(1.0 - nmerged / 30.0, 0.0, 1.0);
+  // shisha tanasi: chetdan ichkariga yengilroq
+  float bodyA = u_tint.a * (0.10 + 0.26 * pow(depth, 0.55)) * alpha;
+  // fresnel — nozik yorug'lik halqasi (chetda)
+  float fresnelA = pow(fresnel, 0.9) * (u_refFresnelFactor / 100.0) * 1.35 * alpha;
+  // specular — kichik, keskin
+  float glareA = pow(clamp(glare, 0.0, 1.0), 1.1) * 0.7 * alpha;
 
   vec3 col = u_tint.rgb;
   col = mix(col, vec3(1.0), clamp(fresnel * (u_refFresnelFactor / 100.0) * 0.9, 0.0, 1.0));
   col = mix(col, vec3(1.0), clamp(glare * 0.85, 0.0, 1.0));
 
-  float a = clamp(bodyA + fresnelA + glareA, 0.0, 1.0);
-  if (a < 0.004) discard;
-  fragColor = vec4(col, a);
+  float a = clamp(bodyA + fresnelA + glareA, 0.0, 0.92);
+  if (a < 0.006) discard;
+  // premultiplied alpha bilan chiqaramiz (ONE, ONE_MINUS_SRC_ALPHA)
+  fragColor = vec4(col * a, a);
 }
 `;
 
@@ -232,12 +242,12 @@ export function createGlRenderer(): GlRenderer | null {
   canvas.setAttribute("aria-hidden", "true");
   const gl = canvas.getContext("webgl2", {
     alpha: true,
-    premultipliedAlpha: false,
+    premultipliedAlpha: true,
     antialias: false,
     depth: false,
     stencil: false,
     powerPreference: "high-performance",
-    desynchronized: true,
+    preserveDrawingBuffer: false,
   });
   if (!gl) return null;
 
@@ -269,11 +279,13 @@ export function createGlRenderer(): GlRenderer | null {
   const shapePBuf = new Float32Array(MAX_GPU_SHAPES * 4);
 
   gl.enable(gl.BLEND);
-  gl.blendFuncSeparate(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA, gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
+  gl.blendFuncSeparate(gl.ONE, gl.ONE_MINUS_SRC_ALPHA, gl.ONE, gl.ONE_MINUS_SRC_ALPHA); // premultiplied
 
   let dpr = 1;
 
   const render = (shapes: GpuShape[], cursor: { x: number; y: number; r: number; on: boolean }, p: GpuParams) => {
+    gl.clearColor(0, 0, 0, 0);
+    gl.clear(gl.COLOR_BUFFER_BIT);
     const n = Math.min(shapes.length, MAX_GPU_SHAPES);
     for (let i = 0; i < n; i++) {
       const s = shapes[i];
@@ -291,10 +303,11 @@ export function createGlRenderer(): GlRenderer | null {
     gl.uniform1i(U("u_count"), n);
     gl.uniform2f(U("u_resolution"), canvas.width, canvas.height);
     gl.uniform1f(U("u_dpr"), dpr);
-    gl.uniform2f(U("u_cursor"), cursor.x, canvas.height - cursor.y);
+    gl.uniform2f(U("u_cursor"), cursor.x, cursor.y);
+    gl.uniform1f(U("u_viewH"), canvas.height / dpr);
     gl.uniform1f(U("u_cursorR"), cursor.r);
     gl.uniform1f(U("u_cursorOn"), cursor.on ? 1 : 0);
-    gl.uniform1f(U("u_cursorK"), 0.02);
+    gl.uniform1f(U("u_cursorK"), 14.0);
     gl.uniform1f(U("u_refThickness"), p.refThickness);
     gl.uniform1f(U("u_refDistance"), p.refDistance);
     gl.uniform1f(U("u_refFactor"), p.refFactor);

@@ -20,12 +20,10 @@
 import { GLASS_DEFAULTS, type GlassSettings } from "@/lib/liquid-glass-settings";
 import { createGlRenderer, MAX_GPU_SHAPES, type GlRenderer, type GpuShape } from "@/lib/liquid-glass-gl";
 
-export const GLASS_EVENT = "lg-settings";
-
 const SEL = ".glass,.glass-strong,.glass-card,.glass-pill,.lg-auto,.glass-panel";
-const MERGE = 26; // px — shakllar shu masofada suvday birlashadi
+const MERGE = 11; // px — shakllar shu masofadan boshlab suvday birlashadi (repo mergeRate 0.05 ga mos)
 const ROUNDNESS = GLASS_DEFAULTS.shapeRoundness;
-const MIN_SIDE = 18;
+const MIN_SIDE = 12;
 
 type Entry = {
   el: HTMLElement;
@@ -123,6 +121,29 @@ function gap(a: Entry, b: Entry) {
   return Math.hypot(dx, dy);
 }
 
+/**
+ * Bevosita DOM kosasiga sig'ib turgan element — alohida chizilmaydi.
+ * Faqat to'g'ridan-to'g'ri ota element hisobga olinadi: aks holda qator ichidagi
+ * kartalar ketma-ket "ichida" deb hisoblanib, o'rniga faqat tashqi karta chiziladi.
+ */
+function isNested(e: Entry) {
+  const a = e.hw * e.hh;
+  if (a <= 0) return false;
+  for (let node = e.el.parentElement; node; node = node.parentElement) {
+    const o = registry.get(node);
+    if (!o) continue;
+    const oa = o.hw * o.hh;
+    if (oa <= a * 1.6) continue; // ota katta bo'lishi kerak
+    if (
+      e.cx > o.cx - o.hw - 2 &&
+      e.cx < o.cx + o.hw + 2 &&
+      e.cy > o.cy - o.hh - 2 &&
+      e.cy < o.cy + o.hh + 2
+    ) return true; // ichida joylashgan — ota shakli uni allaqachon chizadi
+  }
+  return false;
+}
+
 /** har element o'z qo'shnisiga qanchalik yaqinligiga qarab bog'lanadi */
 function computeMerge() {
   const list = [...registry.values()].slice(0, MAX_GPU_SHAPES);
@@ -137,8 +158,8 @@ function computeMerge() {
       const g = gap(a, b);
       if (g < nearest) nearest = g;
     }
-    let k = nearest >= MERGE ? 0 : (MERGE - nearest) * 0.85;
-    if (a.el.matches(":hover") || a === drag) k = Math.max(k, MERGE * 0.9);
+    let k = nearest >= MERGE ? 0 : (MERGE - nearest) * 0.55;
+    if (a.el.matches(":hover") || a === drag) k = Math.max(k, MERGE * 0.75);
     a.k = k;
   }
 }
@@ -169,7 +190,7 @@ function onMove(ev: PointerEvent) {
   const near = (ev.target as HTMLElement)?.closest?.(SEL) as HTMLElement | null;
   if (near) {
     const r = near.getBoundingClientRect();
-    cursor.target = clamp(Math.min(r.width, r.height) * 0.75, 34, 92);
+    cursor.target = clamp(Math.min(r.width, r.height) * 0.55, 22, 64);
     cursor.on = true;
   } else {
     cursor.target = 0;
@@ -239,8 +260,10 @@ function frame(now: number) {
   }
   computeMerge();
 
+  const all = [...registry.values()];
+  const visible = all.filter((e) => !isNested(e));
   const list: GpuShape[] = [];
-  for (const e of registry.values()) {
+  for (const e of visible) {
     if (list.length >= MAX_GPU_SHAPES) break;
     list.push({
       cx: e.cx,
@@ -309,12 +332,7 @@ export function stopLiquidLayer() {
   renderer = null;
 }
 
+/** GPU qatlami sozlamalarni shu funksiya orqali oladi (bitta manba — LiquidGlassDefs) */
 export function setLiquidSettings(next: GlassSettings) {
   settings = next;
-}
-
-/** admin panelidan o'zgarishni darhol qo'llash */
-export function applyLiquidSettings(input: Partial<GlassSettings>) {
-  setLiquidSettings({ ...settings, ...input });
-  window.dispatchEvent(new CustomEvent(GLASS_EVENT, { detail: input }));
 }
