@@ -1,28 +1,33 @@
 "use client";
 
 /**
- * Liquid Glass "suv" qatlami — liquid-glass-studio (iyinchao) mexanikasining DOM porti.
+ * Liquid Glass — yagona boshqaruvchi.
  *
- * Repodagi asosiy g'oya: barcha shakllar bitta SDF maydonida `smin` (smooth min) bilan
- * birlashtiriladi — yaqin shakllar suv kabi qo'shiladi. Shu yerda:
- *   1) glass elementlari shakl sifatida kiritiladi (yaqinlik ~26px = birlashadi);
- *   2) sichqoncha linzasi faqat glass ustida paydo bo'ladi va shakllarga qo'shiladi;
- *   3) tugmani bosib surishda shakl suvga o'xshab cho'zilib, qo'yib yuborilganda
- *      inertsiya bilan qaytadi;
- *   4) render: har shakl faqat o'z kvadratida, faqat 2px kenglikdagi chekka yoritiladi
- *      (fon bo'yalmaydi — matn o'qiladi).
+ * Bitta kod butun saytni qamrab oladi: hech qanday elementga alohida kod
+ * yozilmaydi. Element avtomatik kashf etiladi (registr), uning geometriyasi
+ * GPU renderer'ga (liquid-glass-gl.ts) uzatiladi, u yerda repo formulalari
+ * bo'yicha chiziladi. Orqa fon quyuqlashtirish esa CSS `backdrop-filter`
+ * orqali (liquid-glass-shader.ts -> SVG displacement) — haqiqiy sahifa matni siljiydi.
  *
- * Bitta canvas, bitta rAF, past o'lchamli SDF maydon (SCALE) — shuning uchun yengil.
+ * Fizika (repo sxemasi + DOM uchun moslashtirilgan):
+ *   * qo'shni shakllar yaqinlashganda `smin` bilan birlashadi (MERGE masofa);
+ *   * sichqoncha/kalkalyustek faqat glass ustida linza bo'lib paydo bo'ladi;
+ *   * tugma bosib surilganda suvga o'xshab cho'zilib, qo'yib yuborilganda
+ *     tezlikka bog'liq inertsiya bilan qaytadi;
+ *   * scroll/resize o'zgarishlari kadr ichida sinxronlanadi.
  */
 
-const SEL = ".glass,.glass-strong,.glass-card,.glass-pill,.lg-auto,.glass-panel";
-const MERGE = 26; // px — shakllar shu masofada birlashadi
-const SCALE = 0.25; // SDF maydoni o'lchami (ekran / SCALE)
-const MAX_SHAPES = 56;
-const RIM_PX = 2.2; // chekka yorug'ligi kengligi (ekran px)
-const AA_PX = 0.9; // chekka yumshoqlik
+import { GLASS_DEFAULTS, type GlassSettings } from "@/lib/liquid-glass-settings";
+import { createGlRenderer, MAX_GPU_SHAPES, type GlRenderer, type GpuShape } from "@/lib/liquid-glass-gl";
 
-type Shape = {
+export const GLASS_EVENT = "lg-settings";
+
+const SEL = ".glass,.glass-strong,.glass-card,.glass-pill,.lg-auto,.glass-panel";
+const MERGE = 26; // px — shakllar shu masofada suvday birlashadi
+const ROUNDNESS = GLASS_DEFAULTS.shapeRoundness;
+const MIN_SIDE = 18;
+
+type Entry = {
   el: HTMLElement;
   cx: number;
   cy: number;
@@ -31,397 +36,266 @@ type Shape = {
   r: number;
   k: number;
   alpha: number;
+  ox: number; // cho'zilish siljishi (drag)
+  oy: number;
+  sx: number; // cho'zilish koeffitsienti
+  sy: number;
+  vx: number; // inertsiya tezligi
+  vy: number;
 };
 
-const shapes: Shape[] = [];
-const byEl = new Map<HTMLElement, Shape>();
-
-let canvas: HTMLCanvasElement | null = null;
-let ctx: CanvasRenderingContext2D | null = null;
-let field: HTMLCanvasElement | null = null;
-let fctx: CanvasRenderingContext2D | null = null;
+const registry = new Map<HTMLElement, Entry>();
+let renderer: GlRenderer | null = null;
 let raf = 0;
-let last = 0;
 let running = false;
 let vw = 0;
 let vh = 0;
+let lastFrame = 0;
 let lastScan = 0;
-let fieldW = 0;
-let fieldH = 0;
-let dist = new Float32Array(0);
+let settings: GlassSettings = GLASS_DEFAULTS;
 
-const cursor = { x: -9999, y: -9999, tx: -9999, ty: -9999, r: 0, target: 0, active: false, onGlass: false };
-let drag: {
-  el: HTMLElement;
-  shape: Shape;
-  px: number;
-  py: number;
-  vx: number;
-  vy: number;
-  stretch: number;
-} | null = null;
+const cursor = { x: -9999, y: -9999, tx: -9999, ty: -9999, r: 0, target: 0, on: false, active: false };
+let drag: Entry | null = null;
 
 const clamp = (v: number, a: number, b: number) => (v < a ? a : v > b ? b : v);
 
-/* reponame: lib/sdf.glsl — smooth min */
-function smin(a: number, b: number, k: number) {
-  if (k <= 0.001) return a < b ? a : b;
-  const h = clamp(0.5 + (0.5 * (b - a)) / k, 0, 1);
-  return b * (1 - h) + a * h - k * h * (1 - h);
-}
+/* ---------------------------------------------------------------- kashfiyot */
 
-function roundedSdf(px: number, py: number, hw: number, hh: number, cr: number) {
-  const r = clamp(cr, 0, Math.min(hw, hh));
-  const dx = Math.abs(px) - hw;
-  const dy = Math.abs(py) - hh;
-  const ex = Math.abs(px) - (hw - r);
-  const ey = Math.abs(py) - (hh - r);
-  if (ex > 0 && ey > 0) return Math.hypot(ex, ey) - r;
-  return Math.min(Math.max(dx, dy), 0) + Math.hypot(ex > 0 ? ex : 0, ey > 0 ? ey : 0);
-}
-
-function radiusOf(el: HTMLElement) {
+function readRadius(el: HTMLElement, w: number, h: number) {
   const v = getComputedStyle(el).borderTopLeftRadius || "0";
-  const rr = el.getBoundingClientRect();
-  if (v.includes("%")) return (parseFloat(v) / 100) * Math.min(rr.width, rr.height);
+  if (v.includes("%")) return (parseFloat(v) / 100) * Math.min(w, h);
   const n = parseFloat(v);
   return Number.isFinite(n) ? n : 0;
 }
 
-function syncShape(s: Shape) {
-  const el = s.el;
-  const r = el.getBoundingClientRect();
-  s.hw = r.width / 2;
-  s.hh = r.height / 2;
-  s.cx = r.left + r.width / 2;
-  s.cy = r.top + r.height / 2;
-  s.r = radiusOf(el);
+function measure(e: Entry) {
+  const r = e.el.getBoundingClientRect();
+  if (r.width < MIN_SIDE && r.height < MIN_SIDE) return false;
+  e.hw = r.width / 2;
+  e.hh = r.height / 2;
+  e.cx = r.left + r.width / 2 + e.ox;
+  e.cy = r.top + r.height / 2 + e.oy;
+  e.r = readRadius(e.el, r.width, r.height);
+  return true;
 }
 
-function visible(r: DOMRect) {
-  return r.width >= 30 && r.height >= 18 && r.bottom > -60 && r.top < vh + 60 && r.right > -60 && r.left < vw + 60;
-}
-
-/** yangi elementlarni topadi, yo'qolganlarni tozalaydi */
 function discover() {
   const els = document.querySelectorAll<HTMLElement>(SEL);
   const seen = new Set<HTMLElement>();
   for (const el of els) {
     if (!el.isConnected) continue;
-    const r = el.getBoundingClientRect();
-    if (!visible(r)) continue;
+    const rect = el.getBoundingClientRect();
+    if (rect.width < MIN_SIDE || rect.height < 8) continue;
+    if (rect.bottom < -80 || rect.top > vh + 80 || rect.right < -80 || rect.left > vw + 80) continue;
     seen.add(el);
-    let s = byEl.get(el);
-    if (!s) {
-      s = { el, cx: 0, cy: 0, hw: 0, hh: 0, r: 0, k: 0, alpha: 1 };
-      byEl.set(el, s);
-      shapes.push(s);
+    let e = registry.get(el);
+    if (!e) {
+      e = {
+        el,
+        cx: 0,
+        cy: 0,
+        hw: 0,
+        hh: 0,
+        r: 0,
+        k: 0,
+        alpha: 1,
+        ox: 0,
+        oy: 0,
+        sx: 1,
+        sy: 1,
+        vx: 0,
+        vy: 0,
+      };
+      registry.set(el, e);
     }
-    syncShape(s);
+    measure(e);
   }
-  for (const [el, s] of [...byEl]) {
-    if (!seen.has(el)) {
-      byEl.delete(el);
-      const i = shapes.indexOf(s);
-      if (i >= 0) shapes.splice(i, 1);
-    }
-  }
-  if (shapes.length > MAX_SHAPES) {
-    // kichik/yon elementlar chizilmaydi: katta yuzalarni qoldiramiz
-    const keep = shapes
-      .slice()
-      .sort((a, b) => b.hw * b.hh - a.hw * a.hh)
-      .slice(0, MAX_SHAPES);
-    for (const s of shapes) {
-      if (!keep.includes(s)) {
-        byEl.delete(s.el);
-        const i = shapes.indexOf(s);
-        if (i >= 0) shapes.splice(i, 1);
-      }
-    }
+  for (const [el, e] of [...registry]) {
+    if (!seen.has(el)) registry.delete(el);
   }
 }
 
-/** Ikki shakl orasidagi bo'shliq (negativ = qisman ustma-ust) */
-function gap(a: Shape, b: Shape) {
+/* -------------------------------------------------------------- birlashish */
+
+function gap(a: Entry, b: Entry) {
   const dx = Math.max(0, Math.abs(a.cx - b.cx) - (a.hw + b.hw));
   const dy = Math.max(0, Math.abs(a.cy - b.cy) - (a.hh + b.hh));
   return Math.hypot(dx, dy);
 }
 
-/**
- * Har bir shaklning `k` qiymati haqiqiy qo'shni masofasidan hisoblanadi:
- * yaqinlashganda kichik, uzoqlashganda 0. Shuning uchun birlashish
- * sichqonchadan tashqari ham — qo'shni elementlar yaqinlashganda — paydo bo'ladi.
- */
+/** har element o'z qo'shnisiga qanchalik yaqinligiga qarab bog'lanadi */
 function computeMerge() {
-  const list = shapes;
+  const list = [...registry.values()].slice(0, MAX_GPU_SHAPES);
   for (let i = 0; i < list.length; i++) {
-    const s = list[i];
+    const a = list[i];
     let nearest = Infinity;
     for (let j = 0; j < list.length; j++) {
       if (i === j) continue;
-      const o = list[j];
-      if (Math.abs(s.cy - o.cy) > s.hh + o.hh + MERGE) continue;
-      if (Math.abs(s.cx - o.cx) > s.hw + o.hw + MERGE) continue;
-      const g = gap(s, o);
+      const b = list[j];
+      if (Math.abs(a.cy - b.cy) > a.hh + b.hh + MERGE) continue;
+      if (Math.abs(a.cx - b.cx) > a.hw + b.hw + MERGE) continue;
+      const g = gap(a, b);
       if (g < nearest) nearest = g;
     }
-    // masofa -> merge kuchayishi (0 = far, MERGE = touching)
-    let k = nearest >= MERGE ? 0 : (MERGE - nearest) * 0.9;
-    // hover / drag yanada kuchliroq bog'laydi
-    if (s.el.matches(":hover") || (drag && drag.el === s.el)) k = Math.max(k, MERGE * 0.8);
-    s.k = k;
+    let k = nearest >= MERGE ? 0 : (MERGE - nearest) * 0.85;
+    if (a.el.matches(":hover") || a === drag) k = Math.max(k, MERGE * 0.9);
+    a.k = k;
   }
 }
 
-function drawShapes(dist: Float32Array, W: number, H: number, kx: number, ky: number) {
-  const list = shapes;
-  const lens = cursor.active && cursor.onGlass && cursor.r > 1 ? cursor : null;
-  computeMerge();
+/* ------------------------------------------------------------------ fizika */
 
-  const stamp = (s: Shape) => {
-    const pad = MERGE + RIM_PX + 2;
-    const x0 = Math.max(0, Math.floor((s.cx - s.hw - pad) / kx));
-    const x1 = Math.min(W - 1, Math.ceil((s.cx + s.hw + pad) / kx));
-    const y0 = Math.max(0, Math.floor((s.cy - s.hh - pad) / ky));
-    const y1 = Math.min(H - 1, Math.ceil((s.cy + s.hh + pad) / ky));
-    for (let j = y0; j <= y1; j++) {
-      const sy = (j + 0.5) * ky;
-      for (let i = x0; i <= x1; i++) {
-        const sx = (i + 0.5) * kx;
-        const k = j * W + i;
-        dist[k] = smin(dist[k], roundedSdf(sx - s.cx, sy - s.cy, s.hw, s.hh, s.r), s.k);
-      }
-    }
-  };
-
-  for (const s of list) {
-    if (drag && drag.shape === s && drag.stretch > 0.01) {
-      // suvga o'xshab cho'zilish: harakat vektori bo'yicha uzayadi
-      const pad = MERGE + RIM_PX + 30;
-      const ang = Math.atan2(drag.vy, drag.vx);
-      const ca = Math.cos(ang);
-      const sa = Math.sin(ang);
-      const growX = drag.stretch * Math.abs(ca) * 24;
-      const growY = drag.stretch * Math.abs(sa) * 24;
-      const x0 = Math.max(0, Math.floor((s.cx - s.hw - growX - pad) / kx));
-      const x1 = Math.min(W - 1, Math.ceil((s.cx + s.hw + growX + pad) / kx));
-      const y0 = Math.max(0, Math.floor((s.cy - s.hh - growY - pad) / ky));
-      const y1 = Math.min(H - 1, Math.ceil((s.cy + s.hh + growY + pad) / ky));
-      for (let j = y0; j <= y1; j++) {
-        const sy = (j + 0.5) * ky;
-        for (let i = x0; i <= x1; i++) {
-          const sx = (i + 0.5) * kx;
-          const dx = sx - s.cx;
-          const dy = sy - s.cy;
-          const rx = dx * ca + dy * sa;
-          const ry = -dx * sa + dy * ca;
-          const k = j * W + i;
-          dist[k] = smin(
-            dist[k],
-            roundedSdf(rx, ry, s.hw + growX, s.hh + growY, s.r),
-            MERGE,
-          );
-        }
-      }
-      continue;
-    }
-    stamp(s);
+function spring(e: Entry) {
+  // cho'zilish va inertsiyaning tabiiy qaytishi (kritik dampingdan yumshoq)
+  const t = 0.14;
+  e.sx += (1 - e.sx) * t;
+  e.sy += (1 - e.sy) * t;
+  if (Math.abs(e.vx) < 0.02 && Math.abs(e.vy) < 0.02) {
+    e.ox = 0;
+    e.oy = 0;
+    e.vx = 0;
+    e.vy = 0;
+    return;
   }
-
-  // kursor linzasi (repo usuli) — faqat glass ustida
-  if (lens) {
-    const pad = MERGE + RIM_PX + 2;
-    const x0 = Math.max(0, Math.floor((lens.x - lens.r - pad) / kx));
-    const x1 = Math.min(W - 1, Math.ceil((lens.x + lens.r + pad) / kx));
-    const y0 = Math.max(0, Math.floor((lens.y - lens.r - pad) / ky));
-    const y1 = Math.min(H - 1, Math.ceil((lens.y + lens.r + pad) / ky));
-    for (let j = y0; j <= y1; j++) {
-      const sy = (j + 0.5) * ky;
-      for (let i = x0; i <= x1; i++) {
-        const sx = (i + 0.5) * kx;
-        const k = j * W + i;
-        dist[k] = smin(dist[k], Math.hypot(sx - lens.x, sy - lens.y) - lens.r, MERGE * 0.7);
-      }
-    }
-  }
+  e.vx *= 0.88;
+  e.vy *= 0.88;
+  e.ox += e.vx;
+  e.oy += e.vy;
 }
 
-function render(now: number) {
-  raf = requestAnimationFrame(render);
-  if (now - last < 1000 / 40) return;
-  last = now;
-  if (!ctx || !field || !fctx || !canvas) return;
-  if (canvas.width !== vw || canvas.height !== vh) {
-    canvas.width = vw;
-    canvas.height = vh;
-  }
-  const W = Math.max(2, Math.round(vw * SCALE));
-  const H = Math.max(2, Math.round(vh * SCALE));
-  if (W !== fieldW || H !== fieldH) {
-    field.width = W;
-    field.height = H;
-    fieldW = W;
-    fieldH = H;
-  }
-
-  // kursor spring (radius va pozitsiya yumshoq)
-  cursor.r += (cursor.target - cursor.r) * 0.16;
-  cursor.x += (cursor.tx - cursor.x) * 0.4;
-  cursor.y += (cursor.ty - cursor.y) * 0.4;
-  if (cursor.r < 0.5 && cursor.target === 0) cursor.active = false;
-
-  if (now - lastScan > 350) {
-    lastScan = now;
-    discover();
-  } else {
-    // joylashuv har kadrda — scroll'da iz qolmaydi
-    for (const s of shapes) {
-      if (!s.el.isConnected) continue;
-      const r = s.el.getBoundingClientRect();
-      if (visible(r)) syncShape(s);
-    }
-  }
-
-  if (dist.length !== W * H) dist = new Float32Array(W * H);
-  dist.fill(1e9);
-  const kx = vw / W;
-  const ky = vh / H;
-  drawShapes(dist, W, H, kx, ky);
-
-  // masofa -> faqat chegara yorug'ligi (ichi shaffof, matn o'qiladi)
-  const img = fctx.createImageData(W, H);
-  const d = img.data;
-  const band = Math.max(1.2, RIM_PX / Math.min(kx, ky));
-  for (let j = 0; j < H; j++) {
-    for (let i = 0; i < W; i++) {
-      const k = j * W + i;
-      const dv = dist[k];
-      if (dv > band) continue;
-      const t = 1 - Math.abs(dv) / band; // 0 = chegara, 1 = ichi
-      const a = Math.pow(clamp(t, 0, 1), 1.9) * 232;
-      if (a < 2) continue;
-      const o = k * 4;
-      d[o] = 255;
-      d[o + 1] = 255;
-      d[o + 2] = 255;
-      d[o + 3] = Math.round(a);
-    }
-  }
-  fctx.putImageData(img, 0, 0);
-  ctx.clearRect(0, 0, vw, vh);
-  ctx.imageSmoothingEnabled = true;
-  ctx.imageSmoothingQuality = "high";
-  ctx.drawImage(field, 0, 0, vw, vh);
-}
-
-function onMove(e: PointerEvent) {
-  cursor.tx = e.clientX;
-  cursor.ty = e.clientY;
-  const near = (e.target as HTMLElement)?.closest?.(SEL) as HTMLElement | null;
+function onMove(ev: PointerEvent) {
+  cursor.tx = ev.clientX;
+  cursor.ty = ev.clientY;
+  const near = (ev.target as HTMLElement)?.closest?.(SEL) as HTMLElement | null;
   if (near) {
-    const rr = near.getBoundingClientRect();
-    cursor.target = clamp(Math.min(rr.width, rr.height) * 0.8, 40, 96);
-    cursor.onGlass = true;
+    const r = near.getBoundingClientRect();
+    cursor.target = clamp(Math.min(r.width, r.height) * 0.75, 34, 92);
+    cursor.on = true;
   } else {
     cursor.target = 0;
-    cursor.onGlass = false;
+    cursor.on = false;
   }
   cursor.active = true;
   if (drag) {
-    drag.vx = e.clientX - drag.px;
-    drag.vy = e.clientY - drag.py;
-    drag.px = e.clientX;
-    drag.py = e.clientY;
+    drag.vx = ev.clientX - (drag.cx - drag.hw);
+    drag.vy = ev.clientY - (drag.cy - drag.hh);
   }
 }
 
-function onDown(e: PointerEvent) {
-  const el = (e.target as HTMLElement)?.closest?.(SEL) as HTMLElement | null;
-  if (!el || !byEl.has(el)) return;
-  const rr = el.getBoundingClientRect();
-  drag = {
-    el,
-    shape: byEl.get(el)!,
-    px: e.clientX,
-    py: e.clientY,
-    vx: 0,
-    vy: 0,
-    stretch: 0,
-  };
-  cursor.r = clamp(Math.min(rr.width, rr.height), 48, 110);
-  cursor.x = e.clientX;
-  cursor.y = e.clientY;
-  cursor.tx = e.clientX;
-  cursor.ty = e.clientY;
+function onDown(ev: PointerEvent) {
+  const el = (ev.target as HTMLElement)?.closest?.(SEL) as HTMLElement | null;
+  if (!el) return;
+  const e = registry.get(el);
+  if (!e) return;
+  drag = e;
+  const r = el.getBoundingClientRect();
+  cursor.r = clamp(Math.min(r.width, r.height), 40, 104);
+  cursor.x = ev.clientX;
+  cursor.y = ev.clientY;
+  cursor.tx = ev.clientX;
+  cursor.ty = ev.clientY;
   cursor.active = true;
-  cursor.onGlass = true;
-  // cho'zilish bosqichga bog'liq
-  const t0 = performance.now();
-  const grow = () => {
-    if (!drag) return;
-    drag.stretch = Math.min(1, (performance.now() - t0) / 160);
-    if (drag.stretch < 1) requestAnimationFrame(grow);
-  };
-  grow();
+  cursor.on = true;
 }
 
 function onUp() {
   if (!drag) return;
-  const d = drag;
+  const e = drag;
   drag = null;
-  d.stretch = 0;
-  const sp = Math.hypot(d.vx, d.vy);
-  // tez qo'yib yuborilgan shakl inertia bilan biroz siljiydi, keyin joyiga qaytadi
-  if (sp > 5) {
-    d.shape.cx += d.vx * 1.1;
-    d.shape.cy += d.vy * 1.1;
+  const sp = Math.hypot(e.vx, e.vy);
+  // tez qo'yib yuborilgan element inertia bilan uzoqlashadi, keyin qaytadi
+  if (sp > 6) {
+    e.ox += e.vx * 1.6;
+    e.oy += e.vy * 1.6;
+    e.vx *= 1.6;
+    e.vy *= 1.6;
   }
-  const t0 = performance.now();
-  const settle = () => {
-    if (!d.shape.el.isConnected) return;
-    const r = d.shape.el.getBoundingClientRect();
-    const tx = r.left + r.width / 2;
-    const ty = r.top + r.height / 2;
-    const t = clamp((performance.now() - t0) / 420, 0, 1);
-    const e = 1 - Math.pow(1 - t, 3); // easeOutCubic — tez, inertia
-    d.shape.cx = d.shape.cx + (tx - d.shape.cx) * e * 0.4;
-    d.shape.cy = d.shape.cy + (ty - d.shape.cy) * e * 0.4;
-    if (t < 1) requestAnimationFrame(settle);
-    else {
-      d.shape.cx = tx;
-      d.shape.cy = ty;
-    }
-  };
-  settle();
 }
+
+/* ------------------------------------------------------------------ render */
+
+function frame(now: number) {
+  raf = requestAnimationFrame(frame);
+  if (!renderer || !renderer.ok) return;
+  if (now - lastFrame < 1000 / 60) return;
+  lastFrame = now;
+
+  if (now - lastScan > 320) {
+    lastScan = now;
+    discover();
+  } else {
+    for (const e of registry.values()) if (e.el.isConnected) measure(e);
+  }
+
+  // kursor spring
+  cursor.r += (cursor.target - cursor.r) * 0.16;
+  cursor.x += (cursor.tx - cursor.x) * 0.42;
+  cursor.y += (cursor.ty - cursor.y) * 0.42;
+  if (cursor.r < 0.4 && cursor.target === 0) cursor.active = false;
+
+  for (const e of registry.values()) {
+    spring(e);
+    e.alpha = e.el.matches(":hover") || e === drag ? 1 : 0.86;
+  }
+  computeMerge();
+
+  const list: GpuShape[] = [];
+  for (const e of registry.values()) {
+    if (list.length >= MAX_GPU_SHAPES) break;
+    list.push({
+      cx: e.cx,
+      cy: e.cy,
+      hw: e.hw * e.sx,
+      hh: e.hh * e.sy,
+      radius: e.r,
+      roundness: ROUNDNESS,
+      k: e.k,
+      alpha: e.alpha,
+    });
+  }
+
+  const p = settings;
+  renderer.render(list, { x: cursor.x, y: cursor.y, r: cursor.r, on: cursor.active && cursor.on }, {
+    refThickness: p.refThickness,
+    refDistance: p.refDistance,
+    refFactor: p.refFactor,
+    refDispersion: p.refDispersion,
+    refFresnelRange: p.refFresnelRange,
+    refFresnelHardness: p.refFresnelHardness,
+    refFresnelFactor: p.refFresnelFactor,
+    glareRange: p.glareRange,
+    glareHardness: p.glareHardness,
+    glareFactor: p.glareFactor,
+    glareConvergence: p.glareConvergence,
+    glareOppositeFactor: p.glareOppositeFactor,
+    glareAngle: p.glareAngle,
+    tint: [1, 1, 1, 0.5],
+  });
+}
+
+/* ------------------------------------------------------------------- API */
 
 export function startLiquidLayer() {
   if (running) return;
   running = true;
-  canvas = document.createElement("canvas");
-  canvas.setAttribute("aria-hidden", "true");
-  canvas.className = "lg-layer";
-  field = document.createElement("canvas");
-  fctx = field.getContext("2d");
-  ctx = canvas.getContext("2d");
-  if (!ctx || !fctx) return;
-  document.body.appendChild(canvas);
   vw = window.innerWidth;
   vh = window.innerHeight;
-  window.addEventListener("resize", () => { vw = window.innerWidth; vh = window.innerHeight; }, { passive: true });
+  renderer = createGlRenderer();
+  if (renderer?.ok) {
+    renderer.resize(vw, vh, window.devicePixelRatio || 1);
+    document.body.appendChild(renderer.canvas);
+  }
+  window.addEventListener("resize", () => {
+    vw = window.innerWidth;
+    vh = window.innerHeight;
+    renderer?.resize(vw, vh, window.devicePixelRatio || 1);
+  }, { passive: true });
   window.addEventListener("pointermove", onMove, { passive: true });
   window.addEventListener("pointerdown", onDown, { passive: true });
   window.addEventListener("pointerup", onUp, { passive: true });
   window.addEventListener("pointercancel", onUp, { passive: true });
-  window.addEventListener("pointerout", (e) => {
-    if (!(e as PointerEvent).relatedTarget) {
-      cursor.target = 0;
-      cursor.onGlass = false;
-    }
-  }, { passive: true });
-  raf = requestAnimationFrame(render);
+  window.addEventListener("scroll", () => { lastScan = 0; }, { passive: true, capture: true });
+  raf = requestAnimationFrame(frame);
 }
 
 export function stopLiquidLayer() {
@@ -430,11 +304,17 @@ export function stopLiquidLayer() {
   window.removeEventListener("pointermove", onMove);
   window.removeEventListener("pointerdown", onDown);
   window.removeEventListener("pointerup", onUp);
-  canvas?.remove();
-  canvas = null;
-  shapes.length = 0;
-  byEl.clear();
-  field = null;
-  fctx = null;
-  ctx = null;
+  registry.clear();
+  renderer?.dispose();
+  renderer = null;
+}
+
+export function setLiquidSettings(next: GlassSettings) {
+  settings = next;
+}
+
+/** admin panelidan o'zgarishni darhol qo'llash */
+export function applyLiquidSettings(input: Partial<GlassSettings>) {
+  setLiquidSettings({ ...settings, ...input });
+  window.dispatchEvent(new CustomEvent(GLASS_EVENT, { detail: input }));
 }

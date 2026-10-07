@@ -43,38 +43,45 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
-local-*
-.claude
+/local-*
+/.claude
 .z-ai-config
 *.log
-dev.log
-dev.out.log
-test
-prompt
+/dev.log
+/dev.out.log
+# Muhim: faqat repo ildizi. `test` qoidasi bare bo'lsa src/app/test/ route'lari
+# butunlay tushib ketardi.
+/test
+/prompt
 
 server.log
 # Skills directory
 /skills/
 # lokal diagnostika va brauzer chiqishlari
-tmp-diag-*
-.playwright-mcp/
+/tmp-diag-*
+/.playwright-mcp/
+/.kilocode/
+/.vscode/
+/ai_files.txt
 
 # Local Netlify folder
 .netlify
 
 # lokal diagnostika va vaqtinchalik fayllar
+# Muhim: check-*/e2e-* qoidalari `/` bilan anchorlangan — aks holda
+# scripts/check-encoding.cjs (npm run verify uchun kerak) chiqib ketardi.
 tmp-*
-check-*.cjs
-check-*.mjs
-e2e-*.js
-live-*.css
-live-*.txt
+/check-*.cjs
+/check-*.mjs
+/e2e-*.js
+/live-*.css
+/live-*.txt
 *.pid
 *.exit
-diag-*.png
-tmp-icons/
-screens/
-upload/
+/diag-*.png
+/tmp-icons/
+/screens/
+/upload/
 data/tr-cache.json
 .freebuff/
 data/i18n/

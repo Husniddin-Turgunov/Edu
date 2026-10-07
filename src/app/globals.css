@@ -1047,6 +1047,8 @@ body {
    Sinish/dispersiya: backdrop-filter ichida SVG filtri (real sahifa kontenti).
    Chegara (fresnel + glare): ::after — shader rim xaritasi.
    ===================================================================== */
+/* Chegara/fresnel/glare endi GPU qatlamida chiziladi (canvas.lg-layer) —
+   shuning uchun DOM qatlamida faqat inson o'qiydigan nozik chegara qoladi. */
 html.lg-on .glass::after,
 html.lg-on .glass-strong::after,
 html.lg-on .glass-card::after,
@@ -1056,7 +1058,8 @@ html.lg-on .glass-pill::after {
   inset: 0;
   border-radius: inherit;
   pointer-events: none;
-  background: var(--lg-rim, none) center / 100% 100% no-repeat;
+  border: 1px solid oklch(1 0 0 / 0.35);
+  box-shadow: inset 0 1px 0 0 oklch(1 0 0 / 0.4);
   z-index: 1;
 }
 
@@ -1072,8 +1075,9 @@ html.lg-on .lg-auto::after {
   inset: 0;
   border-radius: inherit;
   pointer-events: none;
-  border: 1px solid oklch(1 0 0 / 0.5);
-  box-shadow: inset 0 1px 0 0 oklch(1 0 0 / 0.55);
+  /* faqat chekka — gradient rangini oqizmasligi uchun background yo'q */
+  border: 1px solid oklch(1 0 0 / 0.42);
+  box-shadow: inset 0 1px 0 0 oklch(1 0 0 / 0.45);
   z-index: 0;
 }
 
@@ -1123,6 +1127,23 @@ html.lg-on .glass-panel::after {
 canvas.lg-layer {
   position: fixed;
   inset: 0;
-  z-index: 60;
+  z-index: 40;
   pointer-events: none;
+  contain: strict;
 }
+
+/* Rangli (gradient/solid) tugmalar: shaffofroq shisha + gradient saqlanadi.
+   Liquid effekt faqat chetda va blur'da — matn va gradient o'z rangini yo'qotmaydi. */
+html.lg-on button.lg-auto[class*='bg-gradient'],
+html.lg-on a.lg-auto[class*='bg-gradient'],
+html.lg-on button.lg-auto[class*='from-'],
+html.lg-on a.lg-auto[class*='from-'] {
+  background-image: linear-gradient(var(--lg-grad-a, #1e40af), var(--lg-grad-b, #4f46e5));
+  background-blend-mode: normal;
+}
+html.lg-on button.lg-auto[class*='from-blue-700'] { background-image: linear-gradient(#1d4ed8, #4338ca); }
+html.lg-on button.lg-auto[class*='from-indigo-700'],
+html.lg-on button.lg-auto[class*='from-indigo-600'] { background-image: linear-gradient(#4338ca, #4f46e5); }
+html.lg-on button.lg-auto[class*='from-pink-600'],
+html.lg-on a.lg-auto[class*='from-pink-600'] { background-image: linear-gradient(#db2777, #9333ea); }
+html.lg-on button.lg-auto[class*='from-emerald-600'] { background-image: linear-gradient(#059669, #0d9488); }
