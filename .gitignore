@@ -1,0 +1,117 @@
+# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+
+# dependencies
+node_modules
+/.pnp
+.pnp.*
+.yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/versions
+
+# testing
+/coverage
+
+# next.js
+/.next/
+/out/
+
+# production
+/build
+
+# misc
+.DS_Store
+*.pem
+
+# debug
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# env files (can opt-in for committing if needed)
+# Maxfiy qiymatlar endi Infisical'da saqlanadi — lokal .env kerak emas.
+.env*
+# ...lekin kalitlar ro'yxati (qiymatsiz shablon) commit qilinadi
+!.env.example
+
+# vercel
+.vercel
+
+
+# typescript
+*.tsbuildinfo
+next-env.d.ts
+/local-*
+/.claude
+.z-ai-config
+*.log
+/dev.log
+/dev.out.log
+# Muhim: faqat repo ildizi. `test` qoidasi bare bo'lsa src/app/test/ route'lari
+# butunlay tushib ketardi.
+/test
+/prompt
+
+server.log
+# Skills directory
+/skills/
+# lokal diagnostika va brauzer chiqishlari
+/tmp-diag-*
+/.playwright-mcp/
+/.kilocode/
+/.vscode/
+/ai_files.txt
+
+# Local Netlify folder
+.netlify
+
+# lokal diagnostika va vaqtinchalik fayllar
+# Muhim: check-*/e2e-* qoidalari `/` bilan anchorlangan — aks holda
+# scripts/check-encoding.cjs (npm run verify uchun kerak) chiqib ketardi.
+tmp-*
+/check-*.cjs
+/check-*.mjs
+/e2e-*.js
+/live-*.css
+/live-*.txt
+*.pid
+*.exit
+/diag-*.png
+/tmp-icons/
+/screens/
+/upload/
+data/tr-cache.json
+.freebuff/
+data/i18n/
+
+# --- repo tozasi: root'dagi diagnostika artefaktlari ---
+# Haqiqiy assetlar public/ ichida, shuning uchun root PNG/PDF/HTML/CSS xotiraga xos.
+/*.png
+/*.pdf
+/*.html
+/*.css
+/*.sql
+/*.patch
+
+# bir martalik tekshiruv skriptlari
+/check-*.ts
+/scan-*.mjs
+/_mk.cjs
+/fix-dynamic2.cjs
+/patch-dynamic.cjs
+
+# root'dagi build/lint/tsc xabarlari
+/build[0-9]*.txt
+/lint*.txt
+/tsc*.txt
+/tsc-current.txt
+
+# root'daki bitrix/live hisobot chiqishlari (haqiqiy ma'lumot data/ va public/bitrix-data/)
+/bitrix-*.json
+/bitrix-*.html
+/live-*.json
+/quiz-limit-*.json
+/finish-btn-*.json
+/next-build-history-checkbox.*

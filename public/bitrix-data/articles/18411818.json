@@ -1,0 +1,320 @@
+{
+ "id": "18411818",
+ "title": "Как звонить и отвечать на звонки в Битрикс24",
+ "sectionId": "161796",
+ "section": "Телефония",
+ "parent": null,
+ "order": 93,
+ "short": null,
+ "toc": [],
+ "breadcrumb": [
+  "Новые статьи",
+  "С чего начать",
+  "Написать в чат",
+  "Лента Новостей",
+  "Приложение Битрикс24",
+  "Общие вопросы"
+ ],
+ "articleMeta": [],
+ "related": [
+  {
+   "id": "18411818",
+   "t": "Открыть в новой вкладке"
+  },
+  {
+   "id": "6450911",
+   "t": "Как начать звонить из Битрикс24: выбираем способ подключения телефонии"
+  },
+  {
+   "id": "19712028",
+   "t": "Как арендовать номер"
+  },
+  {
+   "id": "19312126",
+   "t": "Как настроить номер в Битрикс24: пошаговые рекомендации"
+  },
+  {
+   "id": "18600982",
+   "t": "Как записывать телефонные звонки"
+  }
+ ],
+ "blocks": [
+  {
+   "k": "IMG",
+   "n": 1,
+   "src": "/upload/medialibrary/299/bbbu4izyn42f1k3kk5w56zxvxwnotni7/1.jpg",
+   "local": "/bitrix-img/18411818__01.jpg"
+  },
+  {
+   "k": "H2",
+   "t": "Как звонить из браузера и приложения Битрикс24"
+  },
+  {
+   "k": "LI",
+   "list": "UL",
+   "t": "из CRM,"
+  },
+  {
+   "k": "LI",
+   "list": "UL",
+   "t": "через номеронабиратель в панели чатов справа,"
+  },
+  {
+   "k": "LI",
+   "list": "UL",
+   "t": "из чатов с уведомлениями по звонкам."
+  },
+  {
+   "k": "IMG",
+   "n": 2,
+   "src": "/images/helpdesk/screenshots/ru/ag/howtocall2/1.jpg",
+   "local": "/bitrix-img/18411818__02.jpg"
+  },
+  {
+   "k": "IMG",
+   "n": 3,
+   "src": "/images/helpdesk/screenshots/ru/ag/howtocall2/2.jpg",
+   "local": "/bitrix-img/18411818__03.jpg"
+  },
+  {
+   "k": "IMG",
+   "n": 4,
+   "src": "/images/helpdesk/screenshots/ru/ag/howtocall2/3.jpg",
+   "local": "/bitrix-img/18411818__04.jpg"
+  },
+  {
+   "k": "IMG",
+   "n": 5,
+   "src": "/images/helpdesk/screenshots/ru/ag/howtocall2/4.jpg",
+   "local": "/bitrix-img/18411818__05.jpg"
+  },
+  {
+   "k": "H2",
+   "t": "Как звонить из мобильного приложения"
+  },
+  {
+   "k": "LI",
+   "list": "UL",
+   "t": "из CRM,"
+  },
+  {
+   "k": "LI",
+   "list": "UL",
+   "t": "через номеронабиратель,"
+  },
+  {
+   "k": "LI",
+   "list": "UL",
+   "t": "из чатов с уведомлениями по звонкам."
+  },
+  {
+   "k": "IMG",
+   "n": 6,
+   "src": "/images/helpdesk/screenshots/ru/ag/call_app/1.jpg",
+   "local": "/bitrix-img/18411818__06.jpg"
+  },
+  {
+   "k": "IMG",
+   "n": 7,
+   "src": "/images/helpdesk/screenshots/ru/ag/call_app/2.jpg",
+   "local": "/bitrix-img/18411818__07.jpg"
+  },
+  {
+   "k": "IMG",
+   "n": 8,
+   "src": "/images/helpdesk/screenshots/ru/ag/call_app/3.jpg",
+   "local": "/bitrix-img/18411818__08.jpg"
+  },
+  {
+   "k": "IMG",
+   "n": 9,
+   "src": "/images/helpdesk/screenshots/ru/ag/call_app/4.jpg",
+   "local": "/bitrix-img/18411818__09.jpg"
+  },
+  {
+   "k": "IMG",
+   "n": 10,
+   "src": "/images/helpdesk/screenshots/ru/ag/call_app/5.jpg",
+   "local": "/bitrix-img/18411818__10.jpg"
+  },
+  {
+   "k": "IMG",
+   "n": 11,
+   "src": "/images/helpdesk/screenshots/ru/ag/call_app/6.jpg",
+   "local": "/bitrix-img/18411818__11.jpg"
+  },
+  {
+   "k": "IMG",
+   "n": 12,
+   "src": "/images/helpdesk/screenshots/ru/ag/call_app/7.jpg",
+   "local": "/bitrix-img/18411818__12.jpg"
+  },
+  {
+   "k": "IMG",
+   "n": 13,
+   "src": "/images/helpdesk/screenshots/ru/ag/call_app/8.jpg",
+   "local": "/bitrix-img/18411818__13.jpg"
+  },
+  {
+   "k": "H2",
+   "t": "Как принимать входящие звонки в браузере и приложении Битрикс24"
+  },
+  {
+   "k": "IMG",
+   "n": 14,
+   "src": "/images/helpdesk/screenshots/ru/ag/howtocall2/5.jpg",
+   "local": "/bitrix-img/18411818__14.jpg"
+  },
+  {
+   "k": "H2",
+   "t": "Как принимать входящие звонки в мобильном приложении"
+  },
+  {
+   "k": "IMG",
+   "n": 15,
+   "src": "/upload/medialibrary/183/e9n10iy6sf0vm0fdvrk9c8dgo29unhg1/15_1.jpg",
+   "local": "/bitrix-img/18411818__15.jpg"
+  },
+  {
+   "k": "IMG",
+   "n": 16,
+   "src": "/upload/medialibrary/a43/s50euf72ttc1cnzxgb5apg22o4xs2blz/16.jpg",
+   "local": "/bitrix-img/18411818__16.jpg"
+  },
+  {
+   "k": "H2",
+   "t": "Как работать со звонками на телефонном аппарате"
+  },
+  {
+   "k": "P",
+   "t": "С телефонного аппарата или софтфона можно звонить из Битрикс24, принимать входящие звонки и переводить вызовы на других сотрудников. Примеры настроек sip-телефонов Как подключить софтфон Zoiper к Битрикс24"
+  },
+  {
+   "k": "IMG",
+   "n": 17,
+   "src": "/upload/medialibrary/501/33pgpyi0had80h88egadm43x5qw4ars3/17.jpg",
+   "local": "/bitrix-img/18411818__17.jpg"
+  },
+  {
+   "k": "H2",
+   "t": "Коротко"
+  },
+  {
+   "k": "LI",
+   "list": "UL",
+   "t": "Карточка звонка — это встроенный инструмент для работы со звонками. Она появляется на экране автоматически при входящих и исходящих вызовах."
+  },
+  {
+   "k": "LI",
+   "list": "UL",
+   "t": "В браузере, мобильном приложении и приложении Битрикс24 для компьютера можно звонить из CRM, через номеронабиратель в панели чатов справа, из чатов с уведомлениями по звонкам."
+  },
+  {
+   "k": "LI",
+   "list": "UL",
+   "t": "Если пропустить вызов, придет уведомление в чат. Перезвонить можно сразу из чата."
+  },
+  {
+   "k": "LI",
+   "list": "UL",
+   "t": "В мобильном приложении есть два способа связи: через вашего мобильного оператора (Позвонить) и через телефонию Битрикс24 (Позвонить через Bitrix24)."
+  },
+  {
+   "k": "LI",
+   "list": "UL",
+   "t": "Внешний вид карточки входящего вызова в мобильном приложении может отличаться. Это зависит от того, открыто ли приложение или запущено в фоне. Звонок в любом случае пойдет через Битрикс24."
+  },
+  {
+   "k": "LI",
+   "list": "UL",
+   "t": "Если подключен телефонный аппарат, звонок по умолчанию идет через него. Чтобы переключиться на браузер, нажмите на значок телефонной трубки. Синий цвет означает, что звонок идет с аппарата, зеленый — с браузера или приложения Битрикс24."
+  }
+ ],
+ "images": [
+  {
+   "n": 1,
+   "local": "/bitrix-img/18411818__01.jpg",
+   "bytes": 166035
+  },
+  {
+   "n": 2,
+   "local": "/bitrix-img/18411818__02.jpg",
+   "bytes": 328098
+  },
+  {
+   "n": 3,
+   "local": "/bitrix-img/18411818__03.jpg",
+   "bytes": 514763
+  },
+  {
+   "n": 4,
+   "local": "/bitrix-img/18411818__04.jpg",
+   "bytes": 298425
+  },
+  {
+   "n": 5,
+   "local": "/bitrix-img/18411818__05.jpg",
+   "bytes": 657959
+  },
+  {
+   "n": 6,
+   "local": "/bitrix-img/18411818__06.jpg",
+   "bytes": 64355
+  },
+  {
+   "n": 7,
+   "local": "/bitrix-img/18411818__07.jpg",
+   "bytes": 66497
+  },
+  {
+   "n": 8,
+   "local": "/bitrix-img/18411818__08.jpg",
+   "bytes": 77950
+  },
+  {
+   "n": 9,
+   "local": "/bitrix-img/18411818__09.jpg",
+   "bytes": 73561
+  },
+  {
+   "n": 10,
+   "local": "/bitrix-img/18411818__10.jpg",
+   "bytes": 64732
+  },
+  {
+   "n": 11,
+   "local": "/bitrix-img/18411818__11.jpg",
+   "bytes": 53055
+  },
+  {
+   "n": 12,
+   "local": "/bitrix-img/18411818__12.jpg",
+   "bytes": 471223
+  },
+  {
+   "n": 13,
+   "local": "/bitrix-img/18411818__13.jpg",
+   "bytes": 112107
+  },
+  {
+   "n": 14,
+   "local": "/bitrix-img/18411818__14.jpg",
+   "bytes": 398899
+  },
+  {
+   "n": 15,
+   "local": "/bitrix-img/18411818__15.jpg",
+   "bytes": 63730
+  },
+  {
+   "n": 16,
+   "local": "/bitrix-img/18411818__16.jpg",
+   "bytes": 80499
+  },
+  {
+   "n": 17,
+   "local": "/bitrix-img/18411818__17.jpg",
+   "bytes": 120834
+  }
+ ]
+}

@@ -1,0 +1,297 @@
+{
+  "slug": "support-sales",
+  "title": {
+    "uz": "Support Sales Menejeri",
+    "ru": "Менеджер Support Sales",
+    "en": "Support Sales Manager"
+  },
+  "description": {
+    "uz": "Texnik xizmat ko'rsatish bo'yicha sotuv menejeri — to'liq professional darslik va test tizimi",
+    "ru": "Менеджер по продажам технического обслуживания — полный профессиональный учебник и система тестирования",
+    "en": "Technical Service Sales Manager — complete professional training and testing system"
+  },
+  "totalDays": 35,
+  "modules": [
+    {
+      "id": "normativlar",
+      "title": {
+        "uz": "1-QISM: Normativlar kursi",
+        "ru": "ЧАСТЬ 1: Курс Нормативы",
+        "en": "PART 1: Normatives Course"
+      },
+      "description": {
+        "uz": "5 kunlik normativlar kursi — bo'lim vazifasi, KPI va reja tushunchalari",
+        "ru": "5-дневный курс нормативов — обязанности отдела, KPI и планы",
+        "en": "5-day normatives course — department duties, KPI and plans"
+      },
+      "lessons": [
+        {
+          "id": 1,
+          "day": 1,
+          "title": {
+            "uz": "Support Sales bo'limi, normativ, KPI va reja tushunchalari",
+            "ru": "Отдел Support Sales, нормативы, KPI и планы",
+            "en": "Support Sales department, normatives, KPI and plans"
+          },
+          "objective": {
+            "uz": "Support Sales menejerining bo'limdagi o'rnini, nimani sotishini hamda normativ/KPI/reja tushunchalarini to'liq o'zlashtirish.",
+            "ru": "Полностью усвоить роль менеджера Support Sales в отделе, что он продаёт и понятия нормативов/KPI/планов.",
+            "en": "Fully master the role of Support Sales manager in the department, what they sell and the concepts of normatives/KPI/plans."
+          },
+          "content": {
+            "sections": [
+              {
+                "heading": {
+                  "uz": "Support Sales bo'limining vazifasi",
+                  "ru": "Обязанности отдела Support Sales",
+                  "en": "Support Sales department responsibilities"
+                },
+                "text": {
+                  "uz": "Support Sales menejeri — kompaniyaning texnik xizmat ko'rsatish yo'nalishida ishlaydigan sotuv menejeri. U mijozlarga uskunalarni ta'mirlash va o'rnatish xizmatlarini hamda texnik qo'llab-quvvatlash xizmatlarini sotadi. Asosiy vazifasi — mijoz so'rovini qabul qilishdan tortib, tijorat taklifi (CO) tayyorlash, texnik bo'lim bilan kelishish va yakuniy bitimni yopishgacha bo'lgan butun jarayonni boshqarish.",
+                  "ru": "Менеджер Support Sales — менеджер по продажам, работающий в направлении технического обслуживания компании. Он продаёт клиентам услуги по ремонту и монтажу оборудования, а также услуги технической поддержки. Основная задача — управление всем процессом от приёма запроса клиента до подготовки коммерческого предложения (КП), согласования с техническим отделом и закрытия сделки.",
+                  "en": "Support Sales manager is a sales manager working in the company's technical service direction. They sell equipment repair and installation services as well as technical support services to clients. The main task is managing the entire process from receiving client requests, preparing commercial offers (CO), coordinating with the technical department, to closing the deal."
+                }
+              },
+              {
+                "heading": {
+                  "uz": "Kompaniyadagi o'rni",
+                  "ru": "Позиция в компании",
+                  "en": "Position in the company"
+                },
+                "text": {
+                  "uz": "Support Sales menejeri mustaqil ishlamaydi — u doimiy ravishda texnik qo'llab-quvvatlash va ta'mirlash bo'limi bilan (loyihalarni rejalashtirish va muvofiqlashtirish uchun), moliya bo'limi bilan (narx va to'lov shartlari uchun) hamda uskuna sotuvi bo'limi bilan (mijozga kompleks yechim taklif qilish uchun) hamkorlikda ishlaydi. Rahbariyatga oylik strategik reja va hisobotlar orqali hisobot beradi.",
+                  "ru": "Менеджер Support Sales не работает самостоятельно — он постоянно взаимодействует с отделом технической поддержки и ремонта (для планирования и координации проектов), финансовым отделом (для цен и условий оплаты) и отделом продаж оборудования (для предложения комплексных решений клиентам). Отчитывается перед руководством через ежемесячные стратегические планы и отчёты.",
+                  "en": "Support Sales manager doesn't work independently — they constantly collaborate with the technical support and repair department (for project planning and coordination), finance department (for pricing and payment terms), and equipment sales department (for offering comprehensive solutions to clients). Reports to management through monthly strategic plans and reports."
+                }
+              },
+              {
+                "heading": {
+                  "uz": "Support Sales nimani sotadi?",
+                  "ru": "Что продаёт Support Sales?",
+                  "en": "What does Support Sales sell?"
+                },
+                "text": {
+                  "uz": "Ikki asosiy yo'nalish mavjud: 1) Ta'mirlash va o'rnatish xizmatlari — mijozning mavjud uskunasini ta'mirlash yoki yangi uskunani o'rnatish bo'yicha loyiha asosidagi xizmat, tijorat taklifi (CO) orqali rasmiylashtiriladi. 2) Texnik qo'llab-quvvatlash xizmati — mijozga doimiy, muntazam texnik yordam ko'rsatish xizmati (masalan, texnik xizmat shartnomasi asosida).",
+                  "ru": "Существует два основных направления: 1) Услуги по ремонту и монтажу — проектная услуга по ремонту существующего оборудования клиента или монтажу нового оборудования, оформляемая коммерческим предложением (КП). 2) Услуга технической поддержки — постоянное, регулярное предоставление технической помощи клиенту (например, на основе договора технического обслуживания).",
+                  "en": "There are two main directions: 1) Repair and installation services — project-based service for repairing client's existing equipment or installing new equipment, formalized through a commercial offer (CO). 2) Technical support service — providing regular, ongoing technical assistance to clients (for example, based on a technical service contract)."
+                }
+              },
+              {
+                "heading": {
+                  "uz": "Normativ nima?",
+                  "ru": "Что такое норматив?",
+                  "en": "What is a normative?"
+                },
+                "text": {
+                  "uz": "Normativ — har bir ish turi uchun belgilangan aniq, o'lchanadigan ko'rsatkich: masalan, \"ertalab soat 09:00-10:00 pochta va CRMni tekshirish\" yoki \"kuniga kamida 20 ta potensial mijoz bilan aloqa o'rnatish\". Normativ — bu ish qanday va qachon bajarilishi kerakligini ko'rsatuvchi standart.",
+                  "ru": "Норматив — это чёткий, измеримый показатель, установленный для каждого типа работы: например, «утром с 09:00 до 10:00 проверять почту и CRM» или «устанавливать контакт минимум с 20 потенциальными клиентами в день». Норматив — это стандарт, показывающий, как и когда должна выполняться работа.",
+                  "en": "A normative is a clear, measurable indicator set for each type of work: for example, \"check email and CRM from 9:00-10:00 AM\" or \"contact at least 20 potential clients daily\". A normative is a standard showing how and when work should be performed."
+                }
+              },
+              {
+                "heading": {
+                  "uz": "KPI (Key Performance Indicator) nima?",
+                  "ru": "Что такое KPI (ключевой показатель эффективности)?",
+                  "en": "What is KPI (Key Performance Indicator)?"
+                },
+                "text": {
+                  "uz": "KPI — xodim faoliyatining natijaviyligini o'lchaydigan asosiy ko'rsatkich. Support Sales uchun asosiy KPI'lar: taqdim etilgan tijorat takliflari (CO) summasi, sotilgan texnik qo'llab-quvvatlash xizmati summasi va muloqot qilingan potensial mijozlar soni. KPI reja bilan solishtirilib, foizda (bajarilganlik %) ifodalanadi.",
+                  "ru": "KPI — основной показатель, измеряющий результативность деятельности сотрудника. Основные KPI для Support Sales: сумма представленных коммерческих предложений (КП), сумма проданных услуг технической поддержки и количество контактированных потенциальных клиентов. KPI сравнивается с планом и выражается в процентах (% выполнения).",
+                  "en": "KPI is a key indicator measuring employee performance effectiveness. Main KPIs for Support Sales: sum of presented commercial offers (CO), sum of sold technical support services, and number of contacted potential clients. KPI is compared with the plan and expressed as a percentage (% completion)."
+                }
+              },
+              {
+                "heading": {
+                  "uz": "Reja nima?",
+                  "ru": "Что такое план?",
+                  "en": "What is a plan?"
+                },
+                "text": {
+                  "uz": "Reja — muayyan davr (kun/hafta/oy) uchun erishilishi kerak bo'lgan aniq raqamli maqsad. Masalan, oylik CO taqdim etish rejasi — 4.000.000$. Reja bajarilishi xodimning asosiy baholash mezoni hisoblanadi. Yangi ishga qabul qilingan menejerlar uchun birinchi 3 oy davomida barcha rejalar 50% ga kamaytiriladi — bu moslashuv davri deb ataladi.",
+                  "ru": "План — это конкретная цифровая цель, которой необходимо достичь за определённый период (день/неделю/месяц). Например, месячный план предоставления КП — 4 000 000$. Выполнение плана является основным критерием оценки сотрудника. Для новых менеджеров в течение первых 3 месяцев все планы снижаются на 50% — это называется период адаптации.",
+                  "en": "A plan is a specific numerical goal to be achieved within a certain period (day/week/month). For example, the monthly CO presentation plan is 4,000,000$. Plan completion is the main employee evaluation criterion. For newly hired managers, all plans are reduced by 50% during the first 3 months — this is called the adaptation period."
+                }
+              },
+              {
+                "heading": {
+                  "uz": "Kunlik vazifalar (4 blok)",
+                  "ru": "Ежедневные задачи (4 блока)",
+                  "en": "Daily tasks (4 blocks)"
+                },
+                "text": {
+                  "uz": "Kunlik normativ jadvaliga ko'ra Support Sales menejerining ish kuni to'rt blokdan iborat: 1) So'rovlarni qayta ishlash va taklif tayyorlash, 2) Mijozlar bilan faol muloqot, 3) Texnik bo'lim bilan koordinatsiya va rejalashtirish, 4) Kunlik sotuv rejasini bajarish. Har bir blok o'z ichida aniq normativ bandlarga ega.",
+                  "ru": "Согласно ежедневному графику нормативов, рабочий день менеджера Support Sales состоит из четырёх блоков: 1) Обработка запросов и подготовка предложений, 2) Активное взаимодействие с клиентами, 3) Координация и планирование с техническим отделом, 4) Выполнение ежедневного плана продаж. Каждый блок содержит конкретные нормативные пункты.",
+                  "en": "According to the daily normative schedule, the Support Sales manager's workday consists of four blocks: 1) Processing requests and preparing offers, 2) Active client communication, 3) Coordination and planning with the technical department, 4) Fulfilling the daily sales plan. Each block contains specific normative items."
+                }
+              },
+              {
+                "heading": {
+                  "uz": "Nima uchun har bir normativ muhim?",
+                  "ru": "Почему каждый норматив важен?",
+                  "en": "Why is every normative important?"
+                },
+                "text": {
+                  "uz": "Normativlarga rioya qilish — kompaniyaning barqaror daromadini, mijozlarning ishonchini va jamoaning samarali ishlashini ta'minlaydi. Agar bitta menejer kunlik 20 ta mijoz bilan aloqa qilish normativini bajarmasa, bu haftalik 120 ta va oylik 480-500 ta mijozga xizmat taklif qilish rejasiga, demak — yakuniy sotuv summasiga ham salbiy ta'sir qiladi. Normativlar — katta rejaning kichik, kunlik o'lchanadigan bo'laklaridir.",
+                  "ru": "Соблюдение нормативов обеспечивает стабильный доход компании, доверие клиентов и эффективную работу команды. Если один менеджер не выполняет норматив контакта с 20 клиентами в день, это влияет на план предложения услуг 120 клиентам в неделю и 480-500 клиентам в месяц, а значит — и на итоговую сумму продаж. Нормативы — это маленькие, ежедневно измеримые части большого плана.",
+                  "en": "Compliance with normatives ensures the company's stable income, client trust, and effective team performance. If one manager doesn't fulfill the normative of contacting 20 clients daily, it affects the weekly plan of 120 clients and monthly plan of 480-500 clients, which means it impacts the final sales amount. Normatives are the small, daily measurable parts of a big plan."
+                }
+              }
+            ]
+          },
+          "quiz": [
+            {
+              "question": {
+                "uz": "Support Sales menejeri asosan nimani sotadi?",
+                "ru": "Что в основном продаёт менеджер Support Sales?",
+                "en": "What does the Support Sales manager primarily sell?"
+              },
+              "options": [
+                {
+                  "uz": "Faqat ofis buyumlarini",
+                  "ru": "Только офисные принадлежности",
+                  "en": "Only office supplies"
+                },
+                {
+                  "uz": "Ta'mirlash/o'rnatish xizmatlari va texnik qo'llab-quvvatlash xizmatini",
+                  "ru": "Услуги ремонта/монтажа и технической поддержки",
+                  "en": "Repair/installation services and technical support"
+                },
+                {
+                  "uz": "Faqat dasturiy ta'minotni",
+                  "ru": "Только программное обеспечение",
+                  "en": "Only software"
+                },
+                {
+                  "uz": "Faqat marketing xizmatlarini",
+                  "ru": "Только маркетинговые услуги",
+                  "en": "Only marketing services"
+                }
+              ],
+              "correctIndex": 1
+            },
+            {
+              "question": {
+                "uz": "Normativ nima?",
+                "ru": "Что такое норматив?",
+                "en": "What is a normative?"
+              },
+              "options": [
+                {
+                  "uz": "Tasodifiy ko'rsatma",
+                  "ru": "Случайное указание",
+                  "en": "Random instruction"
+                },
+                {
+                  "uz": "Ish qanday va qachon bajarilishi kerakligini ko'rsatuvchi aniq standart",
+                  "ru": "Чёткий стандарт, показывающий как и когда должна выполняться работа",
+                  "en": "A clear standard showing how and when work should be performed"
+                },
+                {
+                  "uz": "Faqat maosh miqdori",
+                  "ru": "Только размер зарплаты",
+                  "en": "Only salary amount"
+                },
+                {
+                  "uz": "Kompaniya nomi",
+                  "ru": "Название компании",
+                  "en": "Company name"
+                }
+              ],
+              "correctIndex": 1
+            },
+            {
+              "question": {
+                "uz": "KPI nimani o'lchaydi?",
+                "ru": "Что измеряет KPI?",
+                "en": "What does KPI measure?"
+              },
+              "options": [
+                {
+                  "uz": "Ish stoli tozaligini",
+                  "ru": "Чистоту рабочего стола",
+                  "en": "Desk cleanliness"
+                },
+                {
+                  "uz": "Xodim faoliyatining natijaviyligini",
+                  "ru": "Результативность деятельности сотрудника",
+                  "en": "Employee performance effectiveness"
+                },
+                {
+                  "uz": "Ofis rangini",
+                  "ru": "Цвет офиса",
+                  "en": "Office color"
+                },
+                {
+                  "uz": "Kompaniya logotipini",
+                  "ru": "Логотип компании",
+                  "en": "Company logo"
+                }
+              ],
+              "correctIndex": 1
+            },
+            {
+              "question": {
+                "uz": "Yangi menejerlar uchun birinchi necha oy reja 50% kamaytiriladi?",
+                "ru": "В течение первых скольких месяцев план снижается на 50% для новых менеджеров?",
+                "en": "For how many months are plans reduced by 50% for new managers?"
+              },
+              "options": [
+                {
+                  "uz": "1 oy",
+                  "ru": "1 месяц",
+                  "en": "1 month"
+                },
+                {
+                  "uz": "2 oy",
+                  "ru": "2 месяца",
+                  "en": "2 months"
+                },
+                {
+                  "uz": "3 oy",
+                  "ru": "3 месяца",
+                  "en": "3 months"
+                },
+                {
+                  "uz": "6 oy",
+                  "ru": "6 месяцев",
+                  "en": "6 months"
+                }
+              ],
+              "correctIndex": 2
+            },
+            {
+              "question": {
+                "uz": "Support Sales menejerining ish kuni nechta blokdan iborat?",
+                "ru": "Из скольки блоков состоит рабочий день менеджера Support Sales?",
+                "en": "How many blocks make up the Support Sales manager's workday?"
+              },
+              "options": [
+                {
+                  "uz": "2",
+                  "ru": "2",
+                  "en": "2"
+                },
+                {
+                  "uz": "3",
+                  "ru": "3",
+                  "en": "3"
+                },
+                {
+                  "uz": "4",
+                  "ru": "4",
+                  "en": "4"
+                },
+                {
+                  "uz": "6",
+                  "ru": "6",
+                  "en": "6"
+                }
+              ],
+              "correctIndex": 2
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

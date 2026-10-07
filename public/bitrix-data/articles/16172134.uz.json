@@ -1,0 +1,179 @@
+{
+ "id": "16172134",
+ "title": "Taqvimni iCloud bilan sinxronlashtirish",
+ "sectionId": "147994",
+ "section": "Taqvimlarni sinxronlashtirish",
+ "parent": null,
+ "order": 17,
+ "short": null,
+ "toc": [],
+ "breadcrumb": [
+  "Новые статьи",
+  "С чего начать",
+  "Написать в чат",
+  "Лента Новостей",
+  "Приложение Битрикс24",
+  "Общие вопросы"
+ ],
+ "articleMeta": [],
+ "related": [
+  {
+   "id": "16172134",
+   "t": "Открыть в новой вкладке"
+  },
+  {
+   "id": "11828176",
+   "t": "Синхронизация календарей в Битрикс24"
+  },
+  {
+   "id": "16179976",
+   "t": "Синхронизация календаря с Office365"
+  },
+  {
+   "id": "15426356",
+   "t": "Как добавить пароль приложения для календаря iСloud"
+  },
+  {
+   "id": "5682119",
+   "t": "Синхронизация календаря с MS Outlook"
+  },
+  {
+   "id": "16020988",
+   "t": "Как отключить синхронизацию календаря c iPhone и macOS"
+  }
+ ],
+ "blocks": [
+  {
+   "k": "P",
+   "t": "Настройте синхронизацию календаря iCloud с вашим Битрикс24."
+  },
+  {
+   "k": "P",
+   "t": "В разделе Календарь > Мой календарь и кликните на кнопку Синхронизировать календарь."
+  },
+  {
+   "k": "IMG",
+   "n": 1,
+   "src": "/upload/medialibrary/6e0/im0unymmqr6ohe7qb5i2lr520fftrfp6/1.jpg",
+   "local": "/bitrix-img/16172134__01.jpg"
+  },
+  {
+   "k": "P",
+   "t": "Выберите iCloud календарь и нажмите Подключить."
+  },
+  {
+   "k": "IMG",
+   "n": 2,
+   "src": "/upload/medialibrary/558/m7kc9rqi7zd594zfogh11qno6rv0fdov/2.jpg",
+   "local": "/bitrix-img/16172134__02.jpg"
+  },
+  {
+   "k": "P",
+   "t": "Авторизуйтесь в вашей учетной записи Apple ID, для этого введите адрес электронной почты и пароль приложения. Затем нажмите Подключить."
+  },
+  {
+   "k": "IMG",
+   "n": 3,
+   "src": "/upload/medialibrary/3fa/vzxevhd1z2we3du20lhchc251l4s88f6/3.jpg",
+   "local": "/bitrix-img/16172134__03.jpg"
+  },
+  {
+   "k": "P",
+   "t": "Подробнее читайте в статье Как добавить пароль приложения для календаря iСloud."
+  },
+  {
+   "k": "P",
+   "t": "Настройка успешно выполнена. Нажмите Продолжить и проверьте, что все события в календарях синхронизировались."
+  },
+  {
+   "k": "IMG",
+   "n": 4,
+   "src": "/upload/medialibrary/17c/2zdv6c82v7swm9t1cm2xd42bfuve8ppo/4.jpg",
+   "local": "/bitrix-img/16172134__04.jpg"
+  },
+  {
+   "k": "P",
+   "t": "Создайте событие в календаре iCloud, и оно автоматически появится в Битрикс24."
+  },
+  {
+   "k": "IMG",
+   "n": 5,
+   "src": "/upload/medialibrary/88c/75xucwa3a8758mv0i9a5nn2ywtm1uuqy/8.jpg",
+   "local": "/bitrix-img/16172134__05.jpg"
+  },
+  {
+   "k": "IMG",
+   "n": 6,
+   "src": "/upload/medialibrary/d11/ecgqhakliim2v2ynqgmooje3fxv03pun/5.jpg",
+   "local": "/bitrix-img/16172134__06.jpg"
+  },
+  {
+   "k": "P",
+   "t": "Подробнее читайте в статье Как отключить синхронизацию календаря c iPhone и macOS"
+  },
+  {
+   "k": "P",
+   "t": "Нажмите Синхронизация в разделе Календарь, затем перейдите в настройки синхронизации календаря iCloud. Для этого нажмите «Настройки»."
+  },
+  {
+   "k": "IMG",
+   "n": 7,
+   "src": "/upload/medialibrary/ab8/j37zsp31r06gchqykgourmv4mge0ujug/6.jpg",
+   "local": "/bitrix-img/16172134__07.jpg"
+  },
+  {
+   "k": "P",
+   "t": "Кликните Отключить календарь и синхронизация будет прервана."
+  },
+  {
+   "k": "IMG",
+   "n": 8,
+   "src": "/upload/medialibrary/fdf/okvl3xdtzahppogd318eudgn7w9hyri3/7.jpg",
+   "local": "/bitrix-img/16172134__08.jpg"
+  }
+ ],
+ "images": [
+  {
+   "n": 1,
+   "local": "/bitrix-img/16172134__01.jpg",
+   "bytes": 216832
+  },
+  {
+   "n": 2,
+   "local": "/bitrix-img/16172134__02.jpg",
+   "bytes": 180240
+  },
+  {
+   "n": 3,
+   "local": "/bitrix-img/16172134__03.jpg",
+   "bytes": 184023
+  },
+  {
+   "n": 4,
+   "local": "/bitrix-img/16172134__04.jpg",
+   "bytes": 171138
+  },
+  {
+   "n": 5,
+   "local": "/bitrix-img/16172134__05.jpg",
+   "bytes": 106327
+  },
+  {
+   "n": 6,
+   "local": "/bitrix-img/16172134__06.jpg",
+   "bytes": 184260
+  },
+  {
+   "n": 7,
+   "local": "/bitrix-img/16172134__07.jpg",
+   "bytes": 182407
+  },
+  {
+   "n": 8,
+   "local": "/bitrix-img/16172134__08.jpg",
+   "bytes": 159366
+  }
+ ],
+ "sectionKey": "Синхронизация календарей",
+ "lang": "uz"
+}

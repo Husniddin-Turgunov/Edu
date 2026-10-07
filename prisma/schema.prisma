@@ -1,0 +1,771 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model Department {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  description String?
+  color       String   @default("#6366f1")
+  icon        String?
+  order       Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  positions   Position[]
+
+  @@index([order])
+}
+
+model Position {
+  id             String   @id @default(cuid())
+  departmentId   String
+  name           String
+  description    String?
+  normativeUrl   String?  // eski (bitta) fayl — yangi ro'yxatga ko'chirildi
+  normativeDesc  String?
+  order          Int      @default(0)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  department     Department @relation(fields: [departmentId], references: [id], onDelete: Cascade)
+  normatives     PositionNormative[]
+
+  @@index([departmentId])
+  @@index([order])
+}
+
+/// ====== Lavozimga biriktirilgan normativ fayllar (bir nechta) ======
+/// Bosh sahifadagi "Normativ" bo'limi shu jadvalga tayanadi. Bu jadval
+/// `normativeUrl` (bitta fayl) dan farqli: bitta lavozimga ko'p fayl.
+model PositionNormative {
+  id         String   @id @default(cuid())
+  positionId String
+  name       String   @db.Text
+  url        String   @db.Text
+  size       Int      @default(0)
+  note       String?  @db.Text
+  createdAt  DateTime @default(now())
+
+  position Position @relation(fields: [positionId], references: [id], onDelete: Cascade)
+
+  @@index([positionId])
+}
+
+model User {
+  id            String   @id @default(cuid())
+  email         String   @unique
+  name          String?
+  surname       String?
+  phone         String?
+  department    String?
+  position      String?
+  passwordHash  String
+  role          String   @default("user") // user | admin | grader
+  status        String   @default("approved") // approved | blocked | rejected (pending = darhol ishlatiladi)
+  isActive      Boolean  @default(true) // ish faoliyatida / emas (tasdiqlangan xodimlar uchun)
+  approvedAt    DateTime?
+  resetToken    String?  @unique
+  resetExpires  DateTime?
+  telegramId    String?  @unique // Telegram bot foydalanuvchi ID si
+  /// Xavfsizlik: konsol/DevTools aniqlanganda bloklanganmi
+  blockedAt     DateTime?
+  blockedReason String?  @db.VarChar(191)
+  securityNotes Int      @default(0)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  enrollments     Enrollment[]
+  jobEnrollments  JobEnrollment[]
+  jobDayProgress  JobDayProgress[]
+  testResults     TestResult[]
+  jobTestResults  JobTestResult[]
+  aiConversations AiConversation[]
+  testAccessRequests TestAccessRequest[]
+  aiAttachments   AiAttachment[]
+  aiDrafts        AiDraft[]
+  aiUsage         AiUsage[]
+  aiFiles         AiFile[]
+  aiArtifacts     AiArtifact[]
+  securityEvents  SecurityEvent[]
+}
+
+// ====== Telegram bot obunachilari ======
+// Botga /start bosgan HAR BIR odam shu jadvalga yoziladi (saytda akkaunti
+// bo'lishi shart emas). Bildirishnomalar (yangi ro'yxatdan o'tish, test
+// natijasi va h.k.) shu jadvaldagi BARCHA obunachilarga bir xil yuboriladi.
+// Botda "admin" tushunchasi yo'q — hamma teng.
+model BotSubscriber {
+  id        String   @id @default(cuid())
+  chatId    String   @unique
+  name      String?
+  username  String?
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([isActive])
+}
+
+model Post {
+  id        String   @id @default(cuid())
+  title     String   @db.Text
+  content   String?  @db.Text
+  published Boolean  @default(false)
+  authorId  String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// ====== Akela-style LMS: Course -> Module -> Lesson + Test ======
+
+model Course {
+  id          String   @id @default(cuid())
+  title       String   @db.Text
+  description String?  @db.Text
+  language    String   @default("uz") // uz | ru | en
+  coverColor  String   @default("from-emerald-900 to-teal-950")
+  status      String   @default("draft") // draft | active | archived
+  isPublic    Boolean  @default(false)
+  authorId    String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  modules     Module[]
+  enrollments Enrollment[]
+  folders     CourseFolder[]
+
+  @@index([authorId])
+  @@index([status])
+}
+
+model CourseFolder {
+  id        String   @id @default(cuid())
+  name      String
+  color     String   @default("#ef4444") // red
+  authorId  String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  courses   Course[]
+}
+
+model Module {
+  id          String   @id @default(cuid())
+  courseId    String
+  title       String   @db.Text
+  description String?  @db.Text
+  order       Int      @default(0)
+  viewOrder   String   @default("open") // open | closed | scheduled | limited
+  isClosed    Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  course      Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  lessons     Lesson[]
+  tests       Test[]
+
+  @@index([courseId])
+  @@index([order])
+}
+
+model Lesson {
+  id          String   @id @default(cuid())
+  moduleId    String
+  title       String   @db.Text
+  content     String   @db.LongText // MDX/markdown body
+  videoUrl    String?  @db.Text
+  pdfUrl      String?  @db.Text
+  duration    Int      @default(0) // minutes
+  order       Int      @default(0)
+  status      String   @default("draft") // draft | active | archived
+  language    String   @default("uz")
+  isClosed    Boolean  @default(false)
+  isHomework  Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  module      Module   @relation(fields: [moduleId], references: [id], onDelete: Cascade)
+  progress    LessonProgress[]
+
+  @@index([moduleId])
+  @@index([order])
+}
+
+model Test {
+  id                String   @id @default(cuid())
+  moduleId          String?
+  courseId          String?
+  title             String   @db.Text
+  description       String?  @db.Text
+  language          String   @default("uz")
+  timeLimit         Int      @default(0) // 0 = unlimited, otherwise minutes
+  passScore         Int      @default(60) // percent
+  status            String   @default("draft") // draft | active | archived
+  order             Int      @default(0)
+  maxAttempts       Int      @default(1) // 0 = unlimited, 1 = once, N = N times
+  questionCount     Int      @default(10) // testda nechta savol bo'lishi kerak
+  shuffleQuestions  Boolean  @default(true)
+  shuffleChoices    Boolean  @default(true)
+  visibility        String   @default("all") // all | selected
+  assignedUserIds   String   @default("[]") @db.Text // JSON array string
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  module      Module?  @relation(fields: [moduleId], references: [id], onDelete: SetNull)
+  questions   Question[]
+  results     TestResult[]
+  accessRequests TestAccessRequest[]
+  /// Test vaqtida ochiladigan elektron jadval (ixtiyoriy — bir testga bir fayl)
+  spreadsheet TestSpreadsheet?
+
+  @@index([moduleId])
+  @@index([courseId])
+}
+
+model Question {
+  id            String   @id @default(cuid())
+  testId        String
+  text          String   @db.Text
+  type          String   @default("single") // single | multiple | truefalse | written
+  points        Int      @default(1)
+  order         Int      @default(0)
+  explanation   String?  @db.Text
+  correctAnswer String?  @db.Text // yozma javob uchun to'g'ri javob matni
+  /// Majburiy savol: har bir testda BIR MARTA doim beriladi va birinchi
+  /// bo'lib chiqadi. O'chirilsa — savol qator ichida aralashtiriladi.
+  /// Odatda `true` (foydalanuvchi so'raganicha default ochiq).
+  isMandatory   Boolean  @default(true)
+  /// Test vaqtida shu savol kelganda ochiladigan Excel (TestSpreadsheet).
+  spreadsheetId String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  test       Test            @relation(fields: [testId], references: [id], onDelete: Cascade)
+  choices    Choice[]
+  spreadsheet TestSpreadsheet? @relation(fields: [spreadsheetId], references: [id], onDelete: SetNull)
+
+  @@index([testId])
+  @@index([order])
+  @@index([isMandatory])
+}
+
+/// Testga bog'langan elektron jadval (Excel).
+///
+/// Test vaqtida foydalanuvchiga ochib beriladi — u haqiqi formulalar bilan
+/// hisoblaydi (=SUM(B5:B7)), tizim esa foydalanuvchi kiritgan qiymatni
+/// `answerKeyJson` dagi to'g'ri javob bilan solishtiradi (yashil/qizil).
+model TestSpreadsheet {
+  id       String @id @default(cuid())
+  testId   String @unique
+  fileName String @default("") @db.Text
+  /// [{ name, rows, cols, cells: { "B5": { t:"n"|"s", v, f } } }]
+  sheetsJson String     @db.LongText
+  /// { "<sheet>": { "B8": 12400000 } } — to'g'ri javoblar
+  answerKeyJson String?  @db.LongText
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  test       Test       @relation(fields: [testId], references: [id], onDelete: Cascade)
+  questions  Question[]
+
+  @@index([testId])
+}
+
+model Choice {
+  id          String   @id @default(cuid())
+  questionId  String
+  text        String   @db.Text
+  isCorrect   Boolean  @default(false)
+  order       Int      @default(0)
+
+  question    Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
+
+  @@index([questionId])
+}
+
+model Enrollment {
+  id          String   @id @default(cuid())
+  userId      String
+  courseId    String
+  enrolledAt  DateTime @default(now())
+  completedAt DateTime?
+  progress    Int      @default(0) // percent
+
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  course      Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, courseId])
+  @@index([userId])
+  @@index([courseId])
+}
+
+model LessonProgress {
+  id          String   @id @default(cuid())
+  userId      String
+  lessonId    String
+  completed   Boolean  @default(false)
+  completedAt DateTime?
+  timeSpent   Int      @default(0) // seconds
+
+  lesson      Lesson   @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, lessonId])
+  @@index([userId])
+  @@index([lessonId])
+}
+
+model TestResult {
+  id              String   @id @default(cuid())
+  userId          String
+  testId          String
+  score           Int      @default(0) // percent
+  passed          Boolean  @default(false)
+  answers         String   @default("{}") @db.Text // JSON: {"qId": "choiceId"} yoki {"qId": "textAnswer"}
+  gradingStatus   String   @default("auto") // auto | pending | graded
+  graderId        String?  // kim tekshirdi
+  gradedAt        DateTime?
+  startedAt       DateTime @default(now())
+  completedAt     DateTime?
+
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  test            Test     @relation(fields: [testId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([testId])
+  @@index([gradingStatus])
+}
+
+// ====== Testga kirish uchun ruxsat so'rovi ======
+// Xodim testni boshlashdan oldin Telegram botga so'rov yuboradi.
+// Botdagi "Ruxsat berish" / "Rad etish" tugmalari shu yozuvni yangilaydi.
+
+model TestAccessRequest {
+  id          String    @id @default(cuid())
+  userId      String
+  testId      String? // LMS test (agar bo'lsa)
+  targetType  String    @default("test") // test | lesson (dars testi)
+  targetLabel String    @default("") @db.Text // ko'rsatiladigan nom
+  targetMeta  String?   @db.Text // JSON: {slug, mi, li}
+  status      String    @default("pending") // pending | approved | rejected | expired
+  note        String?   @db.Text
+  telegramChats String? @db.Text // JSON: [{chatId,messageId}] — xabar qaysi chatlarga yuborilgani
+  requestedAt DateTime  @default(now())
+  decidedAt   DateTime?
+  decidedBy   String? // telegram id yoki "admin"
+
+  user User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  test Test? @relation(fields: [testId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([testId])
+  @@index([targetType])
+  @@index([status])
+  @@index([requestedAt])
+}
+
+// ====== Video darslar kutubxonasi ======
+// Yangi video qo'shilsa — ro'yxatda va bosh sahifada eng birinchi (eng yangi) chiqadi.
+
+model Video {
+  id          String   @id @default(cuid())
+  title       String   @db.Text
+  description String   @default("") @db.Text
+  category    String   @default("Tizim")
+  duration    String   @default("")
+  size        String   @default("")
+  url         String   @db.Text
+  poster      String?  @db.Text
+  order       Int      @default(0)
+  // Joylashtirish (placement): saytning istalgan bo'limida ko'rinishi
+  isActive    Boolean  @default(true) // kutubxonada ko'rinadimi
+  showOnHome  Boolean  @default(false) // bosh sahifada
+  homeOrder   Int      @default(0) // bosh sahifa tartibi (0 = featured)
+  showOnCourses Boolean @default(false) // kurslar sahifasida (video polosa)
+  coursesOrder Int     @default(0)
+  showOnDashboard Boolean @default(false) // dashboardda (tavsiya karta)
+  dashboardOrder Int   @default(0)
+  showInLessons Boolean @default(false) // dars oynalari oxirida (tegishli videolar)
+  lessonsOrder Int     @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([createdAt])
+  @@index([order])
+  @@index([showOnHome])
+}
+
+// ====== Kasbiy kurslar (Job) - ticket uchun DB persistence ======
+model JobCourse {
+  id             String   @id @default(cuid())
+  jobId          String   @unique // original id like "1"
+  folder         String   @default("")
+  title          String   @db.Text
+  slug           String   @unique
+  hasNormative   Boolean  @default(false)
+  order          Int      @default(0)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  parts          JobPart[]
+  testResults    JobTestResult[]
+  enrollments    JobEnrollment[]
+
+  @@index([order])
+  @@index([slug])
+}
+
+model JobTestResult {
+  id          String   @id @default(cuid())
+  userId      String
+  jobId       String
+  partIdx     Int      @default(0)
+  dayIdx      Int      @default(0)
+  jobDayId    String?
+  score       Int      @default(0)
+  passed      Boolean  @default(false)
+  answers     String   @default("{}") @db.Text // JSON
+  attempt     Int      @default(1)
+  createdAt   DateTime @default(now())
+  completedAt DateTime?
+
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  job         JobCourse @relation(fields: [jobId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([jobId])
+  @@index([jobDayId])
+}
+
+model JobPart {
+  id        String   @id @default(cuid())
+  jobId     String
+  title     String   @db.Text
+  type      String   @default("5day") // 5day | 30day
+  order     Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  job       JobCourse @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  days      JobDay[]
+
+  @@index([jobId])
+  @@index([order])
+}
+
+model JobDay {
+  id        String   @id @default(cuid())
+  partId    String
+  title     String   @db.Text
+  num       Int      @default(1)
+  kind      String   @default("kun") // kun | dars | hafta
+  content   String   @default("") @db.LongText
+  videoUrl  String   @default("") @db.Text // YouTube/Vimeo/mp4 video havolasi
+  order     Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  part      JobPart  @relation(fields: [partId], references: [id], onDelete: Cascade)
+  progress  JobDayProgress[]
+
+  @@index([partId])
+  @@index([order])
+}
+
+// ====== Dars biriktirish (assignment) va o'zlashtirish ======
+// Enrollment (mavjud): onboarding Course -> User
+// JobEnrollment (yangi): kasbiy JobCourse -> User
+// Biriktirilmagan foydalanuvchi hech qanday darsni ko'rmaydi.
+
+model JobEnrollment {
+  id          String   @id @default(cuid())
+  userId      String
+  jobId       String // JobCourse.id
+  enrolledAt  DateTime @default(now())
+  completedAt DateTime?
+
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  job         JobCourse @relation(fields: [jobId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, jobId])
+  @@index([userId])
+  @@index([jobId])
+}
+
+model JobDayProgress {
+  id          String    @id @default(cuid())
+  userId      String
+  jobDayId    String
+  completed   Boolean   @default(false)
+  completedAt DateTime?
+  timeSpent   Int       @default(0) // seconds
+
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  jobDay      JobDay    @relation(fields: [jobDayId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, jobDayId])
+  @@index([userId])
+  @@index([jobDayId])
+}
+
+// ============================================================================
+//  AI BOSHQARUVCHI (AI Assistant) — test yaratish, boshqarish, analitika
+// ============================================================================
+
+/// Chat oynasi. Har bir admin/session bitta suhbat yuritadi.
+model AiConversation {
+  id          String   @id @default(cuid())
+  userId      String
+  title       String   @default("Yangi suhbat") @db.Text
+  mode        String   @default("source") // source | web | auto
+  messageCount Int     @default(0)
+  /// Sessiya kuni (YYYY-MM-DD). Kunlik sessiya 07:00 da yangilanadi:
+  /// 07:00 -> keyingi kuni 06:59 oralig'i bitta "sessiya kuni" hisoblanadi.
+  dayKey      String   @default("")
+  /// open | closed  — 07:00 da eskisi yopiladi, yangisi ochiladi
+  status      String   @default("open")
+  /// Kunlik xotira: bugungi suhbatda muhokama qilinganlarning qisqa xulosa
+  memory      String   @default("") @db.LongText
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  user        User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  messages    AiMessage[]
+
+  @@index([userId])
+  @@index([updatedAt])
+  @@index([userId, dayKey])
+}
+
+/// Chat xabarlari (foydalanuvchi / yordamchi / tizim).
+model AiMessage {
+  id             String   @id @default(cuid())
+  conversationId String
+  role           String   // user | assistant | tool
+  content        String   @default("") @db.LongText
+  /// Model qaysi vositalarni chaqirgani va natijalari (JSON)
+  actions        String?  @db.LongText
+  error          String?  @db.Text
+  promptTokens   Int      @default(0)
+  completionTokens Int    @default(0)
+  latencyMs      Int      @default(0)
+  createdAt      DateTime @default(now())
+
+  conversation   AiConversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+
+  @@index([conversationId])
+  @@index([createdAt])
+}
+
+/// Yuklangan manba fayllar (PDF/DOCX/XLSX/TXT/MD/CSV) va ularning matni.
+model AiAttachment {
+  id            String   @id @default(cuid())
+  ownerId       String
+  fileName      String   @db.Text
+  mimeType      String   @default("")
+  size          Int      @default(0)
+  storagePath   String   @default("") @db.Text
+  extractedText String   @default("") @db.LongText
+  charCount     Int      @default(0)
+  wordCount     Int      @default(0)
+  pageCount     Int      @default(0)
+  parser        String   @default("")
+  status        String   @default("ready") // ready | error
+  error         String?  @db.Text
+  createdAt     DateTime @default(now())
+
+  owner         User     @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+
+  @@index([ownerId])
+  @@index([createdAt])
+}
+
+model AiFile {
+  id            String   @id @default(cuid())
+  ownerId       String
+  kind          String   @default("excel") // excel | word | pdf
+  fileName      String   @db.Text
+  mimeType      String   @default("")
+  size          Int      @default(0)
+  storagePath   String   @default("") @db.Text
+  title         String   @default("") @db.Text
+  specSummary   String   @default("") @db.Text
+  downloadCount Int      @default(0)
+  expiresAt     DateTime?
+  createdAt     DateTime @default(now())
+
+  owner         User     @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+
+  @@index([ownerId])
+  @@index([createdAt])
+}
+
+/// Faza 4: AI tomonidan qurilgan vizual artifact (dashboard / kod ko'rinishi).
+/// HTML bazada saqlanadi va `sandbox` iframe'da, skriptsiz, faqat o'quvchi
+/// rejimda ko'rsatiladi (`/api/ai/artifacts/[id]`).
+model AiArtifact {
+  id             String   @id @default(cuid())
+  ownerId        String
+  conversationId String?
+  /// dashboard | code | html
+  kind           String   @default("dashboard")
+  title          String   @default("") @db.Text
+  /// Ko'rsatish uchun tayyor HTML (barcha ma'lumot escape qilingan)
+  html           String   @db.LongText
+  /// Kod artifactlari uchun manba kod (Ko'rinish/Kod tab uchun)
+  source         String   @default("") @db.LongText
+  viewCount      Int      @default(0)
+  expiresAt      DateTime?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  owner          User     @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+
+  @@index([ownerId])
+  @@index([createdAt])
+}
+
+/// ====== Testga kirish uchun ruxsat so'rovi ======
+/// AI tomonidan tayyorlangan, hali tasdiqlanmagan test qoralamasi.
+model AiDraft {
+  id          String   @id @default(cuid())
+  ownerId     String
+  title       String   @db.Text
+  topic       String   @default("") @db.Text
+  /// source (faqat fayllardan) | web (internetdan) | hybrid
+  sourceMode  String   @default("source")
+  /// draft | approved | applied | rejected
+  status      String   @default("draft")
+  /// Test sozlamalari + savollar (JSON)
+  payload     String   @db.LongText
+  /// Qaysi fayllardan foydalandi (attachment id lar)
+  sourceIds   String   @default("[]") @db.Text
+  sourceNotes String   @default("") @db.LongText
+  webRefs     String   @default("[]") @db.Text
+  testId      String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  owner       User     @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+
+  @@index([ownerId])
+  @@index([status])
+}
+
+/// Kunlik kvota / narx hisobi (rate limit + cost estimate).
+model AiUsage {
+  id               String   @id @default(cuid())
+  userId           String
+  day              String   // YYYY-MM-DD
+  requests         Int      @default(0)
+  promptTokens     Int      @default(0)
+  completionTokens Int      @default(0)
+  estimatedCost    Float    @default(0)
+  updatedAt        DateTime @updatedAt
+
+  user             User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, day])
+  @@index([day])
+}
+
+/// Har bir o'zgarish kim, qachon, nima qilgani — audit izi.
+model AiAuditLog {
+  id           String   @id @default(cuid())
+  actorId      String?
+  actorEmail   String   @default("")
+  actorRole    String   @default("")
+  action       String   @db.VarChar(191)
+  resourceType String   @default("")
+  resourceId   String   @default("")
+  args         String   @default("") @db.LongText
+  outcome      String   @default("ok") // ok | error | denied
+  detail       String   @default("") @db.Text
+  source       String   @default("chat") // chat | capability | api
+  createdAt    DateTime @default(now())
+
+  @@index([actorId])
+  @@index([createdAt])
+  @@index([action])
+}
+
+/// Kengaytirilgan ko'rinish va ruxsat qoidalari.
+/// "Shu foydalanuvchiga shu dars/test ko'rinmasin", "shuni qayta topshirishga
+/// ruxsat ber" — bular shu jadval orqali boshqariladi.
+model AccessRule {
+  id            String   @id @default(cuid())
+  subjectType   String   @db.VarChar(32) // user | department | position | role
+  subjectValue  String   @db.VarChar(191)
+  resourceType  String   // lesson | test | course | module | video | job
+  resourceId    String
+  effect        String   @default("allow") // allow | deny
+  /// Test uchun: qayta topshirishga ruxsat
+  allowRetake   Boolean  @default(false)
+  /// Test uchun: foydalanuvchiga beriladigan urinishlar soni (null = test defaulti)
+  maxAttempts   Int?
+  reason        String?  @db.Text
+  createdBy     String?  @db.Text
+  createdByName String?  @db.Text
+  expiresAt     DateTime?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@unique([subjectType, subjectValue, resourceType, resourceId])
+  @@index([resourceType, resourceId])
+  @@index([subjectType, subjectValue])
+}
+
+/// Xavfsizlik hodisalari — konsol/DevTools, ruxsat buzish, bloklash.
+/// Klient hech narsani ishonchli deb hisoblanmaydi: `userId` serverda sessiya
+/// dan olinadi, `type` esa server belgilaydi.
+model SecurityEvent {
+  id        String   @id @default(cuid())
+  userId    String?
+  user      User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  type      String   @db.VarChar(48) // devtools_open | devtools_closed | console_attempt | auto_blocked | gate_denied | ...
+  severity  String   @default("info") @db.VarChar(16) // info | warn | critical
+  ip        String?  @db.VarChar(64)
+  userAgent String?  @db.VarChar(400)
+  path      String?  @db.VarChar(255)
+  detail    String?  @db.Text
+  createdAt DateTime @default(now())
+
+  @@index([userId, createdAt])
+  @@index([type, createdAt])
+  @@index([createdAt])
+}
+
+/// AI ruteri kalitlari (OpenRouter / Gemini / Anthropic / Groq / Z.AI ...).
+///
+/// Nima uchun alohida jadval: kalit .env da qo'yilganda faqat server
+/// yangilashini talab qiladi va uni hech qanday boshqarish bo'lmaydi.
+/// Bu jadval orqali admin panelning AI markazidan kalit kiritiladi,
+/// tekshiriladi va — bir nechta bo'lsa — BELGILANGANI (`isActive`) ishlatiladi.
+///
+/// `keyCipher` — AES-256-GCM shifrlangan matn (iv.tag.ciphertext).
+/// `keyHint` — oxirgi 4 belgi, faqat ko'rsatish uchun.
+model AiProviderKey {
+  id           String    @id @default(cuid())
+  provider     String    @db.VarChar(32) // openrouter | gemini | anthropic | groq | zai | deepseek | together | openai
+  label        String    @default("") @db.VarChar(120)
+  baseUrl      String    @default("") @db.VarChar(255)
+  model        String    @default("") @db.VarChar(160)
+  keyCipher    String    @db.Text
+  keyHint      String    @default("") @db.VarChar(12)
+  isActive     Boolean   @default(false)
+  lastStatus   String    @default("") @db.VarChar(400)
+  lastTestedAt DateTime?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  @@index([isActive])
+  @@index([provider])
+}

@@ -1,0 +1,2742 @@
+﻿{
+    "generatedAt":  "2026-09-26T15:43:01",
+    "totalArticles":  342,
+    "articles":  [
+                     {
+                         "id":  "23240682?SOURCE_LINK_PLACE=NEW_ARTICLES",
+                         "sectionId":  "72193",
+                         "section":  "Новые статьи",
+                         "parent":  null,
+                         "order":  1,
+                         "title":  "Скрипты продаж и Речевая аналитика 2.0 с AI в CRM"
+                     },
+                     {
+                         "id":  "28080590?SOURCE_LINK_PLACE=NEW_ARTICLES",
+                         "sectionId":  "72193",
+                         "section":  "Новые статьи",
+                         "parent":  null,
+                         "order":  1,
+                         "title":  "Подключение ЭДО для обмена документами c 1C-Битрикс"
+                     },
+                     {
+                         "id":  "28188420?SOURCE_LINK_PLACE=NEW_ARTICLES",
+                         "sectionId":  "72193",
+                         "section":  "Новые статьи",
+                         "parent":  null,
+                         "order":  1,
+                         "title":  "Как пригласить внешнего участника в чат в Битрикс24"
+                     },
+                     {
+                         "id":  "29054678?SOURCE_LINK_PLACE=NEW_ARTICLES",
+                         "sectionId":  "72193",
+                         "section":  "Новые статьи",
+                         "parent":  null,
+                         "order":  1,
+                         "title":  "Как создать услугу в каталоге"
+                     },
+                     {
+                         "id":  "20963834?SOURCE_LINK_PLACE=FAQ",
+                         "sectionId":  "161724",
+                         "section":  "С чего начать",
+                         "parent":  null,
+                         "order":  2,
+                         "title":  "Основные возможности Битрикс24"
+                     },
+                     {
+                         "id":  "21122512?SOURCE_LINK_PLACE=FAQ",
+                         "sectionId":  "161724",
+                         "section":  "С чего начать",
+                         "parent":  null,
+                         "order":  2,
+                         "title":  "Как начать работать в Битрикс24"
+                     },
+                     {
+                         "id":  "22060336?SOURCE_LINK_PLACE=FAQ",
+                         "sectionId":  "161724",
+                         "section":  "С чего начать",
+                         "parent":  null,
+                         "order":  2,
+                         "title":  "Как выбрать тариф Битрикс24"
+                     },
+                     {
+                         "id":  "23713808?SOURCE_LINK_PLACE=READY_ANSWERS",
+                         "sectionId":  "161724",
+                         "section":  "С чего начать",
+                         "parent":  null,
+                         "order":  2,
+                         "title":  ""
+                     },
+                     {
+                         "id":  "27284534?SOURCE_LINK_PLACE=FAQ",
+                         "sectionId":  "161724",
+                         "section":  "С чего начать",
+                         "parent":  null,
+                         "order":  2,
+                         "title":  "Знакомство с Битрикс24: видеоинструкции для быстрого старта"
+                     },
+                     {
+                         "id":  "27336110?SOURCE_LINK_PLACE=OTHER",
+                         "sectionId":  "161724",
+                         "section":  "С чего начать",
+                         "parent":  null,
+                         "order":  2,
+                         "title":  "Частые вопросы об инструментах Битрикс24"
+                     },
+                     {
+                         "id":  "28030104?SOURCE_LINK_PLACE=OTHER",
+                         "sectionId":  "161724",
+                         "section":  "С чего начать",
+                         "parent":  null,
+                         "order":  2,
+                         "title":  "Мобильное приложение Битрикс24: интерфейс и возможности"
+                     },
+                     {
+                         "id":  "28508660?SOURCE_LINK_PLACE=OTHER",
+                         "sectionId":  "161724",
+                         "section":  "С чего начать",
+                         "parent":  null,
+                         "order":  2,
+                         "title":  "Битрикс24 Ответы: новый интерфейс базы знаний и AI-поиск"
+                     },
+                     {
+                         "id":  "23661822?SOURCE_LINK_PLACE=FAQ",
+                         "sectionId":  "162832",
+                         "section":  "Онлайн-запись",
+                         "parent":  null,
+                         "order":  3,
+                         "title":  "Онлайн-запись: как создать новый ресурс"
+                     },
+                     {
+                         "id":  "23661926?SOURCE_LINK_PLACE=FAQ",
+                         "sectionId":  "162832",
+                         "section":  "Онлайн-запись",
+                         "parent":  null,
+                         "order":  3,
+                         "title":  "Онлайн-запись: как настроить уведомления для клиентов"
+                     },
+                     {
+                         "id":  "23661964?SOURCE_LINK_PLACE=FAQ",
+                         "sectionId":  "162832",
+                         "section":  "Онлайн-запись",
+                         "parent":  null,
+                         "order":  3,
+                         "title":  "Онлайн-запись: как записать клиента на услугу"
+                     },
+                     {
+                         "id":  "23712054?SOURCE_LINK_PLACE=FAQ",
+                         "sectionId":  "162832",
+                         "section":  "Онлайн-запись",
+                         "parent":  null,
+                         "order":  3,
+                         "title":  "Битрикс24 Онлайн-запись: начало работы"
+                     },
+                     {
+                         "id":  "24846212?SOURCE_LINK_PLACE=OTHER",
+                         "sectionId":  "162832",
+                         "section":  "Онлайн-запись",
+                         "parent":  null,
+                         "order":  3,
+                         "title":  "Онлайн-запись: как внести клиента в лист ожидания"
+                     },
+                     {
+                         "id":  "25366370?SOURCE_LINK_PLACE=OTHER",
+                         "sectionId":  "162832",
+                         "section":  "Онлайн-запись",
+                         "parent":  null,
+                         "order":  3,
+                         "title":  "Как создать форму для записи клиентов на услуги"
+                     },
+                     {
+                         "id":  "26922108?SOURCE_LINK_PLACE=OTHER",
+                         "sectionId":  "162832",
+                         "section":  "Онлайн-запись",
+                         "parent":  null,
+                         "order":  3,
+                         "title":  "Онлайн-запись: как настроить интеграцию с Яндекс Картами"
+                     },
+                     {
+                         "id":  "28468688?SOURCE_LINK_PLACE=OTHER",
+                         "sectionId":  "162832",
+                         "section":  "Онлайн-запись",
+                         "parent":  null,
+                         "order":  3,
+                         "title":  "Онлайн-запись: как обзванивать клиентов с помощью AI"
+                     },
+                     {
+                         "id":  "17962166?SOURCE_LINK_PLACE=FAQ",
+                         "sectionId":  "45918",
+                         "section":  "Задачи",
+                         "parent":  null,
+                         "order":  4,
+                         "title":  "Задачи Битрикс24"
+                     },
+                     {
+                         "id":  "24213478?SOURCE_LINK_PLACE=OTHER",
+                         "sectionId":  "45918",
+                         "section":  "Задачи",
+                         "parent":  null,
+                         "order":  4,
+                         "title":  "Частые вопросы о задачах Битрикс24"
+                     },
+                     {
+                         "id":  "27344976?SOURCE_LINK_PLACE=OTHER",
+                         "sectionId":  "45918",
+                         "section":  "Задачи",
+                         "parent":  null,
+                         "order":  4,
+                         "title":  "Частые вопросы о новых задачах в Битрикс24"
+                     },
+                     {
+                         "id":  "27359038?SOURCE_LINK_PLACE=OTHER",
+                         "sectionId":  "45918",
+                         "section":  "Задачи",
+                         "parent":  null,
+                         "order":  4,
+                         "title":  "Задачи в Битрикс24: как создать и настроить"
+                     },
+                     {
+                         "id":  "27497372?SOURCE_LINK_PLACE=OTHER",
+                         "sectionId":  "48933",
+                         "section":  "Начало работы с задачами",
+                         "parent":  null,
+                         "order":  5,
+                         "title":  "Как работать с подзадачами в Битрикс24"
+                     },
+                     {
+                         "id":  "27648776?SOURCE_LINK_PLACE=OTHER",
+                         "sectionId":  "48933",
+                         "section":  "Начало работы с задачами",
+                         "parent":  null,
+                         "order":  5,
+                         "title":  "Поиск и фильтры в задачах: как быстро находить нужное"
+                     },
+                     {
+                         "id":  "27706612?SOURCE_LINK_PLACE=OTHER",
+                         "sectionId":  "48933",
+                         "section":  "Начало работы с задачами",
+                         "parent":  null,
+                         "order":  5,
+                         "title":  "Как работать с корзиной в задачах Битрикс24"
+                     },
+                     {
+                         "id":  "18167232?SOURCE_LINK_PLACE=FAQ",
+                         "sectionId":  "48595",
+                         "section":  "Инструменты в задачах",
+                         "parent":  null,
+                         "order":  6,
+                         "title":  "Инструмент Руковожу: как отслеживать задачи подчиненных"
+                     },
+                     {
+                         "id":  "2573061?SOURCE_LINK_PLACE=OTHER",
+                         "sectionId":  "48595",
+                         "section":  "Инструменты в задачах",
+                         "parent":  null,
+                         "order":  6,
+                         "title":  "Пользовательские поля в задачах"
+                     },
+                     {
+                         "id":  "27145920?SOURCE_LINK_PLACE=OTHER",
+                         "sectionId":  "48595",
+                         "section":  "Инструменты в задачах",
+                         "parent":  null,
+                         "order":  6,
+                         "title":  "Как учитывать время на выполнение задачи"
+                     },
+                     {
+                         "id":  "27333140?SOURCE_LINK_PLACE=OTHER",
+                         "sectionId":  "48595",
+                         "section":  "Инструменты в задачах",
+                         "parent":  null,
+                         "order":  6,
+                         "title":  "Чек-листы в задачах: как создать и работать с ними"
+                     },
+                     {
+                         "id":  "27411320?SOURCE_LINK_PLACE=OTHER",
+                         "sectionId":  "48595",
+                         "section":  "Инструменты в задачах",
+                         "parent":  null,
+                         "order":  6,
+                         "title":  "Как настроить напоминания в задачах Битрикс24"
+                     },
+                     {
+                         "id":  "27493452?SOURCE_LINK_PLACE=FAQ",
+                         "sectionId":  "48595",
+                         "section":  "Инструменты в задачах",
+                         "parent":  null,
+                         "order":  6,
+                         "title":  "Как использовать дополнительные возможности в задачах Битрикс24"
+                     },
+                     {
+                         "id":  "17987682?SOURCE_LINK_PLACE=OTHER",
+                         "sectionId":  "48594",
+                         "section":  "Режим работы с задачами",
+                         "parent":  null,
+                         "order":  7,
+                         "title":  "Как работать с задачами в режиме Список"
+                     },
+                     {
+                         "id":  "18127718?SOURCE_LINK_PLACE=OTHER",
+                         "sectionId":  "48594",
+                         "section":  "Режим работы с задачами",
+                         "parent":  null,
+                         "order":  7,
+                         "title":  "Диаграмма Ганта: как установить связь между задачами"
+                     },
+                     {
+                         "id":  "18195312?SOURCE_LINK_PLACE=OTHER",
+                         "sectionId":  "48594",
+                         "section":  "Режим работы с задачами",
+                         "parent":  null,
+                         "order":  7,
+                         "title":  "Отчеты в задачах: как собрать статистику по сотрудникам"
+                     },
+                     {
+                         "id":  "18223692?SOURCE_LINK_PLACE=OTHER",
+                         "sectionId":  "48594",
+                         "section":  "Режим работы с задачами",
+                         "parent":  null,
+                         "order":  7,
+                         "title":  "Как работать с задачами в Календаре"
+                     },
+                     {
+                         "id":  "26862100?SOURCE_LINK_PLACE=OTHER",
+                         "sectionId":  "166906",
+                         "section":  "Сценарии работы",
+                         "parent":  null,
+                         "order":  8,
+                         "title":  "Как правильно ставить задачи в Битрикс24"
+                     },
+                     {
+                         "id":  "26862170?SOURCE_LINK_PLACE=OTHER",
+                         "sectionId":  "166906",
+                         "section":  "Сценарии работы",
+                         "parent":  null,
+                         "order":  8,
+                         "title":  "Какие возможности задач помогают все успевать и не терять детали"
+                     },
+                     {
+                         "id":  "27019714?SOURCE_LINK_PLACE=OTHER",
+                         "sectionId":  "166906",
+                         "section":  "Сценарии работы",
+                         "parent":  null,
+                         "order":  8,
+                         "title":  "Регулярные задачи: как автоматизировать повторяющиеся процессы"
+                     },
+                     {
+                         "id":  "27454082?SOURCE_LINK_PLACE=OTHER",
+                         "sectionId":  "166906",
+                         "section":  "Сценарии работы",
+                         "parent":  null,
+                         "order":  8,
+                         "title":  "Шаблоны задач: как ускорить создание типовых поручений"
+                     },
+                     {
+                         "id":  "14659922?SOURCE_LINK_PLACE=OTHER",
+                         "sectionId":  "143880",
+                         "section":  "Скрам",
+                         "parent":  null,
+                         "order":  10,
+                         "title":  "Как работать в Скрам"
+                     },
+                     {
+                         "id":  "25376418?SOURCE_LINK_PLACE=OTHER",
+                         "sectionId":  "143880",
+                         "section":  "Скрам",
+                         "parent":  null,
+                         "order":  10,
+                         "title":  "Роботы и триггеры в Битрикс24 Скрам"
+                     },
+                     {
+                         "id":  "26183746?SOURCE_LINK_PLACE=FAQ",
+                         "sectionId":  "143880",
+                         "section":  "Скрам",
+                         "parent":  null,
+                         "order":  10,
+                         "title":  "Битрикс24 Скрам: начало работы"
+                     },
+                     {
+                         "id":  "17412872?SOURCE_LINK_PLACE=FAQ",
+                         "sectionId":  "161730",
+                         "section":  "Мессенджер",
+                         "parent":  null,
+                         "order":  11,
+                         "title":  "Чаты в Битрикс24: как выбрать подходящий"
+                     },
+                     {
+                         "id":  "20963046?SOURCE_LINK_PLACE=FAQ",
+                         "sectionId":  "161730",
+                         "section":  "Мессенджер",
+                         "parent":  null,
+                         "order":  11,
+                         "title":  "Что такое каналы в Битрикс24"
+                     },
+                     {
+                         "id":  "25148890?SOURCE_LINK_PLACE=FAQ",
+                         "sectionId":  "161730",
+                         "section":  "Мессенджер",
+                         "parent":  null,
+                         "order":  11,
+                         "title":  "Частые вопросы о чатах в Битрикс24"
+                     },
+                     {
+                         "id":  "17373696?SOURCE_LINK_PLACE=OTHER",
+                         "sectionId":  "162002",
+                         "section":  "Чаты и каналы",
+                         "parent":  null,
+                         "order":  12,
+                         "title":  "Мессенджер: интерфейс и возможности"
+                     },
+                     {
+                         "id":  "18213254?SOURCE_LINK_PLACE=OTHER",
+                         "sectionId":  "162002",
+                         "section":  "Чаты и каналы",
+                         "parent":  null,
+                         "order":  12,
+                         "title":  "Общий чат компании"
+                     },
+                     {
+                         "id":  "21297736?SOURCE_LINK_PLACE=OTHER",
+                         "sectionId":  "162002",
+                         "section":  "Чаты и каналы",
+                         "parent":  null,
+                         "order":  12,
+                         "title":  "Битрикс24 Каналы: как создать и настроить"
+                     },
+                     {
+                         "id":  "28188420?SOURCE_LINK_PLACE=OTHER",
+                         "sectionId":  "162002",
+                         "section":  "Чаты и каналы",
+                         "parent":  null,
+                         "order":  12,
+                         "title":  "Как пригласить внешнего участника в чат в Битрикс24"
+                     },
+                     {
+                         "id":  "21164256",
+                         "sectionId":  "162004",
+                         "section":  "Битрикс24 Синк",
+                         "parent":  null,
+                         "order":  13,
+                         "title":  "Битрикс24 Синк: технические требования для видеозвонков"
+                     },
+                     {
+                         "id":  "21297730",
+                         "sectionId":  "162004",
+                         "section":  "Битрикс24 Синк",
+                         "parent":  null,
+                         "order":  13,
+                         "title":  "Битрикс24 Синк"
+                     },
+                     {
+                         "id":  "23118042",
+                         "sectionId":  "162004",
+                         "section":  "Битрикс24 Синк",
+                         "parent":  null,
+                         "order":  13,
+                         "title":  "Битрикс24 Синк: как проверить работу видеозвонков"
+                     },
+                     {
+                         "id":  "24349090",
+                         "sectionId":  "45919",
+                         "section":  "Календарь",
+                         "parent":  null,
+                         "order":  14,
+                         "title":  "Частые вопросы о календаре"
+                     },
+                     {
+                         "id":  "25882500",
+                         "sectionId":  "45919",
+                         "section":  "Календарь",
+                         "parent":  null,
+                         "order":  14,
+                         "title":  "Как добавить календарь сотрудника, группы или компании"
+                     },
+                     {
+                         "id":  "26431394",
+                         "sectionId":  "45919",
+                         "section":  "Календарь",
+                         "parent":  null,
+                         "order":  14,
+                         "title":  "Как создать новый календарь Битрикс24"
+                     },
+                     {
+                         "id":  "16459468",
+                         "sectionId":  "143826",
+                         "section":  "Настройки календарей",
+                         "parent":  null,
+                         "order":  15,
+                         "title":  "Как добавить категорию в переговорных"
+                     },
+                     {
+                         "id":  "22564754",
+                         "sectionId":  "143826",
+                         "section":  "Настройки календарей",
+                         "parent":  null,
+                         "order":  15,
+                         "title":  "Переговорные комнаты: как создать и забронировать"
+                     },
+                     {
+                         "id":  "26366156",
+                         "sectionId":  "143826",
+                         "section":  "Настройки календарей",
+                         "parent":  null,
+                         "order":  15,
+                         "title":  "Календарь Битрикс24: как настроить права доступа"
+                     },
+                     {
+                         "id":  "25489764",
+                         "sectionId":  "82915",
+                         "section":  "Начало работы с календарем",
+                         "parent":  null,
+                         "order":  16,
+                         "title":  "Как создать событие в календаре Битрикс24"
+                     },
+                     {
+                         "id":  "25570792",
+                         "sectionId":  "82915",
+                         "section":  "Начало работы с календарем",
+                         "parent":  null,
+                         "order":  16,
+                         "title":  "Мой календарь: как планировать встречи и события"
+                     },
+                     {
+                         "id":  "25695912",
+                         "sectionId":  "82915",
+                         "section":  "Начало работы с календарем",
+                         "parent":  null,
+                         "order":  16,
+                         "title":  "Календарь компании: как планировать корпоративные события"
+                     },
+                     {
+                         "id":  "26295296",
+                         "sectionId":  "82915",
+                         "section":  "Начало работы с календарем",
+                         "parent":  null,
+                         "order":  16,
+                         "title":  "Календарь Битрикс24: начало работы"
+                     },
+                     {
+                         "id":  "11828176",
+                         "sectionId":  "147994",
+                         "section":  "Синхронизация календарей",
+                         "parent":  null,
+                         "order":  17,
+                         "title":  "Синхронизация календарей в Битрикс24"
+                     },
+                     {
+                         "id":  "15426356",
+                         "sectionId":  "147994",
+                         "section":  "Синхронизация календарей",
+                         "parent":  null,
+                         "order":  17,
+                         "title":  "Как добавить пароль приложения для календаря iСloud"
+                     },
+                     {
+                         "id":  "16172134",
+                         "sectionId":  "147994",
+                         "section":  "Синхронизация календарей",
+                         "parent":  null,
+                         "order":  17,
+                         "title":  "Синхронизация календаря с iCloud"
+                     },
+                     {
+                         "id":  "16179976",
+                         "sectionId":  "147994",
+                         "section":  "Синхронизация календарей",
+                         "parent":  null,
+                         "order":  17,
+                         "title":  "Синхронизация календаря с Office365"
+                     },
+                     {
+                         "id":  "1930775",
+                         "sectionId":  "45920",
+                         "section":  "Диск",
+                         "parent":  null,
+                         "order":  18,
+                         "title":  "Интеграция с Office365"
+                     },
+                     {
+                         "id":  "19492254",
+                         "sectionId":  "45920",
+                         "section":  "Диск",
+                         "parent":  null,
+                         "order":  18,
+                         "title":  "Права доступа к Моему диску в Битрикс24"
+                     },
+                     {
+                         "id":  "22365342",
+                         "sectionId":  "45920",
+                         "section":  "Диск",
+                         "parent":  null,
+                         "order":  18,
+                         "title":  "Безопасность данных в Битрикс24.Docs"
+                     },
+                     {
+                         "id":  "28121730",
+                         "sectionId":  "45920",
+                         "section":  "Диск",
+                         "parent":  null,
+                         "order":  18,
+                         "title":  "Диск: возможности работы"
+                     },
+                     {
+                         "id":  "28208096",
+                         "sectionId":  "45920",
+                         "section":  "Диск",
+                         "parent":  null,
+                         "order":  18,
+                         "title":  "Общий диск в Битрикс24"
+                     },
+                     {
+                         "id":  "28209008",
+                         "sectionId":  "45920",
+                         "section":  "Диск",
+                         "parent":  null,
+                         "order":  18,
+                         "title":  "Мой диск в Битрикс24"
+                     },
+                     {
+                         "id":  "18213280",
+                         "sectionId":  "140740",
+                         "section":  "Совместная работа",
+                         "parent":  null,
+                         "order":  20,
+                         "title":  "Как быстро подключить диск группы новым участникам"
+                     },
+                     {
+                         "id":  "18869612",
+                         "sectionId":  "140740",
+                         "section":  "Совместная работа",
+                         "parent":  null,
+                         "order":  20,
+                         "title":  "Сколько хранятся версии документа на Диске"
+                     },
+                     {
+                         "id":  "19545036",
+                         "sectionId":  "140740",
+                         "section":  "Совместная работа",
+                         "parent":  null,
+                         "order":  20,
+                         "title":  "Предпросмотр файлов в Битрикс24: быстрый доступ и возможные действия"
+                     },
+                     {
+                         "id":  "19545084",
+                         "sectionId":  "140740",
+                         "section":  "Совместная работа",
+                         "parent":  null,
+                         "order":  20,
+                         "title":  "Как загрузить файл из облачного хранилища в Битрикс24"
+                     },
+                     {
+                         "id":  "20703808",
+                         "sectionId":  "140740",
+                         "section":  "Совместная работа",
+                         "parent":  null,
+                         "order":  20,
+                         "title":  "Как отключить Битрикс24 от облачных хранилищ"
+                     },
+                     {
+                         "id":  "19629424",
+                         "sectionId":  "94945",
+                         "section":  "Файлы и папки на диске",
+                         "parent":  null,
+                         "order":  21,
+                         "title":  "Как работать с документами на диске Битрикс24"
+                     },
+                     {
+                         "id":  "20338924",
+                         "sectionId":  "94945",
+                         "section":  "Файлы и папки на диске",
+                         "parent":  null,
+                         "order":  21,
+                         "title":  "Документы Онлайн: начало работы"
+                     },
+                     {
+                         "id":  "28166604",
+                         "sectionId":  "94945",
+                         "section":  "Файлы и папки на диске",
+                         "parent":  null,
+                         "order":  21,
+                         "title":  "Как работать с папками и файлами на Диске"
+                     },
+                     {
+                         "id":  "18048120",
+                         "sectionId":  "55667",
+                         "section":  "Почта",
+                         "parent":  null,
+                         "order":  22,
+                         "title":  "Как работать с почтой в CRM"
+                     },
+                     {
+                         "id":  "18909968",
+                         "sectionId":  "55667",
+                         "section":  "Почта",
+                         "parent":  null,
+                         "order":  22,
+                         "title":  "Что такое почтовые шаблоны в CRM"
+                     },
+                     {
+                         "id":  "20135364",
+                         "sectionId":  "55667",
+                         "section":  "Почта",
+                         "parent":  null,
+                         "order":  22,
+                         "title":  "Как увеличить дневной лимит на отправку писем"
+                     },
+                     {
+                         "id":  "22016286",
+                         "sectionId":  "55667",
+                         "section":  "Почта",
+                         "parent":  null,
+                         "order":  22,
+                         "title":  "Почта в Битрикс24: особенности инструмента и возможности тарифов"
+                     },
+                     {
+                         "id":  "18258092",
+                         "sectionId":  "161992",
+                         "section":  "Начало работы",
+                         "parent":  null,
+                         "order":  23,
+                         "title":  "Как работать с почтой в Битрикс24"
+                     },
+                     {
+                         "id":  "18344444",
+                         "sectionId":  "161992",
+                         "section":  "Начало работы",
+                         "parent":  null,
+                         "order":  23,
+                         "title":  "Как настроить почту в Битрикс24"
+                     },
+                     {
+                         "id":  "19083990",
+                         "sectionId":  "161992",
+                         "section":  "Начало работы",
+                         "parent":  null,
+                         "order":  23,
+                         "title":  "Способы подключения почтовых ящиков в Битрикс24"
+                     },
+                     {
+                         "id":  "21923258",
+                         "sectionId":  "161992",
+                         "section":  "Начало работы",
+                         "parent":  null,
+                         "order":  23,
+                         "title":  "Как отключить почтовый ящик"
+                     },
+                     {
+                         "id":  "18302654",
+                         "sectionId":  "161994",
+                         "section":  "Как подключить почту",
+                         "parent":  null,
+                         "order":  24,
+                         "title":  "Как подключить Яндекс Почту к Битрикс24"
+                     },
+                     {
+                         "id":  "21801732",
+                         "sectionId":  "161994",
+                         "section":  "Как подключить почту",
+                         "parent":  null,
+                         "order":  24,
+                         "title":  "Как подключить SMTP-сервер для исходящих писем в Битрикс24"
+                     },
+                     {
+                         "id":  "17832334",
+                         "sectionId":  "161762",
+                         "section":  "Сотрудники",
+                         "parent":  null,
+                         "order":  25,
+                         "title":  "Время и отчеты в Битрикс24"
+                     },
+                     {
+                         "id":  "17856080",
+                         "sectionId":  "161762",
+                         "section":  "Сотрудники",
+                         "parent":  null,
+                         "order":  25,
+                         "title":  "Как планировать задачи на день"
+                     },
+                     {
+                         "id":  "17983050",
+                         "sectionId":  "161762",
+                         "section":  "Сотрудники",
+                         "parent":  null,
+                         "order":  25,
+                         "title":  "Экстранет-пользователи в Битрикс24"
+                     },
+                     {
+                         "id":  "21141928",
+                         "sectionId":  "161762",
+                         "section":  "Сотрудники",
+                         "parent":  null,
+                         "order":  25,
+                         "title":  "Как работать со списком сотрудников в Битрикс24"
+                     },
+                     {
+                         "id":  "17881004",
+                         "sectionId":  "161986",
+                         "section":  "Время и отчеты",
+                         "parent":  null,
+                         "order":  27,
+                         "title":  "Как заполнить и подтвердить рабочий отчет"
+                     },
+                     {
+                         "id":  "17921146",
+                         "sectionId":  "161986",
+                         "section":  "Время и отчеты",
+                         "parent":  null,
+                         "order":  27,
+                         "title":  "Как контролировать рабочее время сотрудников"
+                     },
+                     {
+                         "id":  "28292194",
+                         "sectionId":  "161986",
+                         "section":  "Время и отчеты",
+                         "parent":  null,
+                         "order":  27,
+                         "title":  "Рабочие отчеты в Битрикс24"
+                     },
+                     {
+                         "id":  "18913896",
+                         "sectionId":  "151376",
+                         "section":  "Автоматизация",
+                         "parent":  null,
+                         "order":  28,
+                         "title":  "Цифровые рабочие места: как автоматизировать работу любого отдела"
+                     },
+                     {
+                         "id":  "20962622",
+                         "sectionId":  "151376",
+                         "section":  "Автоматизация",
+                         "parent":  null,
+                         "order":  28,
+                         "title":  "Роботы и триггеры: как автоматизировать работу с задачами"
+                     },
+                     {
+                         "id":  "24473054",
+                         "sectionId":  "151376",
+                         "section":  "Автоматизация",
+                         "parent":  null,
+                         "order":  28,
+                         "title":  "Триггеры в CRM: как автоматизировать работу с клиентами"
+                     },
+                     {
+                         "id":  "19361188",
+                         "sectionId":  "162008",
+                         "section":  "Роботы и триггеры",
+                         "parent":  null,
+                         "order":  29,
+                         "title":  "Что такое отладчик роботов"
+                     },
+                     {
+                         "id":  "19901004",
+                         "sectionId":  "162008",
+                         "section":  "Роботы и триггеры",
+                         "parent":  null,
+                         "order":  29,
+                         "title":  "Что такое константы и переменные в роботах"
+                     },
+                     {
+                         "id":  "20979178",
+                         "sectionId":  "162008",
+                         "section":  "Роботы и триггеры",
+                         "parent":  null,
+                         "order":  29,
+                         "title":  "Настройка времени в роботах"
+                     },
+                     {
+                         "id":  "21491832",
+                         "sectionId":  "162008",
+                         "section":  "Роботы и триггеры",
+                         "parent":  null,
+                         "order":  29,
+                         "title":  "Как работают условия в роботах"
+                     },
+                     {
+                         "id":  "24367166",
+                         "sectionId":  "162008",
+                         "section":  "Роботы и триггеры",
+                         "parent":  null,
+                         "order":  29,
+                         "title":  "Роботы в CRM: как автоматизировать работу с клиентами"
+                     },
+                     {
+                         "id":  "18913904",
+                         "sectionId":  "162010",
+                         "section":  "Цифровые рабочие места",
+                         "parent":  null,
+                         "order":  30,
+                         "title":  "Как создать цифровое рабочее место"
+                     },
+                     {
+                         "id":  "19102028",
+                         "sectionId":  "162010",
+                         "section":  "Цифровые рабочие места",
+                         "parent":  null,
+                         "order":  30,
+                         "title":  "Как настроить цифровое рабочее место"
+                     },
+                     {
+                         "id":  "11405974",
+                         "sectionId":  "162012",
+                         "section":  "RPA",
+                         "parent":  null,
+                         "order":  31,
+                         "title":  "Стадии и задания в канбане RPA"
+                     },
+                     {
+                         "id":  "11502860",
+                         "sectionId":  "162012",
+                         "section":  "RPA",
+                         "parent":  null,
+                         "order":  31,
+                         "title":  "Права доступа в RPA"
+                     },
+                     {
+                         "id":  "16414560",
+                         "sectionId":  "162012",
+                         "section":  "RPA",
+                         "parent":  null,
+                         "order":  31,
+                         "title":  "Пользовательские поля в RPA"
+                     },
+                     {
+                         "id":  "26143052",
+                         "sectionId":  "162012",
+                         "section":  "RPA",
+                         "parent":  null,
+                         "order":  31,
+                         "title":  "RPA в Битрикс24: как автоматизировать рутинные задачи"
+                     },
+                     {
+                         "id":  "17451118",
+                         "sectionId":  "161790",
+                         "section":  "Маркетплейс",
+                         "parent":  null,
+                         "order":  32,
+                         "title":  "Приложения по подписке BitrixGPT + Маркетплейс"
+                     },
+                     {
+                         "id":  "17459328",
+                         "sectionId":  "161790",
+                         "section":  "Маркетплейс",
+                         "parent":  null,
+                         "order":  32,
+                         "title":  "Бесплатные приложения Битрикс24 Маркетплейс"
+                     },
+                     {
+                         "id":  "19404620",
+                         "sectionId":  "161790",
+                         "section":  "Маркетплейс",
+                         "parent":  null,
+                         "order":  32,
+                         "title":  "Битрикс24 Маркетплейс: готовые решения для оптимизации инструментов"
+                     },
+                     {
+                         "id":  "20703042",
+                         "sectionId":  "161790",
+                         "section":  "Маркетплейс",
+                         "parent":  null,
+                         "order":  32,
+                         "title":  "Как оформить подписку BitrixGPT+Маркетплейс из России и Маркет плюс из Беларуси"
+                     },
+                     {
+                         "id":  "23776074",
+                         "sectionId":  "161790",
+                         "section":  "Маркетплейс",
+                         "parent":  null,
+                         "order":  32,
+                         "title":  "Новый этап развития маркетплейса облачной версии Битрикс24"
+                     },
+                     {
+                         "id":  "17381216",
+                         "sectionId":  "161980",
+                         "section":  "Начало работы с Битрикс24 Маркетплейс",
+                         "parent":  null,
+                         "order":  33,
+                         "title":  "Как найти и установить приложения Битрикс24 Маркетплейс"
+                     },
+                     {
+                         "id":  "17395580",
+                         "sectionId":  "161980",
+                         "section":  "Начало работы с Битрикс24 Маркетплейс",
+                         "parent":  null,
+                         "order":  33,
+                         "title":  "Как удалить приложение в Битрикс24 Маркетплейс"
+                     },
+                     {
+                         "id":  "17398580",
+                         "sectionId":  "161980",
+                         "section":  "Начало работы с Битрикс24 Маркетплейс",
+                         "parent":  null,
+                         "order":  33,
+                         "title":  "Как настроить доступ к приложениям Битрикс24 Маркетплейс"
+                     },
+                     {
+                         "id":  "19411366",
+                         "sectionId":  "161982",
+                         "section":  "Подписка BitrixGPT + Маркетплейс",
+                         "parent":  null,
+                         "order":  34,
+                         "title":  "Пробная подписка Маркетплейс"
+                     },
+                     {
+                         "id":  "19740650",
+                         "sectionId":  "161772",
+                         "section":  "КЭДО",
+                         "parent":  null,
+                         "order":  35,
+                         "title":  "Как выбрать провайдера электронной подписи в Битрикс24 КЭДО"
+                     },
+                     {
+                         "id":  "19740668",
+                         "sectionId":  "161772",
+                         "section":  "КЭДО",
+                         "parent":  null,
+                         "order":  35,
+                         "title":  "Битрикс24 КЭДО: сервис для подписания кадровых документов"
+                     },
+                     {
+                         "id":  "19740688",
+                         "sectionId":  "161772",
+                         "section":  "КЭДО",
+                         "parent":  null,
+                         "order":  35,
+                         "title":  "Как подписывать кадровые документы в Битрикс24 через Госключ"
+                     },
+                     {
+                         "id":  "19740792",
+                         "sectionId":  "161772",
+                         "section":  "КЭДО",
+                         "parent":  null,
+                         "order":  35,
+                         "title":  "Как перейти на кадровый электронный документооборот"
+                     },
+                     {
+                         "id":  "19816578",
+                         "sectionId":  "161772",
+                         "section":  "КЭДО",
+                         "parent":  null,
+                         "order":  35,
+                         "title":  "Битрикс24 КЭДО: начало работы"
+                     },
+                     {
+                         "id":  "21590338",
+                         "sectionId":  "161772",
+                         "section":  "КЭДО",
+                         "parent":  null,
+                         "order":  35,
+                         "title":  "Как сотруднику подписать документ простой электронной подписью"
+                     },
+                     {
+                         "id":  "20338910",
+                         "sectionId":  "161988",
+                         "section":  "Начало работы",
+                         "parent":  null,
+                         "order":  36,
+                         "title":  "Как отправить документы на подпись в Битрикс24 КЭДО"
+                     },
+                     {
+                         "id":  "21589840",
+                         "sectionId":  "161988",
+                         "section":  "Начало работы",
+                         "parent":  null,
+                         "order":  36,
+                         "title":  "Частые вопросы о сервисе КЭДО+Госключ"
+                     },
+                     {
+                         "id":  "26311976",
+                         "sectionId":  "161988",
+                         "section":  "Начало работы",
+                         "parent":  null,
+                         "order":  36,
+                         "title":  "Тестовый документ в Битрикс24 КЭДО: как проверить процесс подписания"
+                     },
+                     {
+                         "id":  "28437430",
+                         "sectionId":  "161988",
+                         "section":  "Начало работы",
+                         "parent":  null,
+                         "order":  36,
+                         "title":  "Онлайн-редактор документов в Битрикс24 КЭДО: что это и как с ним работать"
+                     },
+                     {
+                         "id":  "28631806",
+                         "sectionId":  "161988",
+                         "section":  "Начало работы",
+                         "parent":  null,
+                         "order":  36,
+                         "title":  "Битрикс24 КЭДО: возможности работы"
+                     },
+                     {
+                         "id":  "19740842",
+                         "sectionId":  "161990",
+                         "section":  "КЭДО + Госключ",
+                         "parent":  null,
+                         "order":  37,
+                         "title":  "Как сотруднику подписать документы в Госключе"
+                     },
+                     {
+                         "id":  "20005520",
+                         "sectionId":  "161990",
+                         "section":  "КЭДО + Госключ",
+                         "parent":  null,
+                         "order":  37,
+                         "title":  "Как подписывать кадровые документы по машиночитаемой доверенности"
+                     },
+                     {
+                         "id":  "22315184",
+                         "sectionId":  "161990",
+                         "section":  "КЭДО + Госключ",
+                         "parent":  null,
+                         "order":  37,
+                         "title":  "Особенности приложения Госключ"
+                     },
+                     {
+                         "id":  "28905516",
+                         "sectionId":  "161990",
+                         "section":  "КЭДО + Госключ",
+                         "parent":  null,
+                         "order":  37,
+                         "title":  "Как подключить Госключ без API-ключа"
+                     },
+                     {
+                         "id":  "18453372",
+                         "sectionId":  "160630",
+                         "section":  "Подпись",
+                         "parent":  null,
+                         "order":  38,
+                         "title":  "Битрикс24 Подпись: соглашение об электронном документообороте"
+                     },
+                     {
+                         "id":  "22365326",
+                         "sectionId":  "160630",
+                         "section":  "Подпись",
+                         "parent":  null,
+                         "order":  38,
+                         "title":  "Как настроить права доступа к разделу Подпись"
+                     },
+                     {
+                         "id":  "25976808",
+                         "sectionId":  "160630",
+                         "section":  "Подпись",
+                         "parent":  null,
+                         "order":  38,
+                         "title":  "Контрагенты подписания: кто это и как с ними работать"
+                     },
+                     {
+                         "id":  "26378460",
+                         "sectionId":  "160630",
+                         "section":  "Подпись",
+                         "parent":  null,
+                         "order":  38,
+                         "title":  "Канбан в Битрикс24 Подпись: как настроить и работать с документами"
+                     },
+                     {
+                         "id":  "26847650",
+                         "sectionId":  "160630",
+                         "section":  "Подпись",
+                         "parent":  null,
+                         "order":  38,
+                         "title":  "Битрикс24 Подпись: начало работы"
+                     },
+                     {
+                         "id":  "26862330",
+                         "sectionId":  "160630",
+                         "section":  "Подпись",
+                         "parent":  null,
+                         "order":  38,
+                         "title":  "Битрикс24 Подпись: как создать и отправить электронный документ"
+                     },
+                     {
+                         "id":  "17302210",
+                         "sectionId":  "45936",
+                         "section":  "Мой тариф",
+                         "parent":  null,
+                         "order":  40,
+                         "title":  "Как настроить автопродление тарифа облачного Битрикс24"
+                     },
+                     {
+                         "id":  "17525472",
+                         "sectionId":  "45936",
+                         "section":  "Мой тариф",
+                         "parent":  null,
+                         "order":  40,
+                         "title":  "Максимальное количество пользователей в Битрикс24 на разных тарифах"
+                     },
+                     {
+                         "id":  "21538090",
+                         "sectionId":  "45936",
+                         "section":  "Мой тариф",
+                         "parent":  null,
+                         "order":  40,
+                         "title":  "Как включить Демо"
+                     },
+                     {
+                         "id":  "24515854",
+                         "sectionId":  "45936",
+                         "section":  "Мой тариф",
+                         "parent":  null,
+                         "order":  40,
+                         "title":  "Возможности раздела Мой тариф"
+                     },
+                     {
+                         "id":  "28721100",
+                         "sectionId":  "45936",
+                         "section":  "Мой тариф",
+                         "parent":  null,
+                         "order":  40,
+                         "title":  "Возможности бесплатного тарифа Битрикс24"
+                     },
+                     {
+                         "id":  "21920160",
+                         "sectionId":  "159798",
+                         "section":  "Бусты",
+                         "parent":  null,
+                         "order":  41,
+                         "title":  "Бусты скорости: как быстро создавать документы в CRM"
+                     },
+                     {
+                         "id":  "26312138",
+                         "sectionId":  "159798",
+                         "section":  "Бусты",
+                         "parent":  null,
+                         "order":  41,
+                         "title":  "Бусты в облачной версии Битрикс24"
+                     },
+                     {
+                         "id":  "27716674",
+                         "sectionId":  "159798",
+                         "section":  "Бусты",
+                         "parent":  null,
+                         "order":  41,
+                         "title":  "Бусты документов: дополнительные сессии одновременного редактирования"
+                     },
+                     {
+                         "id":  "28435966",
+                         "sectionId":  "159798",
+                         "section":  "Бусты",
+                         "parent":  null,
+                         "order":  41,
+                         "title":  "Бусты документов в коробочной версии Битрикс24"
+                     },
+                     {
+                         "id":  "11231424",
+                         "sectionId":  "45917",
+                         "section":  "Лента Новостей",
+                         "parent":  null,
+                         "order":  42,
+                         "title":  "Как создать задачу из сообщения в ленте новостей"
+                     },
+                     {
+                         "id":  "12051282",
+                         "sectionId":  "45917",
+                         "section":  "Лента Новостей",
+                         "parent":  null,
+                         "order":  42,
+                         "title":  "Кто такой скрытый получатель"
+                     },
+                     {
+                         "id":  "16447874",
+                         "sectionId":  "45917",
+                         "section":  "Лента Новостей",
+                         "parent":  null,
+                         "order":  42,
+                         "title":  "Как найти сообщение в ленте Новостей"
+                     },
+                     {
+                         "id":  "18634548",
+                         "sectionId":  "45917",
+                         "section":  "Лента Новостей",
+                         "parent":  null,
+                         "order":  42,
+                         "title":  "Что такое Лента в Битрикс24"
+                     },
+                     {
+                         "id":  "26366130",
+                         "sectionId":  "45917",
+                         "section":  "Лента Новостей",
+                         "parent":  null,
+                         "order":  42,
+                         "title":  "Как поблагодарить коллег в ленте новостей Битрикс24"
+                     },
+                     {
+                         "id":  "26694796",
+                         "sectionId":  "45917",
+                         "section":  "Лента Новостей",
+                         "parent":  null,
+                         "order":  42,
+                         "title":  "Частые вопросы о ленте новостей"
+                     },
+                     {
+                         "id":  "28399218",
+                         "sectionId":  "45917",
+                         "section":  "Лента Новостей",
+                         "parent":  null,
+                         "order":  42,
+                         "title":  "Как создать важное сообщение в ленте новостей"
+                     },
+                     {
+                         "id":  "28432320",
+                         "sectionId":  "45917",
+                         "section":  "Лента Новостей",
+                         "parent":  null,
+                         "order":  42,
+                         "title":  "Как создать опрос в ленте новостей"
+                     },
+                     {
+                         "id":  "11591694",
+                         "sectionId":  "45937",
+                         "section":  "Приложение Битрикс24",
+                         "parent":  null,
+                         "order":  43,
+                         "title":  "Приложение Битрикс24: начало работы"
+                     },
+                     {
+                         "id":  "16171806",
+                         "sectionId":  "45937",
+                         "section":  "Приложение Битрикс24",
+                         "parent":  null,
+                         "order":  43,
+                         "title":  "Приложение Битрикс24 для Linux"
+                     },
+                     {
+                         "id":  "18409392",
+                         "sectionId":  "45937",
+                         "section":  "Приложение Битрикс24",
+                         "parent":  null,
+                         "order":  43,
+                         "title":  "Как установить приложение Битрикс24 на ALT Linux"
+                     },
+                     {
+                         "id":  "20628882",
+                         "sectionId":  "45937",
+                         "section":  "Приложение Битрикс24",
+                         "parent":  null,
+                         "order":  43,
+                         "title":  "Как обновить приложение Битрикс24"
+                     },
+                     {
+                         "id":  "20732130",
+                         "sectionId":  "45937",
+                         "section":  "Приложение Битрикс24",
+                         "parent":  null,
+                         "order":  43,
+                         "title":  "Как скачать и установить приложение Битрикс24 на macOS и Windows"
+                     },
+                     {
+                         "id":  "21297742",
+                         "sectionId":  "45937",
+                         "section":  "Приложение Битрикс24",
+                         "parent":  null,
+                         "order":  43,
+                         "title":  "Битрикс24 Синк: видеозвонки в приложении Битрикс24"
+                     },
+                     {
+                         "id":  "22443064",
+                         "sectionId":  "45937",
+                         "section":  "Приложение Битрикс24",
+                         "parent":  null,
+                         "order":  43,
+                         "title":  "Битрикс24 Синк: как создать резюме встречи во время звонка"
+                     },
+                     {
+                         "id":  "25546754",
+                         "sectionId":  "45937",
+                         "section":  "Приложение Битрикс24",
+                         "parent":  null,
+                         "order":  43,
+                         "title":  "Как настроить приложение Битрикс24"
+                     },
+                     {
+                         "id":  "17302258",
+                         "sectionId":  "45945",
+                         "section":  "Общие вопросы",
+                         "parent":  null,
+                         "order":  44,
+                         "title":  "Как переключить язык интерфейса в Битрикс24"
+                     },
+                     {
+                         "id":  "21060098",
+                         "sectionId":  "45945",
+                         "section":  "Общие вопросы",
+                         "parent":  null,
+                         "order":  44,
+                         "title":  "Неактивные Битрикс24: что важно знать"
+                     },
+                     {
+                         "id":  "22218424",
+                         "sectionId":  "45945",
+                         "section":  "Общие вопросы",
+                         "parent":  null,
+                         "order":  44,
+                         "title":  "Как удалить профиль в Битрикс24"
+                     },
+                     {
+                         "id":  "22391872",
+                         "sectionId":  "45945",
+                         "section":  "Общие вопросы",
+                         "parent":  null,
+                         "order":  44,
+                         "title":  "Ограничение на поиск задач и элементов CRM"
+                     },
+                     {
+                         "id":  "25505108",
+                         "sectionId":  "45945",
+                         "section":  "Общие вопросы",
+                         "parent":  null,
+                         "order":  44,
+                         "title":  "Как искать элементы в CRM"
+                     },
+                     {
+                         "id":  "1291620",
+                         "sectionId":  "46733",
+                         "section":  "Мои данные в Битрикс24",
+                         "parent":  null,
+                         "order":  45,
+                         "title":  "Что произойдет с данными, если вы перестанете использовать Битрикс24"
+                     },
+                     {
+                         "id":  "24955644",
+                         "sectionId":  "46733",
+                         "section":  "Мои данные в Битрикс24",
+                         "parent":  null,
+                         "order":  45,
+                         "title":  "Как восстановить данные в Битрикс24"
+                     },
+                     {
+                         "id":  "2663151",
+                         "sectionId":  "46736",
+                         "section":  "Технические детали",
+                         "parent":  null,
+                         "order":  46,
+                         "title":  "Доступ к Битрикс24 для техподдержки"
+                     },
+                     {
+                         "id":  "7557973",
+                         "sectionId":  "46736",
+                         "section":  "Технические детали",
+                         "parent":  null,
+                         "order":  46,
+                         "title":  "SSL-сертификаты в Битрикс24"
+                     },
+                     {
+                         "id":  "25359914",
+                         "sectionId":  "48602",
+                         "section":  "Виджет сотрудника",
+                         "parent":  null,
+                         "order":  47,
+                         "title":  "Виджет сотрудника: новый интерфейс и возможности"
+                     },
+                     {
+                         "id":  "25559494",
+                         "sectionId":  "48602",
+                         "section":  "Виджет сотрудника",
+                         "parent":  null,
+                         "order":  47,
+                         "title":  "Как изменить тему оформления Битрикс24"
+                     },
+                     {
+                         "id":  "26508532",
+                         "sectionId":  "48602",
+                         "section":  "Виджет сотрудника",
+                         "parent":  null,
+                         "order":  47,
+                         "title":  "Как изменить данные и настроить профиль сотрудника в Битрикс24"
+                     },
+                     {
+                         "id":  "27600210",
+                         "sectionId":  "48602",
+                         "section":  "Виджет сотрудника",
+                         "parent":  null,
+                         "order":  47,
+                         "title":  "Пароли приложений в Битрикс24: что это и как с ними работать"
+                     },
+                     {
+                         "id":  "5392179",
+                         "sectionId":  "48602",
+                         "section":  "Виджет сотрудника",
+                         "parent":  null,
+                         "order":  47,
+                         "title":  "Профиль сотрудника в Битрикс24: возможности и настройки"
+                     },
+                     {
+                         "id":  "17410400",
+                         "sectionId":  "148408",
+                         "section":  "Поддержка Битрикс24",
+                         "parent":  null,
+                         "order":  49,
+                         "title":  "Как написать в поддержку Битрикс24"
+                     },
+                     {
+                         "id":  "17585752",
+                         "sectionId":  "148408",
+                         "section":  "Поддержка Битрикс24",
+                         "parent":  null,
+                         "order":  49,
+                         "title":  "Как открыть несколько чатов с поддержкой Битрикс24"
+                     },
+                     {
+                         "id":  "21753870",
+                         "sectionId":  "148408",
+                         "section":  "Поддержка Битрикс24",
+                         "parent":  null,
+                         "order":  49,
+                         "title":  "Как подключить партнерскую поддержку"
+                     },
+                     {
+                         "id":  "21794510",
+                         "sectionId":  "148408",
+                         "section":  "Поддержка Битрикс24",
+                         "parent":  null,
+                         "order":  49,
+                         "title":  "Что сообщить в поддержку, если не работает Битрикс24"
+                     },
+                     {
+                         "id":  "24351052",
+                         "sectionId":  "148408",
+                         "section":  "Поддержка Битрикс24",
+                         "parent":  null,
+                         "order":  49,
+                         "title":  "Виртуальный помощник в чатах с поддержкой Битрикс24"
+                     },
+                     {
+                         "id":  "24381224",
+                         "sectionId":  "148408",
+                         "section":  "Поддержка Битрикс24",
+                         "parent":  null,
+                         "order":  49,
+                         "title":  "Как обратиться в поддержку приложений Битрикс24 Маркетплейс"
+                     },
+                     {
+                         "id":  "26823620",
+                         "sectionId":  "148408",
+                         "section":  "Поддержка Битрикс24",
+                         "parent":  null,
+                         "order":  49,
+                         "title":  "Частые вопросы о поддержке Битрикс24"
+                     },
+                     {
+                         "id":  "22540324",
+                         "sectionId":  "148410",
+                         "section":  "Для технических специалистов",
+                         "parent":  null,
+                         "order":  50,
+                         "title":  "Как узнать IP-адрес и выполнить трассировку маршрута"
+                     },
+                     {
+                         "id":  "22792730",
+                         "sectionId":  "148410",
+                         "section":  "Для технических специалистов",
+                         "parent":  null,
+                         "order":  50,
+                         "title":  "Как записать HAR-файл"
+                     },
+                     {
+                         "id":  "22800538",
+                         "sectionId":  "148410",
+                         "section":  "Для технических специалистов",
+                         "parent":  null,
+                         "order":  50,
+                         "title":  "Как выполнить MTR-диагностику"
+                     },
+                     {
+                         "id":  "24667624",
+                         "sectionId":  "149484",
+                         "section":  "Регистрация и вход",
+                         "parent":  null,
+                         "order":  51,
+                         "title":  "Частые вопросы об авторизации в Битрикс24"
+                     },
+                     {
+                         "id":  "24945824",
+                         "sectionId":  "164394",
+                         "section":  "Управление аккаунтом в Битрикс24",
+                         "parent":  null,
+                         "order":  52,
+                         "title":  "Как изменить логин и пароль для входа в Битрикс24"
+                     },
+                     {
+                         "id":  "25300002",
+                         "sectionId":  "164394",
+                         "section":  "Управление аккаунтом в Битрикс24",
+                         "parent":  null,
+                         "order":  52,
+                         "title":  "Как создать логин и пароль при входе через соцсети"
+                     },
+                     {
+                         "id":  "25510160",
+                         "sectionId":  "164394",
+                         "section":  "Управление аккаунтом в Битрикс24",
+                         "parent":  null,
+                         "order":  52,
+                         "title":  "Как создать пароль для входа в Битрикс24"
+                     },
+                     {
+                         "id":  "25703148",
+                         "sectionId":  "164394",
+                         "section":  "Управление аккаунтом в Битрикс24",
+                         "parent":  null,
+                         "order":  52,
+                         "title":  "Что такое Битрикс24 Паспорт"
+                     },
+                     {
+                         "id":  "19503644",
+                         "sectionId":  "164396",
+                         "section":  "Настройка двухфакторной аутентификации",
+                         "parent":  null,
+                         "order":  53,
+                         "title":  "Как защитить вход в Битрикс24 с помощью одноразового кода"
+                     },
+                     {
+                         "id":  "25708190",
+                         "sectionId":  "164396",
+                         "section":  "Настройка двухфакторной аутентификации",
+                         "parent":  null,
+                         "order":  53,
+                         "title":  "Как настроить двухфакторную аутентификацию на новом телефоне"
+                     },
+                     {
+                         "id":  "17499092",
+                         "sectionId":  "153338",
+                         "section":  "Интеграция 1С и Битрикс24",
+                         "parent":  null,
+                         "order":  54,
+                         "title":  "Общее описание раздела Битрикс24"
+                     },
+                     {
+                         "id":  "17499566",
+                         "sectionId":  "153338",
+                         "section":  "Интеграция 1С и Битрикс24",
+                         "parent":  null,
+                         "order":  54,
+                         "title":  "Синхронизация данных"
+                     },
+                     {
+                         "id":  "17499654",
+                         "sectionId":  "153338",
+                         "section":  "Интеграция 1С и Битрикс24",
+                         "parent":  null,
+                         "order":  54,
+                         "title":  "Настройка синхронизации смарт-процессов с 1С"
+                     },
+                     {
+                         "id":  "20445404",
+                         "sectionId":  "153338",
+                         "section":  "Интеграция 1С и Битрикс24",
+                         "parent":  null,
+                         "order":  54,
+                         "title":  "Как настроить синхронизацию складского учета 1С и Битрикс24"
+                     },
+                     {
+                         "id":  "26617332",
+                         "sectionId":  "153338",
+                         "section":  "Интеграция 1С и Битрикс24",
+                         "parent":  null,
+                         "order":  54,
+                         "title":  "Коннектор к 1С: начало работы"
+                     },
+                     {
+                         "id":  "11162430",
+                         "sectionId":  "161782",
+                         "section":  "Аналитика",
+                         "parent":  null,
+                         "order":  57,
+                         "title":  "Отчетный период в CRM"
+                     },
+                     {
+                         "id":  "14888370",
+                         "sectionId":  "161782",
+                         "section":  "Аналитика",
+                         "parent":  null,
+                         "order":  57,
+                         "title":  "Битрикс24.BI-Аналитика"
+                     },
+                     {
+                         "id":  "18897300",
+                         "sectionId":  "161782",
+                         "section":  "Аналитика",
+                         "parent":  null,
+                         "order":  57,
+                         "title":  "BI Конструктор для создания аналитических отчетов"
+                     },
+                     {
+                         "id":  "9673603",
+                         "sectionId":  "161782",
+                         "section":  "Аналитика",
+                         "parent":  null,
+                         "order":  57,
+                         "title":  "CRM-аналитика"
+                     },
+                     {
+                         "id":  "28506858",
+                         "sectionId":  "167110",
+                         "section":  "Вайбкод",
+                         "parent":  null,
+                         "order":  59,
+                         "title":  "Частые вопросы о Битрикс24 Вайбкод"
+                     },
+                     {
+                         "id":  "28397818",
+                         "sectionId":  "168064",
+                         "section":  "Проекты AI",
+                         "parent":  null,
+                         "order":  60,
+                         "title":  "Новые проекты AI: пространство, где команда движется к цели"
+                     },
+                     {
+                         "id":  "28540716",
+                         "sectionId":  "168064",
+                         "section":  "Проекты AI",
+                         "parent":  null,
+                         "order":  60,
+                         "title":  "Как создать проект в Битрикс24"
+                     },
+                     {
+                         "id":  "28740560",
+                         "sectionId":  "168064",
+                         "section":  "Проекты AI",
+                         "parent":  null,
+                         "order":  60,
+                         "title":  "Как пригласить сотрудника или гостя в проект"
+                     },
+                     {
+                         "id":  "28786832",
+                         "sectionId":  "168064",
+                         "section":  "Проекты AI",
+                         "parent":  null,
+                         "order":  60,
+                         "title":  "Какие инструменты есть в проектах Битрикс24"
+                     },
+                     {
+                         "id":  "28800262",
+                         "sectionId":  "168064",
+                         "section":  "Проекты AI",
+                         "parent":  null,
+                         "order":  60,
+                         "title":  "Как сменить владельца проекта"
+                     },
+                     {
+                         "id":  "28850342",
+                         "sectionId":  "168064",
+                         "section":  "Проекты AI",
+                         "parent":  null,
+                         "order":  60,
+                         "title":  "Как скопировать проект в Битрикс24"
+                     },
+                     {
+                         "id":  "28851636",
+                         "sectionId":  "168160",
+                         "section":  "Филиальная сеть",
+                         "parent":  null,
+                         "order":  61,
+                         "title":  "Как создать Битрикс24 для филиальной сети"
+                     },
+                     {
+                         "id":  "28871512",
+                         "sectionId":  "168160",
+                         "section":  "Филиальная сеть",
+                         "parent":  null,
+                         "order":  61,
+                         "title":  "Филиальная сеть в Битрикс24"
+                     },
+                     {
+                         "id":  "28875066",
+                         "sectionId":  "168160",
+                         "section":  "Филиальная сеть",
+                         "parent":  null,
+                         "order":  61,
+                         "title":  "Как отключить филиал от Битрикс24"
+                     },
+                     {
+                         "id":  "28941394",
+                         "sectionId":  "168160",
+                         "section":  "Филиальная сеть",
+                         "parent":  null,
+                         "order":  61,
+                         "title":  "Как связать существующий Битрикс24 с филиальной сетью"
+                     },
+                     {
+                         "id":  "17759636",
+                         "sectionId":  "168830",
+                         "section":  "Покупки и документы",
+                         "parent":  null,
+                         "order":  63,
+                         "title":  "История заказов"
+                     },
+                     {
+                         "id":  "27600196",
+                         "sectionId":  "168830",
+                         "section":  "Покупки и документы",
+                         "parent":  null,
+                         "order":  63,
+                         "title":  "Как купить лицензию Битрикс24 и подписку BitrixGPT + Маркетплейс через партнера"
+                     },
+                     {
+                         "id":  "28080580",
+                         "sectionId":  "168830",
+                         "section":  "Покупки и документы",
+                         "parent":  null,
+                         "order":  63,
+                         "title":  "Как получить закрывающие документы за оплату лицензии Битрикс24"
+                     },
+                     {
+                         "id":  "28798704",
+                         "sectionId":  "168830",
+                         "section":  "Покупки и документы",
+                         "parent":  null,
+                         "order":  63,
+                         "title":  "Правила оформления заказов"
+                     },
+                     {
+                         "id":  "6519155",
+                         "sectionId":  "151374",
+                         "section":  "Сайты и Магазины",
+                         "parent":  null,
+                         "order":  64,
+                         "title":  "Правила использования Битрикс24.Сайтов"
+                     },
+                     {
+                         "id":  "6527585",
+                         "sectionId":  "151374",
+                         "section":  "Сайты и Магазины",
+                         "parent":  null,
+                         "order":  64,
+                         "title":  "Настройки сайтов и страниц"
+                     },
+                     {
+                         "id":  "7919271",
+                         "sectionId":  "151374",
+                         "section":  "Сайты и Магазины",
+                         "parent":  null,
+                         "order":  64,
+                         "title":  "Как добавить сайт в поиск Яндекс"
+                     },
+                     {
+                         "id":  "26702902",
+                         "sectionId":  "93291",
+                         "section":  "Сайты",
+                         "parent":  null,
+                         "order":  65,
+                         "title":  "Частые вопросы о сайтах Битрикс24"
+                     },
+                     {
+                         "id":  "7704105",
+                         "sectionId":  "93291",
+                         "section":  "Сайты",
+                         "parent":  null,
+                         "order":  65,
+                         "title":  "Как установить модуль сайтов в коробке"
+                     },
+                     {
+                         "id":  "7908779",
+                         "sectionId":  "93291",
+                         "section":  "Сайты",
+                         "parent":  null,
+                         "order":  65,
+                         "title":  "Как добавить сайт в поиск Google"
+                     },
+                     {
+                         "id":  "8756173",
+                         "sectionId":  "93291",
+                         "section":  "Сайты",
+                         "parent":  null,
+                         "order":  65,
+                         "title":  "Как добавить сайт в поиск Bing"
+                     },
+                     {
+                         "id":  "13903286",
+                         "sectionId":  "162014",
+                         "section":  "Настройки сайтов",
+                         "parent":  null,
+                         "order":  66,
+                         "title":  "Как изменить дизайн сайтов и магазинов в Битрикс24"
+                     },
+                     {
+                         "id":  "16168436",
+                         "sectionId":  "162014",
+                         "section":  "Настройки сайтов",
+                         "parent":  null,
+                         "order":  66,
+                         "title":  "Анимация, FAQ блок и Gif-картинки"
+                     },
+                     {
+                         "id":  "27705138",
+                         "sectionId":  "162014",
+                         "section":  "Настройки сайтов",
+                         "parent":  null,
+                         "order":  66,
+                         "title":  "Как ускорить загрузку сайта, созданного в Битрикс24"
+                     },
+                     {
+                         "id":  "28868922",
+                         "sectionId":  "162014",
+                         "section":  "Настройки сайтов",
+                         "parent":  null,
+                         "order":  66,
+                         "title":  "Как настроить действие по клику на сайте и в интернет-магазине"
+                     },
+                     {
+                         "id":  "12677994",
+                         "sectionId":  "108711",
+                         "section":  "Магазины",
+                         "parent":  null,
+                         "order":  67,
+                         "title":  "Интернет-магазин. Триггеры"
+                     },
+                     {
+                         "id":  "12706110",
+                         "sectionId":  "108711",
+                         "section":  "Магазины",
+                         "parent":  null,
+                         "order":  67,
+                         "title":  "Интернет-магазин. Роботы для сотрудника"
+                     },
+                     {
+                         "id":  "28848860",
+                         "sectionId":  "108711",
+                         "section":  "Магазины",
+                         "parent":  null,
+                         "order":  67,
+                         "title":  "Как настроить статусы заказа и доставки в Битрикс24"
+                     },
+                     {
+                         "id":  "29072934",
+                         "sectionId":  "108711",
+                         "section":  "Магазины",
+                         "parent":  null,
+                         "order":  67,
+                         "title":  "Как настроить платежные системы в интернет-магазине"
+                     },
+                     {
+                         "id":  "12303134",
+                         "sectionId":  "162016",
+                         "section":  "Настройки магазинов",
+                         "parent":  null,
+                         "order":  68,
+                         "title":  "Вопросы и ответы по собственным доменам"
+                     },
+                     {
+                         "id":  "21837540",
+                         "sectionId":  "162016",
+                         "section":  "Настройки магазинов",
+                         "parent":  null,
+                         "order":  68,
+                         "title":  "Как привязать домен к сайту или интернет-магазину"
+                     },
+                     {
+                         "id":  "22449704",
+                         "sectionId":  "162016",
+                         "section":  "Настройки магазинов",
+                         "parent":  null,
+                         "order":  68,
+                         "title":  "Как отвязать свой домен от сайта или интернет-магазина"
+                     },
+                     {
+                         "id":  "23105638",
+                         "sectionId":  "162016",
+                         "section":  "Настройки магазинов",
+                         "parent":  null,
+                         "order":  68,
+                         "title":  "Как подключить свой домен к сайту или магазину через Beget"
+                     },
+                     {
+                         "id":  "17858278",
+                         "sectionId":  "143886",
+                         "section":  "Складской учет",
+                         "parent":  null,
+                         "order":  69,
+                         "title":  "Методы списания и отчет о валовой прибыли"
+                     },
+                     {
+                         "id":  "20233688",
+                         "sectionId":  "143886",
+                         "section":  "Складской учет",
+                         "parent":  null,
+                         "order":  69,
+                         "title":  "Режимы работы складского учета: в Битрикс24 и 1С"
+                     },
+                     {
+                         "id":  "28794422",
+                         "sectionId":  "143886",
+                         "section":  "Складской учет",
+                         "parent":  null,
+                         "order":  69,
+                         "title":  "Как перенести данные из других сервисов складского учета в Битрикс24"
+                     },
+                     {
+                         "id":  "19133562",
+                         "sectionId":  "143898",
+                         "section":  "Начало работы",
+                         "parent":  null,
+                         "order":  70,
+                         "title":  "Как работает метод списания по порядку прихода товара на склад (ФИФО)"
+                     },
+                     {
+                         "id":  "19134456",
+                         "sectionId":  "143898",
+                         "section":  "Начало работы",
+                         "parent":  null,
+                         "order":  70,
+                         "title":  "Как работает метод списания по средней стоимости товара"
+                     },
+                     {
+                         "id":  "21805344",
+                         "sectionId":  "143898",
+                         "section":  "Начало работы",
+                         "parent":  null,
+                         "order":  70,
+                         "title":  "Складской учет: страница настроек"
+                     },
+                     {
+                         "id":  "27765678",
+                         "sectionId":  "143898",
+                         "section":  "Начало работы",
+                         "parent":  null,
+                         "order":  70,
+                         "title":  "Пользовательские поля в карточке склада"
+                     },
+                     {
+                         "id":  "28323482",
+                         "sectionId":  "143898",
+                         "section":  "Начало работы",
+                         "parent":  null,
+                         "order":  70,
+                         "title":  "Складской учет в Битрикс24: начало работы"
+                     },
+                     {
+                         "id":  "28810230",
+                         "sectionId":  "143898",
+                         "section":  "Начало работы",
+                         "parent":  null,
+                         "order":  70,
+                         "title":  "Как включить складской учет в режиме Сделки + Заказы"
+                     },
+                     {
+                         "id":  "18563126",
+                         "sectionId":  "143900",
+                         "section":  "Документы",
+                         "parent":  null,
+                         "order":  71,
+                         "title":  "Как работать с документами реализации"
+                     },
+                     {
+                         "id":  "22524122",
+                         "sectionId":  "143900",
+                         "section":  "Документы",
+                         "parent":  null,
+                         "order":  71,
+                         "title":  "Как создать документ оприходования"
+                     },
+                     {
+                         "id":  "22558126",
+                         "sectionId":  "143900",
+                         "section":  "Документы",
+                         "parent":  null,
+                         "order":  71,
+                         "title":  "Как создать документ прихода"
+                     },
+                     {
+                         "id":  "23094464",
+                         "sectionId":  "143900",
+                         "section":  "Документы",
+                         "parent":  null,
+                         "order":  71,
+                         "title":  "Как создать документ перемещения"
+                     },
+                     {
+                         "id":  "18564140",
+                         "sectionId":  "143904",
+                         "section":  "Складской учет в CRM",
+                         "parent":  null,
+                         "order":  72,
+                         "title":  "Как зарезервировать товар"
+                     },
+                     {
+                         "id":  "25227614",
+                         "sectionId":  "143904",
+                         "section":  "Складской учет в CRM",
+                         "parent":  null,
+                         "order":  72,
+                         "title":  "Складской учет: как работает документ реализации в сделках"
+                     },
+                     {
+                         "id":  "27911992",
+                         "sectionId":  "143904",
+                         "section":  "Складской учет в CRM",
+                         "parent":  null,
+                         "order":  72,
+                         "title":  "Как узнать, в каких сделках зарезервирован товар"
+                     },
+                     {
+                         "id":  "23440468",
+                         "sectionId":  "45925",
+                         "section":  "CRM",
+                         "parent":  null,
+                         "order":  73,
+                         "title":  "Как выбрать режим работы CRM"
+                     },
+                     {
+                         "id":  "25817644",
+                         "sectionId":  "45925",
+                         "section":  "CRM",
+                         "parent":  null,
+                         "order":  73,
+                         "title":  "Частые вопросы о CRM"
+                     },
+                     {
+                         "id":  "26035204",
+                         "sectionId":  "45925",
+                         "section":  "CRM",
+                         "parent":  null,
+                         "order":  73,
+                         "title":  "Как начать работать с CRM в Битрикс24"
+                     },
+                     {
+                         "id":  "28323344",
+                         "sectionId":  "45925",
+                         "section":  "CRM",
+                         "parent":  null,
+                         "order":  73,
+                         "title":  "Как рассчитывать налоги и доставку по местоположению клиента"
+                     },
+                     {
+                         "id":  "25026458",
+                         "sectionId":  "161866",
+                         "section":  "Начало работы в CRM",
+                         "parent":  null,
+                         "order":  74,
+                         "title":  "Как работать с Умными сценариями в CRM"
+                     },
+                     {
+                         "id":  "23172742",
+                         "sectionId":  "47411",
+                         "section":  "Лиды",
+                         "parent":  null,
+                         "order":  75,
+                         "title":  "Лиды: что это и как с ними работать"
+                     },
+                     {
+                         "id":  "23260824",
+                         "sectionId":  "47411",
+                         "section":  "Лиды",
+                         "parent":  null,
+                         "order":  75,
+                         "title":  "Как конвертировать лид"
+                     },
+                     {
+                         "id":  "26161116",
+                         "sectionId":  "47598",
+                         "section":  "Сделки",
+                         "parent":  null,
+                         "order":  76,
+                         "title":  "Сделки: что это и как с ними работать"
+                     },
+                     {
+                         "id":  "24945678",
+                         "sectionId":  "47596",
+                         "section":  "Контакты",
+                         "parent":  null,
+                         "order":  77,
+                         "title":  "Как сделать обзвон клиентов в CRM"
+                     },
+                     {
+                         "id":  "25042958",
+                         "sectionId":  "47596",
+                         "section":  "Контакты",
+                         "parent":  null,
+                         "order":  77,
+                         "title":  "Контакты: что это и как с ними работать"
+                     },
+                     {
+                         "id":  "28202602",
+                         "sectionId":  "47599",
+                         "section":  "Счета",
+                         "parent":  null,
+                         "order":  79,
+                         "title":  "Счета: что это и как с ними работать"
+                     },
+                     {
+                         "id":  "18388076",
+                         "sectionId":  "47595",
+                         "section":  "Мои дела",
+                         "parent":  null,
+                         "order":  80,
+                         "title":  "Как работают счетчики в делах CRM"
+                     },
+                     {
+                         "id":  "18677680",
+                         "sectionId":  "47595",
+                         "section":  "Мои дела",
+                         "parent":  null,
+                         "order":  80,
+                         "title":  "Push CRM — подход, который помогает работать с клиентами"
+                     },
+                     {
+                         "id":  "21623188",
+                         "sectionId":  "47595",
+                         "section":  "Мои дела",
+                         "parent":  null,
+                         "order":  80,
+                         "title":  "Мои дела в CRM"
+                     },
+                     {
+                         "id":  "27844326",
+                         "sectionId":  "47595",
+                         "section":  "Мои дела",
+                         "parent":  null,
+                         "order":  80,
+                         "title":  "Как настроить права доступа к делам в CRM"
+                     },
+                     {
+                         "id":  "14749830",
+                         "sectionId":  "47605",
+                         "section":  "Настройки",
+                         "parent":  null,
+                         "order":  81,
+                         "title":  "Как работают права CRM в случае конфликтов"
+                     },
+                     {
+                         "id":  "21600612",
+                         "sectionId":  "47605",
+                         "section":  "Настройки",
+                         "parent":  null,
+                         "order":  81,
+                         "title":  "Как заполнить справочники в CRM"
+                     },
+                     {
+                         "id":  "22048980",
+                         "sectionId":  "47605",
+                         "section":  "Настройки",
+                         "parent":  null,
+                         "order":  81,
+                         "title":  "Пользовательские поля в CRM"
+                     },
+                     {
+                         "id":  "27632310",
+                         "sectionId":  "47605",
+                         "section":  "Настройки",
+                         "parent":  null,
+                         "order":  81,
+                         "title":  "Как создать и настроить свойства товаров в CRM"
+                     },
+                     {
+                         "id":  "5429733",
+                         "sectionId":  "47605",
+                         "section":  "Настройки",
+                         "parent":  null,
+                         "order":  81,
+                         "title":  "Способы оплаты"
+                     },
+                     {
+                         "id":  "22091166",
+                         "sectionId":  "161614",
+                         "section":  "Маркетинг",
+                         "parent":  null,
+                         "order":  82,
+                         "title":  "Как настроить права доступа к Маркетингу"
+                     },
+                     {
+                         "id":  "22846420",
+                         "sectionId":  "161614",
+                         "section":  "Маркетинг",
+                         "parent":  null,
+                         "order":  82,
+                         "title":  "Как настроить раздел Маркетинг"
+                     },
+                     {
+                         "id":  "22952868",
+                         "sectionId":  "161614",
+                         "section":  "Маркетинг",
+                         "parent":  null,
+                         "order":  82,
+                         "title":  "Как собирать согласия на получение рассылок"
+                     },
+                     {
+                         "id":  "23019390",
+                         "sectionId":  "161614",
+                         "section":  "Маркетинг",
+                         "parent":  null,
+                         "order":  82,
+                         "title":  "Как создать почтовую рассылку"
+                     },
+                     {
+                         "id":  "21076480",
+                         "sectionId":  "161616",
+                         "section":  "Начало работы",
+                         "parent":  null,
+                         "order":  83,
+                         "title":  "Как создать сегмент клиентов для маркетинговой рассылки"
+                     },
+                     {
+                         "id":  "22085946",
+                         "sectionId":  "161616",
+                         "section":  "Начало работы",
+                         "parent":  null,
+                         "order":  83,
+                         "title":  "Как привязать номер телефона для работы с рассылками и CRM-формами"
+                     },
+                     {
+                         "id":  "12302778",
+                         "sectionId":  "161618",
+                         "section":  "Создание рассылок",
+                         "parent":  null,
+                         "order":  84,
+                         "title":  "Как настроить персонализированную рассылку"
+                     },
+                     {
+                         "id":  "22001658",
+                         "sectionId":  "161618",
+                         "section":  "Создание рассылок",
+                         "parent":  null,
+                         "order":  84,
+                         "title":  "Ошибки при почтовой рассылке: причины и решения проблем"
+                     },
+                     {
+                         "id":  "10437116",
+                         "sectionId":  "121991",
+                         "section":  "Центр продаж",
+                         "parent":  null,
+                         "order":  85,
+                         "title":  "Общие настройки платежных систем"
+                     },
+                     {
+                         "id":  "11864562",
+                         "sectionId":  "121991",
+                         "section":  "Центр продаж",
+                         "parent":  null,
+                         "order":  85,
+                         "title":  "Как подключить платежные системы"
+                     },
+                     {
+                         "id":  "27464728",
+                         "sectionId":  "121991",
+                         "section":  "Центр продаж",
+                         "parent":  null,
+                         "order":  85,
+                         "title":  "Частые вопросы о центре продаж"
+                     },
+                     {
+                         "id":  "9289135",
+                         "sectionId":  "121991",
+                         "section":  "Центр продаж",
+                         "parent":  null,
+                         "order":  85,
+                         "title":  "Что такое центр продаж"
+                     },
+                     {
+                         "id":  "9602691",
+                         "sectionId":  "121991",
+                         "section":  "Центр продаж",
+                         "parent":  null,
+                         "order":  85,
+                         "title":  "Центр продаж - с чего начать"
+                     },
+                     {
+                         "id":  "11604358",
+                         "sectionId":  "162034",
+                         "section":  "Начало работы",
+                         "parent":  null,
+                         "order":  86,
+                         "title":  "Как подключить Яндекс.Доставку"
+                     },
+                     {
+                         "id":  "9611075",
+                         "sectionId":  "162034",
+                         "section":  "Начало работы",
+                         "parent":  null,
+                         "order":  86,
+                         "title":  "Как добавить свои страницы"
+                     },
+                     {
+                         "id":  "9611971",
+                         "sectionId":  "162034",
+                         "section":  "Начало работы",
+                         "parent":  null,
+                         "order":  86,
+                         "title":  "Обработка персональных данных"
+                     },
+                     {
+                         "id":  "9612449",
+                         "sectionId":  "162034",
+                         "section":  "Начало работы",
+                         "parent":  null,
+                         "order":  86,
+                         "title":  "Работа с чеками"
+                     },
+                     {
+                         "id":  "10462440",
+                         "sectionId":  "162036",
+                         "section":  "Как подключить платежные системы",
+                         "parent":  null,
+                         "order":  87,
+                         "title":  "Как подключить оплату картой (Сбербанк)"
+                     },
+                     {
+                         "id":  "12595360",
+                         "sectionId":  "162036",
+                         "section":  "Как подключить платежные системы",
+                         "parent":  null,
+                         "order":  87,
+                         "title":  "Подключение и настройка Robokassa"
+                     },
+                     {
+                         "id":  "14053810",
+                         "sectionId":  "162036",
+                         "section":  "Как подключить платежные системы",
+                         "parent":  null,
+                         "order":  87,
+                         "title":  "Как проверить работу платежной системы"
+                     },
+                     {
+                         "id":  "17614994",
+                         "sectionId":  "162036",
+                         "section":  "Как подключить платежные системы",
+                         "parent":  null,
+                         "order":  87,
+                         "title":  "Как подключить ЮКаssa"
+                     },
+                     {
+                         "id":  "24689844",
+                         "sectionId":  "162036",
+                         "section":  "Как подключить платежные системы",
+                         "parent":  null,
+                         "order":  87,
+                         "title":  "Как подключить платежную систему Т‑Бизнес"
+                     },
+                     {
+                         "id":  "19123608",
+                         "sectionId":  "161786",
+                         "section":  "BI Конструктор",
+                         "parent":  null,
+                         "order":  88,
+                         "title":  "Как начать работать с BI Конструктором"
+                     },
+                     {
+                         "id":  "19123632",
+                         "sectionId":  "161786",
+                         "section":  "BI Конструктор",
+                         "parent":  null,
+                         "order":  88,
+                         "title":  "Как редактировать отчеты в BI Конструкторе"
+                     },
+                     {
+                         "id":  "19498394",
+                         "sectionId":  "161786",
+                         "section":  "BI Конструктор",
+                         "parent":  null,
+                         "order":  88,
+                         "title":  "Как создавать отчеты в BI Конструкторе"
+                     },
+                     {
+                         "id":  "20337242",
+                         "sectionId":  "162020",
+                         "section":  "Начало работы",
+                         "parent":  null,
+                         "order":  89,
+                         "title":  "BI Конструктор: страница настроек"
+                     },
+                     {
+                         "id":  "23962608",
+                         "sectionId":  "162020",
+                         "section":  "Начало работы",
+                         "parent":  null,
+                         "order":  89,
+                         "title":  "Наборы данных BI Конструктора: бизнес-процессы"
+                     },
+                     {
+                         "id":  "25556500",
+                         "sectionId":  "162020",
+                         "section":  "Начало работы",
+                         "parent":  null,
+                         "order":  89,
+                         "title":  "Как настроить права доступа в BI Конструкторе"
+                     },
+                     {
+                         "id":  "25711144",
+                         "sectionId":  "162020",
+                         "section":  "Начало работы",
+                         "parent":  null,
+                         "order":  89,
+                         "title":  "Как распределить права доступа в BI Конструкторе"
+                     },
+                     {
+                         "id":  "19498440",
+                         "sectionId":  "162022",
+                         "section":  "Отчеты",
+                         "parent":  null,
+                         "order":  90,
+                         "title":  "Как создать график на основе виртуального набора данных"
+                     },
+                     {
+                         "id":  "20041766",
+                         "sectionId":  "162022",
+                         "section":  "Отчеты",
+                         "parent":  null,
+                         "order":  90,
+                         "title":  "Как настроить готовый отчет в BI Конструкторе"
+                     },
+                     {
+                         "id":  "20173374",
+                         "sectionId":  "162022",
+                         "section":  "Отчеты",
+                         "parent":  null,
+                         "order":  90,
+                         "title":  "Как изменить оформление отчета в BI Конструкторе"
+                     },
+                     {
+                         "id":  "22658454",
+                         "sectionId":  "162022",
+                         "section":  "Отчеты",
+                         "parent":  null,
+                         "order":  90,
+                         "title":  "Как настроить параметры отчета в BI Конструкторе"
+                     },
+                     {
+                         "id":  "22848752",
+                         "sectionId":  "162024",
+                         "section":  "Наборы данных",
+                         "parent":  null,
+                         "order":  91,
+                         "title":  "Наборы данных BI Конструктора: сделки"
+                     },
+                     {
+                         "id":  "22924296",
+                         "sectionId":  "162024",
+                         "section":  "Наборы данных",
+                         "parent":  null,
+                         "order":  91,
+                         "title":  "Наборы данных BI Конструктора: лиды"
+                     },
+                     {
+                         "id":  "23096454",
+                         "sectionId":  "162024",
+                         "section":  "Наборы данных",
+                         "parent":  null,
+                         "order":  91,
+                         "title":  "Наборы данных BI Конструктора: товары из каталога"
+                     },
+                     {
+                         "id":  "23951190",
+                         "sectionId":  "162024",
+                         "section":  "Наборы данных",
+                         "parent":  null,
+                         "order":  91,
+                         "title":  "Наборы данных BI Конструктора: задачи и проекты"
+                     },
+                     {
+                         "id":  "18213196",
+                         "sectionId":  "45992",
+                         "section":  "Настройки",
+                         "parent":  null,
+                         "order":  92,
+                         "title":  "Как показать или скрыть разделы и инструменты в Битрикс24"
+                     },
+                     {
+                         "id":  "18213298",
+                         "sectionId":  "45992",
+                         "section":  "Настройки",
+                         "parent":  null,
+                         "order":  92,
+                         "title":  "Как изменить адрес Битрикс24 или подключить свой домен"
+                     },
+                     {
+                         "id":  "18213326",
+                         "sectionId":  "45992",
+                         "section":  "Настройки",
+                         "parent":  null,
+                         "order":  92,
+                         "title":  "Сайт-визитка: отправляем реквизиты компании в один клик"
+                     },
+                     {
+                         "id":  "18325288",
+                         "sectionId":  "45992",
+                         "section":  "Настройки",
+                         "parent":  null,
+                         "order":  92,
+                         "title":  "Как установить корпоративную тему оформления Битрикс24"
+                     },
+                     {
+                         "id":  "18371844",
+                         "sectionId":  "45992",
+                         "section":  "Настройки",
+                         "parent":  null,
+                         "order":  92,
+                         "title":  "Настройки Битрикс24: новый интерфейс и единый раздел"
+                     },
+                     {
+                         "id":  "18530242",
+                         "sectionId":  "45992",
+                         "section":  "Настройки",
+                         "parent":  null,
+                         "order":  92,
+                         "title":  "Как изменить название или логотип вашего Битрикс24"
+                     },
+                     {
+                         "id":  "18641966",
+                         "sectionId":  "45992",
+                         "section":  "Настройки",
+                         "parent":  null,
+                         "order":  92,
+                         "title":  "Как вернуться на домен Битрикс24"
+                     },
+                     {
+                         "id":  "18411818",
+                         "sectionId":  "161796",
+                         "section":  "Телефония",
+                         "parent":  null,
+                         "order":  93,
+                         "title":  "Как звонить и отвечать на звонки в Битрикс24"
+                     },
+                     {
+                         "id":  "19312126",
+                         "sectionId":  "161796",
+                         "section":  "Телефония",
+                         "parent":  null,
+                         "order":  93,
+                         "title":  "Как настроить номер в Битрикс24: пошаговые рекомендации"
+                     },
+                     {
+                         "id":  "19712028",
+                         "sectionId":  "161796",
+                         "section":  "Телефония",
+                         "parent":  null,
+                         "order":  93,
+                         "title":  "Как арендовать номер"
+                     },
+                     {
+                         "id":  "6450911",
+                         "sectionId":  "161796",
+                         "section":  "Телефония",
+                         "parent":  null,
+                         "order":  93,
+                         "title":  "Как начать звонить из Битрикс24: выбираем способ подключения телефонии"
+                     },
+                     {
+                         "id":  "17537676",
+                         "sectionId":  "162064",
+                         "section":  "Начало работы с телефонией",
+                         "parent":  null,
+                         "order":  94,
+                         "title":  "Как быстро проверить качество звонков"
+                     },
+                     {
+                         "id":  "17540118",
+                         "sectionId":  "162064",
+                         "section":  "Начало работы с телефонией",
+                         "parent":  null,
+                         "order":  94,
+                         "title":  "Телефония: технические требования"
+                     },
+                     {
+                         "id":  "18425138",
+                         "sectionId":  "162064",
+                         "section":  "Начало работы с телефонией",
+                         "parent":  null,
+                         "order":  94,
+                         "title":  "Карточка звонка: возможности во время разговора"
+                     },
+                     {
+                         "id":  "18429262",
+                         "sectionId":  "162064",
+                         "section":  "Начало работы с телефонией",
+                         "parent":  null,
+                         "order":  94,
+                         "title":  "Как переводить звонки на других сотрудников"
+                     },
+                     {
+                         "id":  "19732560",
+                         "sectionId":  "162066",
+                         "section":  "Как арендовать номер",
+                         "parent":  null,
+                         "order":  95,
+                         "title":  "Как пройти верификацию для аренды номера"
+                     },
+                     {
+                         "id":  "19732572",
+                         "sectionId":  "162066",
+                         "section":  "Как арендовать номер",
+                         "parent":  null,
+                         "order":  95,
+                         "title":  "Как арендовать пакет телефонных номеров"
+                     },
+                     {
+                         "id":  "20036066",
+                         "sectionId":  "162066",
+                         "section":  "Как арендовать номер",
+                         "parent":  null,
+                         "order":  95,
+                         "title":  "Как арендовать номер 8-800"
+                     },
+                     {
+                         "id":  "20055960",
+                         "sectionId":  "162066",
+                         "section":  "Как арендовать номер",
+                         "parent":  null,
+                         "order":  95,
+                         "title":  "Как арендовать красивый городской номер"
+                     },
+                     {
+                         "id":  "19420080",
+                         "sectionId":  "162068",
+                         "section":  "Как подключить АТС",
+                         "parent":  null,
+                         "order":  96,
+                         "title":  "Как выбрать и подключить SIP АТС в Битрикс24"
+                     },
+                     {
+                         "id":  "19571878",
+                         "sectionId":  "162068",
+                         "section":  "Как подключить АТС",
+                         "parent":  null,
+                         "order":  96,
+                         "title":  "Что такое SIP-коннектор"
+                     },
+                     {
+                         "id":  "19572116",
+                         "sectionId":  "162068",
+                         "section":  "Как подключить АТС",
+                         "parent":  null,
+                         "order":  96,
+                         "title":  "Как подключить АТС через REST-приложение"
+                     },
+                     {
+                         "id":  "19572186",
+                         "sectionId":  "162068",
+                         "section":  "Как подключить АТС",
+                         "parent":  null,
+                         "order":  96,
+                         "title":  "Отличия SIP-коннектора от REST-приложений телефонии"
+                     },
+                     {
+                         "id":  "18177766",
+                         "sectionId":  "162070",
+                         "section":  "Настройки телефонии",
+                         "parent":  null,
+                         "order":  97,
+                         "title":  "Как настроить права доступа в телефонии"
+                     },
+                     {
+                         "id":  "18392082",
+                         "sectionId":  "162070",
+                         "section":  "Настройки телефонии",
+                         "parent":  null,
+                         "order":  97,
+                         "title":  "Общие настройки телефонии"
+                     },
+                     {
+                         "id":  "18600982",
+                         "sectionId":  "162070",
+                         "section":  "Настройки телефонии",
+                         "parent":  null,
+                         "order":  97,
+                         "title":  "Как записывать телефонные звонки"
+                     },
+                     {
+                         "id":  "18641558",
+                         "sectionId":  "162070",
+                         "section":  "Настройки телефонии",
+                         "parent":  null,
+                         "order":  97,
+                         "title":  "Детализация звонков: как получить данные о звонках"
+                     }
+                 ]
+}

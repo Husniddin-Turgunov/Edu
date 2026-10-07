@@ -1,0 +1,186 @@
+{
+ "id": "22800538",
+ "title": "MTR-diagnostikani qanday bajarish kerak",
+ "sectionId": "148410",
+ "section": "Texnik mutaxassislar uchun",
+ "parent": null,
+ "order": 50,
+ "short": null,
+ "toc": [],
+ "breadcrumb": [
+  "Новые статьи",
+  "С чего начать",
+  "Написать в чат",
+  "Лента Новостей",
+  "Приложение Битрикс24",
+  "Общие вопросы"
+ ],
+ "articleMeta": [],
+ "related": [
+  {
+   "id": "22800538",
+   "t": "Открыть в новой вкладке"
+  },
+  {
+   "id": "22792730",
+   "t": "Как записать HAR-файл"
+  },
+  {
+   "id": "22540324",
+   "t": "Как узнать IP-адрес и выполнить трассировку маршрута"
+  }
+ ],
+ "blocks": [
+  {
+   "k": "P",
+   "t": "MTR-диагностика помогает определить, где на маршруте сети возникают сбои или ухудшение качества связи. Данные обновляются в режиме реального времени. Такая диагностика сочетает функции двух других утилит: TracerouteTraceroute — программа, которая проверяет маршрут данных от вашего устройства до сервера Битрикс24. и PingPing — программа, определяющая время, за которое запрос достигнет адресата и возвратится обратно. Чем медленнее интернет, тем больше пинг. ."
+  },
+  {
+   "k": "P",
+   "t": "Специалист поддержки может запросить результат MTR-диагностики, если данных трассировки маршрута и HAR-файла недостаточно. Как узнать IP-адрес и выполнить трассировку маршрута Как записать HAR-файл"
+  },
+  {
+   "k": "H2",
+   "t": "MTR-диагностика на Windows"
+  },
+  {
+   "k": "P",
+   "t": "Скачайте и запустите приложение WinMTR. Скачать приложение WinMTR"
+  },
+  {
+   "k": "OL",
+   "t": "Укажите адрес вашего Битрикс24 в поле Host, например test.bitrix24.ru. Адрес не должен содержать http и www. Запустите диагностику — нажмите Start. Подождите 2–3 минуты. Нажмите Stop. Сохраните результат диагностики — нажмите Export TEXT."
+  },
+  {
+   "k": "P",
+   "t": "Отправьте файл в чат с поддержкой Битрикс24."
+  },
+  {
+   "k": "IMG",
+   "n": 1,
+   "src": "/upload/medialibrary/6c2/l17impltzefod0ag9jw106au4wh9q258/win mtr.jpg",
+   "local": "/bitrix-img/22800538__01.jpg"
+  },
+  {
+   "k": "IMG",
+   "n": 2,
+   "src": "/upload/medialibrary/638/3uz2r6v3jsay9t4hqer8godwhn1icu4l/win mtr 2.jpg",
+   "local": "/bitrix-img/22800538__02.jpg"
+  },
+  {
+   "k": "H2",
+   "t": "MTR-диагностика на macOS"
+  },
+  {
+   "k": "P",
+   "t": "Установите менеджер пакетов HomebrewHomebrew — это инструмент для установки и управления программами на macOS и других системах. Он упрощает установку, обновление и удаление программ через терминал. ."
+  },
+  {
+   "k": "OL",
+   "t": "Откройте Программы > Утилиты > Терминал. В командной строке введите /bin/bash -c \"$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)\". Введите пароль. Согласитесь с установкой пакетов. Нажмите Enter."
+  },
+  {
+   "k": "IMG",
+   "n": 3,
+   "src": "/upload/medialibrary/2a3/8aaxi0a01t4ivynoen5f8ovz8tmnjn1p/код.jpg",
+   "local": "/bitrix-img/22800538__03.jpg"
+  },
+  {
+   "k": "IMG",
+   "n": 4,
+   "src": "/upload/medialibrary/db1/lzcs3agkhkifl82v9aj4tvk0lv11pqdd/пароль (1).jpg",
+   "local": "/bitrix-img/22800538__04.jpg"
+  },
+  {
+   "k": "IMG",
+   "n": 5,
+   "src": "/upload/medialibrary/fcc/3e02lz5r1r5d0jgro7k24k1ap65i8330/mac.jpg",
+   "local": "/bitrix-img/22800538__05.jpg"
+  },
+  {
+   "k": "P",
+   "t": "Проверьте корректность установки — введите brew -v."
+  },
+  {
+   "k": "OL",
+   "t": "Откройте Программы. Выберите Утилиты. Нажмите Терминал. Введите команду brew install mtr, чтобы установить утилиту MTR. Откроется новое окно. В командной строке напишите sudo mtr адрес вашего Битрикс24. Например,sudo mtr test.bitrix24.ru. Нажмите Enter. Скопируйте результат диагностики или сделайте скриншот."
+  },
+  {
+   "k": "P",
+   "t": "Отправьте скриншот в чат с поддержкой Битрикс24."
+  },
+  {
+   "k": "IMG",
+   "n": 6,
+   "src": "/upload/medialibrary/306/xmpza90atp3pdr87678tfbsaw8yx48xi/терминал мак.jpg",
+   "local": "/bitrix-img/22800538__06.jpg"
+  },
+  {
+   "k": "IMG",
+   "n": 7,
+   "src": "/upload/medialibrary/3cf/w74fxfqr6xuhpgjmeb0qm2w3k3dv6ehw/mtr_mac1.jpg",
+   "local": "/bitrix-img/22800538__07.jpg"
+  },
+  {
+   "k": "IMG",
+   "n": 8,
+   "src": "/upload/medialibrary/305/jebl64xt0ighnenfzeqpsseaxcgq0hpv/mtr_mac2.jpg",
+   "local": "/bitrix-img/22800538__08.jpg"
+  },
+  {
+   "k": "IMG",
+   "n": 9,
+   "src": "/upload/medialibrary/97f/th88r04b3vi7lwz2swbul4lyyu0am852/сообщение.jpg",
+   "local": "/bitrix-img/22800538__09.jpg"
+  }
+ ],
+ "images": [
+  {
+   "n": 1,
+   "local": "/bitrix-img/22800538__01.jpg",
+   "bytes": 78626
+  },
+  {
+   "n": 2,
+   "local": "/bitrix-img/22800538__02.jpg",
+   "bytes": 112595
+  },
+  {
+   "n": 3,
+   "local": "/bitrix-img/22800538__03.jpg",
+   "bytes": 53680
+  },
+  {
+   "n": 4,
+   "local": "/bitrix-img/22800538__04.jpg",
+   "bytes": 66003
+  },
+  {
+   "n": 5,
+   "local": "/bitrix-img/22800538__05.jpg",
+   "bytes": 249187
+  },
+  {
+   "n": 6,
+   "local": "/bitrix-img/22800538__06.jpg",
+   "bytes": 357469
+  },
+  {
+   "n": 7,
+   "local": "/bitrix-img/22800538__07.jpg",
+   "bytes": 48738
+  },
+  {
+   "n": 8,
+   "local": "/bitrix-img/22800538__08.jpg",
+   "bytes": 166458
+  },
+  {
+   "n": 9,
+   "local": "/bitrix-img/22800538__09.jpg",
+   "bytes": 42808
+  }
+ ],
+ "sectionKey": "Для технических специалистов",
+ "lang": "uz"
+}

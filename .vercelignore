@@ -1,0 +1,14 @@
+node_modules
+.next
+.git
+.github
+.kilo
+.kilocode
+.playwright-mcp
+strix_runs
+tmp-icons
+tmp-*
+*.log
+*.tsbuildinfo
+start-modal.png
+*.md
