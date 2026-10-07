@@ -113,6 +113,58 @@ const OPENAI_COMPATIBLE: Candidate[] = [
  * Aks holda mashinada tasodifan o'rnatilgan boshqa kalit (masalan
  * ANTHROPIC_API_KEY) loyihaning o'z kalitini bosib ketishi mumkin.
  */
+/**
+ * Admin panel orqali saqlangan, BELGILANGAN kalit (serverless'da bitta
+ * so'rov ichida bitta marta o'qiydi — global kesh).
+ */
+let __dbActiveKey: { provider: string; name: string; baseUrl: string; model: string; apiKey: string } | null = null;
+
+/**
+ * Kalitni bazadan olib `resolveProvider()` ga ulaydi.
+ *
+ * Nima uchun async kerak: `resolveProvider()` sinxron (ko'p joyda shunday
+ * chaqiriladi), lekin kalit bazada saqlanadi. Shu sabab biz kalitni avval
+ * shu funksiya orqali yuklab, keyin `resolveProvider()` ni oddiycha chaqiramiz.
+ *
+ * `.env` dagi kalit bo'lsa, DB umuman o'qilmaydi.
+ */
+export async function resolveProviderAsync(): Promise<AiProvider> {
+  // 1) AVVAL bazadagi kalit (admin paneldan kiritilgan).
+  //
+  //    Sabab: avval `AI_API_KEY` mavjud bo'lsa bazadagi kalit BUTUNLAY
+  //    e'tiborsiz qoldirilardi — ya'ni paneldan modelni o'zgartirsangiz
+  //    u HECH QANDAY ta'sir ko'rsatmasdi va vidget boshqa model nomini
+  //    ko'rsatib turardi. Endi admin qarori ustun.
+  const fresh = Date.now() - __dbKeyAt < DB_KEY_TTL_MS;
+  if (__dbActiveKey && fresh) return resolveProvider();
+  try {
+    const { getActiveKey } = await import("./key-store");
+    __dbActiveKey = await getActiveKey();
+    __dbKeyAt = Date.now();
+  } catch {
+    __dbActiveKey = null;
+  }
+  if (__dbActiveKey) return resolveProvider();
+
+  // 2) Bazada kalit yo'q — `.env` kalitidan foydalanamiz
+  return resolveProvider();
+}
+
+/**
+ * Bazadagi kalit keshi — qancha vaqt saqlanadi.
+ *
+ * 8 soniya: paneldan model/kalit o'zgartirilgach darhol kuchga kiradi,
+ * lekin har bir so'rovda bazaga urilmaydi.
+ */
+const DB_KEY_TTL_MS = 8000;
+let __dbKeyAt = 0;
+
+/** Serverless so'rov boshida keshni tozalaydi (ixtiyoriy). */
+export function resetActiveKeyCache() {
+  __dbActiveKey = null;
+  __dbKeyAt = 0;
+}
+
 export function resolveProvider(): AiProvider {
   const temperature = clampNumber(process.env.AI_TEMPERATURE, 0, 2, 0.2);
   const maxOutputTokens = clampNumber(process.env.AI_MAX_TOKENS, 256, 32000, 4000);
@@ -146,6 +198,18 @@ export function resolveProvider(): AiProvider {
       process.env.AI_BASE_URL || defaultBaseFor(kind),
       customKey,
     );
+  }
+
+  // 1b) Admin panel orqali kiritilgan KALIT (baza, shifrlangan).
+  //
+  // Nima uchun shu yerda: foydalanuvchi bir nechta kalit saqlagan bo'lsa,
+  // faqat BELGILANGANI (`isActive`) ishlatiladi — "hammasi ketma-ket" emas.
+  // `.env` kaliti bo'lsa, u har doim ustun turadi (server sozlamasi kuchliroq).
+  const dbKey = __dbActiveKey;
+  if (dbKey) {
+    const kind: AiProviderKind =
+      dbKey.provider === "anthropic" ? "anthropic" : dbKey.provider === "gemini" ? "gemini" : "openai";
+    return build(kind, dbKey.name, dbKey.model, dbKey.baseUrl, dbKey.apiKey);
   }
 
   // 2) Aniq talab qilingan provayder (AI_PROVIDER)

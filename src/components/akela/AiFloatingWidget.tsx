@@ -515,7 +515,7 @@ export function AiFloatingWidget() {
                           <WifiOff className="h-3 w-3" />
                         )}
                         <span className="truncate">
-                          {caps.provider.live ? caps.provider.model : "o'rnatilgan rejim"}
+                          {caps.provider.live ? caps.provider.model : "AI kaliti yo'q — so'z rejimi"}
                         </span>
                       </>
                     ) : capsError ? (

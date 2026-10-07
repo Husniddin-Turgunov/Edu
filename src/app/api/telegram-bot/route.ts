@@ -92,8 +92,20 @@ export async function GET(req: NextRequest) {
       if (!email) return NextResponse.json({ error: "email required" }, { status: 400 });
       const user = await prisma.user.findUnique({ where: { email } });
       if (!user) return NextResponse.json({ error: "not found" }, { status: 404 });
-      await prisma.user.update({ where: { email }, data: { status: "blocked" } });
-      return NextResponse.json({ ok: true, message: `${email} bloklandi` });
+      // Adminlar bloklanmaydi — hech qanday yo'l orqali (avtomatik ham, qo'lda ham).
+      if (user.role === "admin") {
+        return NextResponse.json(
+          { ok: false, error: "admin bloklanmaydi", message: `${email} — admin, bloklanmadi` },
+          { status: 409 },
+        );
+      }
+      // Bloklash emas — FAQAT OGOHLANTIRISH. Sabab: bloklangan odam saytdan
+      // chiqib qoladi va ishlashda davom eta olmaydi. Endi faqat ogohlantirish.
+      await prisma.user.update({
+        where: { email },
+        data: { blockedAt: new Date(), blockedReason: "OGOHLANTIRISH: qo'lda (Telegram)" },
+      });
+      return NextResponse.json({ ok: true, message: `${email} — ogohlantirildi (bloklanmadi)` });
     }
 
     // Blokdan chiqarish

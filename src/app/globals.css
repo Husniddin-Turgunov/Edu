@@ -1037,3 +1037,92 @@ body {
 }
 /* Tugmalarga majburiy padding/line-height berilmaydi — h-8/h-6 kabi qat'iy
    balandlikdagi tugmalar o'z borderi ichida qolishi kerak. */
+
+
+
+
+
+/* =====================================================================
+   Liquid Glass — liquid-glass-studio shaderi (CPU porti).
+   Sinish/dispersiya: backdrop-filter ichida SVG filtri (real sahifa kontenti).
+   Chegara (fresnel + glare): ::after — shader rim xaritasi.
+   ===================================================================== */
+html.lg-on .glass::after,
+html.lg-on .glass-strong::after,
+html.lg-on .glass-card::after,
+html.lg-on .glass-pill::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  background: var(--lg-rim, none) center / 100% 100% no-repeat;
+  z-index: 1;
+}
+
+/* Butun saytdagi tugma/kartalar uchun avtomatik liquid glass (chegara + sinish) */
+html.lg-on .lg-auto {
+  position: relative;
+  backdrop-filter: blur(0px) saturate(180%);
+  -webkit-backdrop-filter: blur(0px) saturate(180%);
+}
+html.lg-on .lg-auto::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  border: 1px solid oklch(1 0 0 / 0.5);
+  box-shadow: inset 0 1px 0 0 oklch(1 0 0 / 0.55);
+  z-index: 0;
+}
+
+/* Hover holati ham liquid glass (yorug'lik chetga uradi, qattiqroq chegara) */
+html.lg-on .lg-auto:hover,
+html.lg-on .glass-panel:hover,
+html.lg-on .glass:hover,
+html.lg-on .glass-strong:hover,
+html.lg-on .glass-card:hover,
+html.lg-on .glass-pill:hover {
+  filter: brightness(1.035) saturate(1.08);
+}
+html.lg-on .lg-auto:hover::after,
+html.lg-on .glass-panel:hover::after,
+html.lg-on .glass:hover::after,
+html.lg-on .glass-strong:hover::after,
+html.lg-on .glass-card:hover::after,
+html.lg-on .glass-pill:hover::after {
+  border-color: oklch(1 0 0 / 0.85);
+  box-shadow:
+    inset 0 1px 0 0 oklch(1 0 0 / 0.85),
+    inset 0 -1px 0 0 oklch(0.45 0.14 258 / 0.12);
+}
+
+/* statik pozitsiyadagi avtomatik glass elementlar uchun */
+html.lg-on .lg-auto.lg-rel { position: relative; }
+
+/* Sahifa kontenti katta shisha paneli */
+html.lg-on .glass-panel {
+  position: relative;
+  background: var(--glass);
+  border: 1px solid var(--glass-border);
+  border-radius: 2rem;
+  box-shadow: 0 24px 48px -28px oklch(0.38 0.16 262 / 0.3);
+}
+html.lg-on .glass-panel::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  background: var(--lg-rim, none) center / 100% 100% no-repeat;
+  z-index: 0;
+}
+
+/* Liquid Glass "suv" qatlami: yaqin shakllar birlashadi (smin), chetlar yoritiladi */
+canvas.lg-layer {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  pointer-events: none;
+}

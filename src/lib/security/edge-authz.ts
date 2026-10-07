@@ -117,13 +117,17 @@ export async function edgeActor(req: NextRequest): Promise<EdgeActor | null> {
           isAdmin: role === "admin",
         };
       }
-      // Eski token (status'siz) — autentifikatsiya bor, lekin admin deb
-      // hisoblanmaydi; route ichidagi getSession() bazadan qayta tekshiradi.
-      if (id && status === undefined) {
+      // Eski token (status'siz) — autentifikatsiya bor, lekin holat noma'lum.
+      // Edge bazaga ulana olmaydi, shuning uchun qarorni Node qatlamiga
+      // qoldiramiz: `getSession()` bazadagi joriy `status` va `role` ni
+      // qayta tekshiradi. Shu yerda `isAdmin: false` qilib yopish — admin
+      // panelining API'sini (masalan `/api/admin/*`) o'z-o'zidan yopib
+      // qo'yardi, chunki ro'l token ichida `admin` bo'lsa ham rad etilardi.
+      if (id) {
         return {
           userId: id,
           role: role || "participant",
-          isAdmin: false,
+          isAdmin: role === "admin",
         };
       }
     }

@@ -7,7 +7,7 @@ import Link from "next/link";
 import { useSession } from "next-auth/react";
 import { motion } from "framer-motion";
 import { LiquidBackground } from "@/components/akela/LiquidBackground";
-import { LogIn, Loader2, Mail, Lock, ArrowLeft, UserPlus, Eye, EyeOff, KeyRound, X, CheckCircle2 } from "lucide-react";
+import { LogIn, Loader2, Mail, Lock, UserPlus, Eye, EyeOff, KeyRound, X, CheckCircle2 } from "lucide-react";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -97,10 +97,8 @@ export default function LoginPage() {
         animate={{ opacity: 1, y: 0 }}
         className="relative glass-card rounded-3xl p-8 max-w-md w-full"
       >
-        <Link href="/" className="inline-flex items-center gap-2 text-sm text-[color:var(--ink-soft)] hover:text-[color:var(--emerald-deep)] mb-6">
-          <ArrowLeft className="h-4 w-4" /> Bosh sahifa
-        </Link>
-
+        {/* "← Bosh sahifa" havolasi OLIB TASHLANDI: sayt endi login ortida,
+            shuning uchun bu havola foydalanuvchini yana /login ga qaytarardi. */}
         <div className="flex items-center gap-3 mb-6">
           <img src="/akela/logo.png" alt="AKELA" className="h-14 w-auto object-contain shrink-0" />
           <div>

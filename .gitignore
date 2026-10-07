@@ -31,7 +31,10 @@ yarn-error.log*
 .pnpm-debug.log*
 
 # env files (can opt-in for committing if needed)
+# Maxfiy qiymatlar endi Infisical'da saqlanadi — lokal .env kerak emas.
 .env*
+# ...lekin kalitlar ro'yxati (qiymatsiz shablon) commit qilinadi
+!.env.example
 
 # vercel
 .vercel
@@ -55,3 +58,53 @@ server.log
 # lokal diagnostika va brauzer chiqishlari
 tmp-diag-*
 .playwright-mcp/
+
+# Local Netlify folder
+.netlify
+
+# lokal diagnostika va vaqtinchalik fayllar
+tmp-*
+check-*.cjs
+check-*.mjs
+e2e-*.js
+live-*.css
+live-*.txt
+*.pid
+*.exit
+diag-*.png
+tmp-icons/
+screens/
+upload/
+data/tr-cache.json
+.freebuff/
+data/i18n/
+
+# --- repo tozasi: root'dagi diagnostika artefaktlari ---
+# Haqiqiy assetlar public/ ichida, shuning uchun root PNG/PDF/HTML/CSS xotiraga xos.
+/*.png
+/*.pdf
+/*.html
+/*.css
+/*.sql
+/*.patch
+
+# bir martalik tekshiruv skriptlari
+/check-*.ts
+/scan-*.mjs
+/_mk.cjs
+/fix-dynamic2.cjs
+/patch-dynamic.cjs
+
+# root'dagi build/lint/tsc xabarlari
+/build[0-9]*.txt
+/lint*.txt
+/tsc*.txt
+/tsc-current.txt
+
+# root'daki bitrix/live hisobot chiqishlari (haqiqiy ma'lumot data/ va public/bitrix-data/)
+/bitrix-*.json
+/bitrix-*.html
+/live-*.json
+/quiz-limit-*.json
+/finish-btn-*.json
+/next-build-history-checkbox.*

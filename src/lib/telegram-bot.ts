@@ -798,7 +798,18 @@ export async function notifySecurityAlert(alert: SecurityAlert) {
       : "⚠️ Holatni admin panelida tekshiring.",
   );
 
-  const result = await broadcast({ text: lines.join("\n") });
+  const buttons: any = alert.blocked && alert.userId
+    ? [
+        [
+          {
+            text: "🔓 Blokdan chiqarish (admin)",
+            url: `https://edu.akelagroup.uz/admin/users?id=${encodeURIComponent(alert.userId)}`,
+          },
+        ],
+      ]
+    : undefined;
+
+  const result = await broadcast({ text: lines.join("\n"), buttons });
   console.log(
     `[telegram] security alert: ${alert.type} -> ${result.sent}/${result.total} (blocked=${!!alert.blocked})`,
   );

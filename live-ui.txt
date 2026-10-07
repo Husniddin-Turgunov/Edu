@@ -1,9 +1,0 @@
-BASE: https://edu.akelagroup.uz
-LOGIN: false (- / -)
-PAGES: home=200 dashboard=200 courses=200 admin=200 admin-students=200 admin-tests=200 admin-jobs=200 guides=200
-OVERFLOW TOTAL: 1
---- guides: 1
-  v+5 h+0 93x32 fs=13px lh=20.8px :: Ro'yxatdan o'tish
-CONSOLE ERRORS:
-  Failed to load resource: the server responded with a status of 401 ()
-FAILED: login, no_overflow, no_console_errors

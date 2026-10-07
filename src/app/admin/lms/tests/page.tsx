@@ -37,6 +37,7 @@ import {
 import { AdminSidebar } from "@/components/admin/AdminSidebar";
 import { api } from "@/lib/api";
 import { parseExcelFileToQuestions, downloadTestTemplate } from "@/lib/job-test-excel";
+import SpreadsheetEditor, { type SpreadsheetData } from "@/components/excel/SpreadsheetEditor";
 
 type Test = {
   id: string;
@@ -120,10 +121,12 @@ export default function AdminTestsPage() {
 
   const [qForm, setQForm] = useState({
     text: "",
-    type: "single" as "single" | "written",
+    type: "single" as "single" | "written" | "excel",
     points: 1,
     explanation: "",
     correctAnswer: "",
+    /** Majburiy savol — default YOQILGAN (ochiq), foydalanuvchi so'ragan. */
+    isMandatory: true,
     choices: [
       { text: "", isCorrect: true },
       { text: "", isCorrect: false },
@@ -133,6 +136,10 @@ export default function AdminTestsPage() {
   });
 
   const excelInputRef = useRef<HTMLInputElement>(null);
+  // —— JADVAL (EXCEL) turi uchun ——
+  const spreadsheetInputRef = useRef<HTMLInputElement>(null);
+  const [spreadsheet, setSpreadsheet] = useState<SpreadsheetData | null>(null);
+  const [savedExcelQuestionId, setSavedExcelQuestionId] = useState<string | null>(null);
   const testExcelInputRef = useRef<HTMLInputElement>(null);
   const [importingExcel, setImportingExcel] = useState(false);
   // Jonli import hisobi: qancha yuklandi / qancha kiritib bo'lmadi
@@ -216,15 +223,33 @@ export default function AdminTestsPage() {
       setImportProgress({ total: items.length, done: 0, failed: 0, failures: [], finished: false });
       // har bir savolni ketma-ket yaratish — variantlar allaqachon random aralashtirilgan
       let ok = 0;
+      let writtenCount = 0;
+      let choiceCount = 0;
       const failures: { row: number; reason: string }[] = [];
       for (let i = 0; i < items.length; i++) {
         const it = items[i];
-        const choices = it.options.map((t, idx) => ({ text: t, isCorrect: idx === it.correct }));
+        // Har bir qator — ALOHIDA savol. Turi shablondan keladi:
+        //   variantlar >= 2  -> "single" (tanlash, variantlar random)
+        //   variant yo'q      -> "written" (yozma javob, alohida-alohida)
+        const isWritten = it.hasOptions === false;
+        const payload = isWritten
+          ? { testId: addingQuestionTo, text: it.question, type: "written", points: 1, correctAnswer: it.correctText, choices: [] }
+          : {
+              testId: addingQuestionTo,
+              text: it.question,
+              type: "single",
+              points: 1,
+              // Majburiy bayrog'i faqat jadval savollarida — import qilgan
+              // savollar uchun yuborilmaydi (DB defaulti qo'llaniladi).
+              choices: it.options.map((t, idx) => ({ text: t, isCorrect: idx === it.correct })),
+            };
+        if (isWritten) writtenCount++;
+        else choiceCount++;
         try {
           const res = await fetch("/api/admin/questions", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ testId: addingQuestionTo, text: it.question, type: "single", points: 1, choices }),
+            body: JSON.stringify(payload),
           });
           if (res.ok) {
             ok++;
@@ -246,8 +271,10 @@ export default function AdminTestsPage() {
       }
       showToast(
         failures.length ? "err" : "ok",
-        `${ok}/${items.length} ta savol import qilindi` +
-          (failures.length ? ` — ${failures.length} tasi kiritib bo'lmadi` : " — variantlar random aralashtirildi")
+        `${ok}/${items.length} ta savol alohida qo'shildi` +
+          (writtenCount ? ` — yozma javobli: ${writtenCount}` : "") +
+          (choiceCount ? `, variantli: ${choiceCount}` : "") +
+          (failures.length ? ` — ${failures.length} tasi kiritib bo'lmadi` : "")
       );
       fetchTests();
     } catch (err: any) {
@@ -259,8 +286,22 @@ export default function AdminTestsPage() {
     }
   };
 
+  /** Excel faylni tahlil qilish — saqlanmaydi, faqat ko'rsatish uchun. */
+  const loadSpreadsheet = async (file: File) => {
+    try {
+      const fd = new FormData();
+      fd.append("file", file);
+      const res = await fetch("/api/ai/spreadsheet?action=analyze", { method: "POST", body: fd });
+      const out = await res.json().catch(() => null);
+      if (!res.ok || !out?.ok) throw new Error(out?.error || "Faylni tahlil qilib bo'lmadi");
+      setSpreadsheet({ fileName: out.fileName, sheets: out.sheets, tabs: out.tabs });
+      showToast("ok", `${out.fileName}: ${out.tabs.length} ta tab, ${out.tabs.reduce((n: number, t: any) => n + t.answerCells.length, 0)} ta katak javob talab qiladi`);
+    } catch (e: any) {
+      showToast("err", e?.message || "Xato");
+    }
+  };
+
   useEffect(() => {
-    if (status === "unauthenticated") router.push("/login");
     if (status === "authenticated" && (session?.user as any)?.role === "user") router.push("/dashboard");
   }, [status, session, router]);
 
@@ -425,6 +466,9 @@ setTestForm({
         points: qForm.points,
         explanation: qForm.explanation,
       };
+      // Majburiy bayrog'i FAQAT jadval (Excel) savollari uchun — boshqa
+      // turlarda yuborilmaydi (u yerda ma'no yo'q va eski tartibni buzadi).
+      if (qForm.type === "excel") payload.isMandatory = qForm.isMandatory !== false;
       if (qForm.type === "single") {
         payload.choices = qForm.choices;
       } else {
@@ -442,6 +486,7 @@ setTestForm({
           points: 1,
           explanation: "",
           correctAnswer: "",
+          isMandatory: true,
           choices: [
             { text: "", isCorrect: true },
             { text: "", isCorrect: false },
@@ -827,7 +872,17 @@ setTestForm({
           </Modal>
         )}
         {addingQuestionTo && (
-          <Modal title="Savol qo'shish" subtitle="Yangi savol matni va variantlarini kiriting — yoki Excel shablon bilan avto" onClose={() => setAddingQuestionTo(null)}>
+          <Modal
+            title="Savol qo'shish"
+            subtitle="Yangi savol matni va variantlarini kiriting — yoki Excel shablon bilan avto"
+            onClose={() => setAddingQuestionTo(null)}
+            /* Jadval tanlanganda modal deyarli BUTUN EKRAN kengligiga
+               o'tadi — A4 yonma yo'nalish kabi. Aks holda jadval siqilib,
+               ustunlar kesilib ko'rinardi. */
+            xl={qForm.type === "excel"}
+          >
+            {/* `space-y-4` — qatorlar orasidagi bo'shliq. Uni olib tashlash
+                layoutni butunlay buzdi (barcha maydonlar yonma-yon tushdi). */}
             <div className="space-y-4">
               <div className="flex gap-2">
                 <button onClick={handleDownloadTemplate} type="button" className="flex-1 flex items-center justify-center gap-1.5 rounded-xl border-2 border-indigo-200 bg-indigo-50 px-3 py-2.5 text-xs font-bold text-indigo-800 hover:bg-indigo-100 transition-colors">
@@ -851,8 +906,48 @@ setTestForm({
                   <button type="button" onClick={() => setQForm({ ...qForm, type: "written" })} className={`flex-1 px-3 py-2 text-sm font-semibold rounded-lg border-2 transition-all ${qForm.type === "written" ? "border-violet-500 bg-violet-50 text-violet-700" : "border-neutral-200 text-neutral-500 hover:border-neutral-300"}`}>
                     Yozma javob
                   </button>
+                  <button type="button" onClick={() => setQForm({ ...qForm, type: "excel" })} className={`flex-1 px-3 py-2 text-sm font-semibold rounded-lg border-2 transition-all ${qForm.type === "excel" ? "border-emerald-600 bg-emerald-50 text-emerald-800" : "border-neutral-200 text-neutral-500 hover:border-neutral-300"}`}>
+                    Jadval (Excel)
+                  </button>
                 </div>
+                {/* MAJBURIY tugmasi — faqat JADVAL (Excel) turida.
+                    Boshqa turlarda bu ma'no yo'q (ular har doim bir martadan
+                    beriladi), shuning uchun ko'rsatilmaydi.
+                    Tugma ostida izoh bor. Default: YOQILGAN (ochiq). */}
+                {qForm.type === "excel" && (
+                  <label className="mt-2 flex cursor-pointer items-start gap-2 rounded-lg border border-emerald-200 bg-emerald-50/60 px-2.5 py-2">
+                    <input
+                      type="checkbox"
+                      checked={qForm.isMandatory !== false}
+                      onChange={(e) => setQForm({ ...qForm, isMandatory: e.target.checked })}
+                      className="mt-0.5 h-4 w-4 shrink-0 accent-emerald-600"
+                    />
+                    <span>
+                      <span className="block text-[12.5px] font-semibold text-emerald-900">
+                        Majburiy savol
+                      </span>
+                      <span className="block text-[11px] leading-snug text-emerald-700">
+                        Bu jadval savoli har bir testda faqat bir marta beriladi va doim
+                        birinchi bo&apos;lib chiqadi. O&apos;chirilsa — jadval savollari
+                        tasodifiy aralashib, har urinishda boshqacha bo&apos;ladi.
+                      </span>
+                    </span>
+                  </label>
+                )}
               </Field>
+              {/* Turga mos maydon — SMOOTH o'tish (sizning talab).
+                  Avval tur almashganda blok sakrab ketardi (balandlik
+                  birdan o'zgarardi); endi balandlik ham yumshoq animatsiya
+                  bilan o'tadi. */}
+              <AnimatePresence mode="wait" initial={false}>
+                <motion.div
+                  key={qForm.type}
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: "auto" }}
+                  exit={{ opacity: 0, height: 0 }}
+                  transition={{ duration: 0.24, ease: [0.16, 1, 0.3, 1] }}
+                  className="overflow-hidden"
+                >
               {qForm.type === "single" ? (
                 <Field label="Variantlar">
                   <div className="space-y-2">
@@ -866,12 +961,54 @@ setTestForm({
                     <button onClick={() => setQForm({ ...qForm, choices: [...qForm.choices, { text: "", isCorrect: false }] })} className="flex items-center gap-1.5 text-xs text-neutral-600 hover:text-neutral-900"><Plus className="w-3.5 h-3.5" /> Variant qo'shish</button>
                   </div>
                 </Field>
+              ) : qForm.type === "excel" ? (
+                /* JADVAL (EXCEL) — fayl yuklanadi, AI har bir tab uchun
+                   javoblarni alohida chiqaradi va alohida tasdiqlanadi. */
+                <Field label="Excel fayl">
+                  <div className="space-y-2">
+                    <button
+                      type="button"
+                      onClick={() => spreadsheetInputRef.current?.click()}
+                      className="flex w-full items-center justify-center gap-1.5 rounded-xl border-2 border-emerald-200 bg-emerald-50 px-3 py-2.5 text-xs font-bold text-emerald-800 hover:bg-emerald-100"
+                    >
+                      <FileSpreadsheet className="h-4 w-4" />
+                      {spreadsheet ? `${spreadsheet.fileName} — ${spreadsheet.tabs.length} ta tab` : "Excel fayl yuklash"}
+                    </button>
+                    <input
+                      ref={spreadsheetInputRef}
+                      type="file"
+                      accept=".xlsx,.xls"
+                      className="hidden"
+                      onChange={(e) => {
+                        const f = e.target.files?.[0];
+                        if (f) void loadSpreadsheet(f);
+                        e.target.value = "";
+                      }}
+                    />
+                    <p className="text-[11px] leading-relaxed text-emerald-700">
+                      Fayl yuklanganda AI har bir tabni <b>alohida</b> tahlil qiladi va
+                      javoblarni chiqaradi. Siz har bir tabni <b>alohida tasdiqlaysiz</b> —
+                      tasdiqlangan javob serverga saqlanadi va test vaqtida model
+                      chaqirilmaydi.
+                    </p>
+                    {spreadsheet && (
+                      <SpreadsheetEditor
+                        data={spreadsheet}
+                        testId={addingQuestionTo}
+                        questionId={savedExcelQuestionId}
+                        onSaved={(qid) => setSavedExcelQuestionId(qid)}
+                      />
+                    )}
+                  </div>
+                </Field>
               ) : (
                 <Field label="Nazoratchi tekshiruvi">
                   <textarea value={qForm.correctAnswer} onChange={(e) => setQForm({ ...qForm, correctAnswer: e.target.value })} rows={3} placeholder="To'g'ri javob matnini kiriting — nazoratchi foydalanuvchi javobini shu bilan solishtiradi" className="w-full px-3 py-2 text-sm border border-violet-200 bg-violet-50/50 rounded-lg resize-none focus:border-violet-400 focus:outline-none" />
                   <p className="text-[11px] text-violet-500 mt-1 flex items-center gap-1"><Shield className="w-3 h-3" /> Faqat nazoratchi ko'radi. Foydalanuvchiga ko'rinmaydi.</p>
                 </Field>
               )}
+                </motion.div>
+              </AnimatePresence>
               <Field label="Ball"><input type="number" value={qForm.points} onChange={(e) => setQForm({ ...qForm, points: parseInt(e.target.value) || 1 })} className="w-32 px-3 py-2 text-sm border border-neutral-200 rounded-lg" /></Field>
             </div>
             <div className="flex justify-end gap-2 mt-6">
@@ -1088,10 +1225,13 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
   );
 }
 
-function Modal({ title, subtitle, children, onClose, wide }: { title: string; subtitle?: string; children: React.ReactNode; onClose: () => void; wide?: boolean }) {
-  return (
-    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm flex items-center justify-center p-4" onClick={onClose}>
-      <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} onClick={(e) => e.stopPropagation()} className={`bg-white rounded-2xl shadow-2xl w-full overflow-hidden max-h-[90vh] overflow-y-auto ${wide ? "max-w-3xl" : "max-w-2xl"}`}>
+function Modal({ title, subtitle, children, onClose, wide, xl }: { title: string; subtitle?: string; children: React.ReactNode; onClose: () => void; wide?: boolean; xl?: boolean }) {
+    return (
+      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm flex items-center justify-center p-3" onClick={onClose}>
+        {/* `xl` — deyarli butun ekran kengligi (A4 yonma yo'nalish kabi).
+            Jadval (Excel) uchun shart: jadval sig'ishi kerak, aks holda
+            ustunlar kesilib qoladi. */}
+        <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} onClick={(e) => e.stopPropagation()} className={`bg-white rounded-2xl shadow-2xl w-full overflow-hidden max-h-[94vh] overflow-y-auto ${xl ? "max-w-[97vw]" : wide ? "max-w-3xl" : "max-w-2xl"}`}>
         <div className="px-6 py-5 border-b border-neutral-100 flex items-start justify-between">
           <div><h2 className="text-lg font-bold text-neutral-900">{title}</h2>{subtitle && <p className="text-sm text-neutral-500 mt-1">{subtitle}</p>}</div>
           <button onClick={onClose} className="p-1 rounded-lg hover:bg-neutral-100"><X className="w-5 h-5 text-neutral-500" /></button>

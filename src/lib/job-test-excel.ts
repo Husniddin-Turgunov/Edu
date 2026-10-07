@@ -1,5 +1,21 @@
 // helper for Excel test template — import/export with randomization
-export type QuizItem = { question: string; options: string[]; correct: number };
+export type QuizItem = {
+  question: string;
+  options: string[];
+  correct: number;
+  /**
+   * `false` — bu YOZMA javobli savol (variant yo'q, foydalanuvchi javobni
+   * o'zi yozadi). `true` — variantli savol.
+   *
+   * Nima uchun kerak: avval parser 2 ta variant bo'lmasa qatorni butunlay
+   * tashlab ketardi (`if (opts.length < 2) continue`), ya'ni Excel orqali
+   * yozma javobli savol kiritib bo'lmas edi. Endi ikkala tur ham qabul qilinadi
+   * va HAR BIR QATOR ALOHIDA savol bo'lib saqlanadi.
+   */
+  hasOptions: boolean;
+  /** Yozma javob uchun to'g'ri javob matni. */
+  correctText: string;
+};
 
 function shuffleWithCorrect(options: string[], correctIdx: number): { options: string[]; correct: number } {
   const correctText = options[correctIdx];
@@ -46,14 +62,37 @@ export async function parseExcelFileToQuestions(file: File): Promise<QuizItem[]>
     }
     // Filter empty but keep at least 2
     const opts = rawOpts.filter(o => o.trim() !== "");
-    // Need at least 2 options
+    // To'g'ri javob matni — F ustun (index 5)
+    const correctTextRaw = String(row[5] ?? "").trim();
+
+    // ——— YOZMA JAVOBLI SAVOL ———
+    //
+    // Variant 2 tadan kam bo'lsa, bu variantli savol EMAS. Balki yozma javobli
+    // savol: foydalanuvchi javobni o'zi yozadi, nazoratchi solishtiradi.
+    // Shuni avval tashlab ketish sabab 1 — sabab 2, savollar aralashib
+    // ketmasligi uchun har biri alohida `items.push` qilinadi.
     if (opts.length < 2) {
-      // try to continue, but skip if not enough
-      // If only 1 option, pad? skip
       if (opts.length === 1) {
-        // not enough, skip
+        // bitta katak = to'g'ri javob matni deb qabul qilamiz
+        items.push({
+          question: qRaw,
+          options: [],
+          correct: -1,
+          hasOptions: false,
+          correctText: correctTextRaw || opts[0],
+        });
         continue;
       }
+      // variant yo'q, to'g'ri javob F ustunda bo'lishi SHART
+      if (!correctTextRaw) continue;
+      items.push({
+        question: qRaw,
+        options: [],
+        correct: -1,
+        hasOptions: false,
+        correctText: correctTextRaw,
+      });
+      continue;
     }
 
     // To'g'ri javob - column 5 (index 5) => F
@@ -111,10 +150,16 @@ export async function parseExcelFileToQuestions(file: File): Promise<QuizItem[]>
       question: qRaw,
       options: shuffled,
       correct: newCorrect,
+      hasOptions: true,
+      correctText: "",
     });
   }
 
-  if (items.length === 0) throw new Error("Hech qanday savol topilmadi. Shablonni tekshiring (Savol, A-D, To'g'ri).");
+  if (items.length === 0)
+    throw new Error(
+      "Hech qanday savol topilmadi. Shablonni tekshiring: Savol ustuni to'ldirilgan, " +
+        "hamda yoki variantlar (kamida 2 ta) yoki «To'g'ri javob» ustuni bo'lishi kerak.",
+    );
   return items;
 }
 

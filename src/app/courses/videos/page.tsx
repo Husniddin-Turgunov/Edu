@@ -10,6 +10,8 @@ import { Navbar } from "@/components/akela/Navbar";
 import { Search, Play, Clock, HardDrive, Tag, ArrowLeft, Loader2 } from "lucide-react";
 import { UI_STRINGS, type Locale } from "@/lib/akela-content";
 import { videoThumb } from "@/lib/video-thumb";
+import { groupVideos, totalDuration } from "@/lib/video-groups";
+import { PlaylistCard } from "@/components/akela/PlaylistCard";
 import { useMyCourses } from "@/hooks/useMyCourses";
 import { NoAccess } from "@/components/akela/NoAccess";
 
@@ -23,6 +25,11 @@ export default function VideosPage() {
   // Videolar — API dan, eng yangi birinchi
   const [videos, setVideos] = useState<any[]>([]);
   const [loadingVideos, setLoadingVideos] = useState(true);
+  const [cat, setCat] = useState("");
+  useEffect(() => {
+    const q = new URLSearchParams(window.location.search).get("cat");
+    if (q) setCat(q);
+  }, []);
 
   useEffect(() => {
     if (status === "unauthenticated") router.push("/login");
@@ -42,9 +49,14 @@ export default function VideosPage() {
     return () => { cancelled = true; };
   }, [status ]);
 
+  const cats = Array.from(
+    videos.reduce((mm: Map<string, number>, v: any) => mm.set(v.category || "Tizim", (mm.get(v.category || "Tizim") || 0) + 1), new Map<string, number>())
+  ) as [string, number][];
   const filtered = videos.filter((v: any) =>
-    !search || v.title.toLowerCase().includes(search.toLowerCase()) || (v.category || "").toLowerCase().includes(search.toLowerCase())
+    (!cat || (v.category || "Tizim") === cat) &&
+    (!search || v.title.toLowerCase().includes(search.toLowerCase()) || (v.category || "").toLowerCase().includes(search.toLowerCase()))
   );
+  const rows = !search && !cat ? groupVideos(filtered) : filtered.map((v: any) => ({ kind: "single" as const, video: v }));
 
   if (status === "loading") {
     return (
@@ -94,6 +106,40 @@ export default function VideosPage() {
           />
         </div>
 
+        {cat && (
+          <div className="mb-6 flex flex-wrap items-center gap-3" data-testid="playlist-open-bar">
+            <button type="button" onClick={() => setCat("")} className="glass inline-flex items-center gap-1.5 rounded-xl px-3.5 py-2 text-sm font-bold text-[color:var(--emerald-deep)]">
+              <ArrowLeft className="h-4 w-4" /> Barcha videolar
+            </button>
+            <span className="text-lg font-extrabold text-[color:var(--emerald-deep)]">{cat}</span>
+            <span className="text-sm text-[color:var(--ink-soft)]">
+              {filtered.length} ta dars{totalDuration(filtered) ? ` · jami ${totalDuration(filtered)}` : ""}
+            </span>
+          </div>
+        )}
+
+        {cats.length > 1 && (
+          <div className="mb-6 flex flex-wrap gap-2" data-testid="videos-category-chips">
+            <button
+              type="button"
+              onClick={() => setCat("")}
+              className={`rounded-full px-4 py-1.5 text-xs font-bold transition-colors ${!cat ? "bg-indigo-600 text-white" : "glass-card text-[color:var(--emerald-deep)]"}`}
+            >
+              Barchasi <span className="opacity-70">{videos.length}</span>
+            </button>
+            {cats.map(([name, n]) => (
+              <button
+                key={name}
+                type="button"
+                onClick={() => setCat(cat === name ? "" : name)}
+                className={`rounded-full px-4 py-1.5 text-xs font-bold transition-colors ${cat === name ? "bg-indigo-600 text-white" : "glass-card text-[color:var(--emerald-deep)]"}`}
+              >
+                {name} <span className="opacity-70">{n}</span>
+              </button>
+            ))}
+          </div>
+        )}
+
         {loadingVideos ? (
           <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
             {[1, 2, 3].map((i) => (
@@ -103,7 +149,9 @@ export default function VideosPage() {
         ) : (
         <>
         <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-          {filtered.map((v: any, i: number) => (
+          {rows.map((row: any, i: number) => row.kind === "playlist" ? (
+            <PlaylistCard key={"pl-" + row.name} name={row.name} videos={row.videos} onOpen={() => setCat(row.name)} />
+          ) : (() => { const v = row.video; return (
             <motion.div
               key={v.id}
               initial={{ opacity: 0, y: 18 }}
@@ -143,7 +191,7 @@ export default function VideosPage() {
                 </div>
               </Link>
             </motion.div>
-          ))}
+          ); })())}
         </div>
 
         {filtered.length === 0 && !loadingVideos && (

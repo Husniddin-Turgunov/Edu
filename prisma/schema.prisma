@@ -70,7 +70,7 @@ model User {
   position      String?
   passwordHash  String
   role          String   @default("user") // user | admin | grader
-  status        String   @default("pending") // pending | approved | rejected
+  status        String   @default("approved") // approved | blocked | rejected (pending = darhol ishlatiladi)
   isActive      Boolean  @default(true) // ish faoliyatida / emas (tasdiqlangan xodimlar uchun)
   approvedAt    DateTime?
   resetToken    String?  @unique
@@ -224,6 +224,8 @@ model Test {
   questions   Question[]
   results     TestResult[]
   accessRequests TestAccessRequest[]
+  /// Test vaqtida ochiladigan elektron jadval (ixtiyoriy — bir testga bir fayl)
+  spreadsheet TestSpreadsheet?
 
   @@index([moduleId])
   @@index([courseId])
@@ -238,14 +240,44 @@ model Question {
   order         Int      @default(0)
   explanation   String?  @db.Text
   correctAnswer String?  @db.Text // yozma javob uchun to'g'ri javob matni
+  /// Majburiy savol: har bir testda BIR MARTA doim beriladi va birinchi
+  /// bo'lib chiqadi. O'chirilsa — savol qator ichida aralashtiriladi.
+  /// Odatda `true` (foydalanuvchi so'raganicha default ochiq).
+  isMandatory   Boolean  @default(true)
+  /// Test vaqtida shu savol kelganda ochiladigan Excel (TestSpreadsheet).
+  spreadsheetId String?
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 
-  test          Test     @relation(fields: [testId], references: [id], onDelete: Cascade)
-  choices       Choice[]
+  test       Test            @relation(fields: [testId], references: [id], onDelete: Cascade)
+  choices    Choice[]
+  spreadsheet TestSpreadsheet? @relation(fields: [spreadsheetId], references: [id], onDelete: SetNull)
 
   @@index([testId])
   @@index([order])
+  @@index([isMandatory])
+}
+
+/// Testga bog'langan elektron jadval (Excel).
+///
+/// Test vaqtida foydalanuvchiga ochib beriladi — u haqiqi formulalar bilan
+/// hisoblaydi (=SUM(B5:B7)), tizim esa foydalanuvchi kiritgan qiymatni
+/// `answerKeyJson` dagi to'g'ri javob bilan solishtiradi (yashil/qizil).
+model TestSpreadsheet {
+  id       String @id @default(cuid())
+  testId   String @unique
+  fileName String @default("") @db.Text
+  /// [{ name, rows, cols, cells: { "B5": { t:"n"|"s", v, f } } }]
+  sheetsJson String     @db.LongText
+  /// { "<sheet>": { "B8": 12400000 } } — to'g'ri javoblar
+  answerKeyJson String?  @db.LongText
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  test       Test       @relation(fields: [testId], references: [id], onDelete: Cascade)
+  questions  Question[]
+
+  @@index([testId])
 }
 
 model Choice {
@@ -709,4 +741,31 @@ model SecurityEvent {
   @@index([userId, createdAt])
   @@index([type, createdAt])
   @@index([createdAt])
+}
+
+/// AI ruteri kalitlari (OpenRouter / Gemini / Anthropic / Groq / Z.AI ...).
+///
+/// Nima uchun alohida jadval: kalit .env da qo'yilganda faqat server
+/// yangilashini talab qiladi va uni hech qanday boshqarish bo'lmaydi.
+/// Bu jadval orqali admin panelning AI markazidan kalit kiritiladi,
+/// tekshiriladi va — bir nechta bo'lsa — BELGILANGANI (`isActive`) ishlatiladi.
+///
+/// `keyCipher` — AES-256-GCM shifrlangan matn (iv.tag.ciphertext).
+/// `keyHint` — oxirgi 4 belgi, faqat ko'rsatish uchun.
+model AiProviderKey {
+  id           String    @id @default(cuid())
+  provider     String    @db.VarChar(32) // openrouter | gemini | anthropic | groq | zai | deepseek | together | openai
+  label        String    @default("") @db.VarChar(120)
+  baseUrl      String    @default("") @db.VarChar(255)
+  model        String    @default("") @db.VarChar(160)
+  keyCipher    String    @db.Text
+  keyHint      String    @default("") @db.VarChar(12)
+  isActive     Boolean   @default(false)
+  lastStatus   String    @default("") @db.VarChar(400)
+  lastTestedAt DateTime?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  @@index([isActive])
+  @@index([provider])
 }

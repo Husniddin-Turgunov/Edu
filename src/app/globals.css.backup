@@ -1,0 +1,1053 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+/* ——— UNIVER (haqiqiy Excel yadrosi, Apache-2.0) ———
+   Rasmiy CSS. Bu fayl katalogni to'ldiradi, tooltip va boshqa
+   kiritish qutilarini chizadi. */
+@import "@univerjs/design/lib/index.css";
+@import "@univerjs/preset-sheets-core/lib/index.css";
+@import "@univerjs/preset-sheets-filter/lib/index.css";
+@import "@univerjs/preset-sheets-sort/lib/index.css";
+@import "@univerjs/preset-sheets-find-replace/lib/index.css";
+@import "@univerjs/preset-sheets-conditional-formatting/lib/index.css";
+@import "@univerjs/preset-sheets-data-validation/lib/index.css";
+@import "@univerjs/preset-sheets-note/lib/index.css";
+@import "@univerjs/preset-sheets-hyper-link/lib/index.css";
+@import "@univerjs/preset-sheets-thread-comment/lib/index.css";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+  --font-display: var(--font-display);
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar: var(--sidebar);
+  --color-chart-5: var(--chart-5);
+  --color-chart-4: var(--chart-4);
+  --color-chart-3: var(--chart-3);
+  --color-chart-2: var(--chart-2);
+  --color-chart-1: var(--chart-1);
+  --color-ring: var(--ring);
+  --color-input: var(--input);
+  --color-border: var(--border);
+  --color-destructive: var(--destructive);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent: var(--accent);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-muted: var(--muted);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary: var(--secondary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary: var(--primary);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-popover: var(--popover);
+  --color-card-foreground: var(--card-foreground);
+  --color-card: var(--card);
+  --color-glass: var(--glass);
+  --color-glass-strong: var(--glass-strong);
+  --color-glass-border: var(--glass-border);
+  --color-ink: var(--ink);
+  --color-ink-soft: var(--ink-soft);
+  --color-gold: var(--gold);
+  --color-gold-soft: var(--gold-soft);
+  --color-emerald-deep: var(--emerald-deep);
+  --color-emerald-mid: var(--emerald-mid);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+}
+
+:root {
+  --radius: 0.875rem;
+
+  /* AKELA GROUP — BIR XIL KO'K TIZIM (unified blue)
+     Barcha oynalar uchun yagona fon: och ko'k → muz ko'k → indigo.
+     Primary #4F5BD5 (indigo) atrofida uyg'un ko'k oila. */
+  --background: oklch(0.92 0.045 255);
+  --foreground: oklch(0.18 0.05 258);
+  --card: oklch(0.985 0.015 250);
+  --card-foreground: oklch(0.18 0.05 258);
+  --popover: oklch(0.985 0.015 250);
+  --popover-foreground: oklch(0.18 0.05 258);
+  --primary: oklch(0.52 0.20 258);
+  --primary-foreground: oklch(0.98 0.01 250);
+  --secondary: oklch(0.90 0.04 255);
+  --secondary-foreground: oklch(0.25 0.05 258);
+  --muted: oklch(0.90 0.04 255);
+  --muted-foreground: oklch(0.45 0.04 258);
+  --accent: oklch(0.72 0.16 250);
+  --accent-foreground: oklch(0.98 0.01 250);
+  --destructive: oklch(0.60 0.22 28);
+  --border: oklch(0.72 0.08 255 / 0.45);
+  --input: oklch(0.96 0.02 250);
+  --ring: oklch(0.52 0.18 258);
+
+  /* Custom AKELA palette — ko'k oila (blue harmony) */
+  --ink: oklch(0.18 0.05 258);
+  --ink-soft: oklch(0.40 0.04 258);
+  --gold: oklch(0.72 0.16 250);
+  --gold-soft: oklch(0.90 0.05 255);
+  --royal-deep: oklch(0.32 0.18 262);
+  --royal-mid: oklch(0.52 0.20 258);
+  --emerald-deep: oklch(0.30 0.12 258);
+  --emerald-mid: oklch(0.48 0.16 258);
+  --slate-deep: oklch(0.22 0.04 258);
+  --slate-mid: oklch(0.40 0.04 258);
+
+  /* Liquid glass surfaces — ko'k tusli shisha */
+  --glass: oklch(0.985 0.015 250 / 0.62);
+  --glass-strong: oklch(0.985 0.015 250 / 0.85);
+  --glass-border: oklch(1 0 0 / 0.7);
+
+  /* Lesson-specific colors — barchasi ko'k oila (uyg'unlik) */
+  --lesson-accent: oklch(0.62 0.17 250);
+  --lesson-secondary: oklch(0.52 0.15 258);
+
+  --chart-1: oklch(0.52 0.18 258);
+  --chart-2: oklch(0.65 0.16 240);
+  --chart-3: oklch(0.45 0.08 258);
+  --chart-4: oklch(0.60 0.15 250);
+  --chart-5: oklch(0.55 0.14 232);
+  --sidebar: oklch(0.985 0.012 240);
+  --sidebar-foreground: oklch(0.22 0.03 250);
+  --sidebar-primary: oklch(0.52 0.18 258);
+  --sidebar-primary-foreground: oklch(0.98 0.01 250);
+  --sidebar-accent: oklch(0.94 0.015 245);
+  --sidebar-accent-foreground: oklch(0.25 0.04 250);
+  --sidebar-border: oklch(0.86 0.025 245);
+  --sidebar-ring: oklch(0.52 0.18 258);
+}
+
+.dark {
+  --background: oklch(0.20 0.06 262);
+  --foreground: oklch(0.95 0.02 250);
+  --card: oklch(0.24 0.06 262);
+  --card-foreground: oklch(0.95 0.02 250);
+  --popover: oklch(0.24 0.06 262);
+  --popover-foreground: oklch(0.95 0.02 250);
+  --primary: oklch(0.70 0.18 258);
+  --primary-foreground: oklch(0.16 0.05 262);
+  --secondary: oklch(0.28 0.06 262);
+  --secondary-foreground: oklch(0.93 0.02 250);
+  --muted: oklch(0.27 0.06 262);
+  --muted-foreground: oklch(0.72 0.03 250);
+  --accent: oklch(0.68 0.17 250);
+  --accent-foreground: oklch(0.16 0.05 262);
+  --destructive: oklch(0.704 0.191 22.216);
+  --border: oklch(0.55 0.12 258 / 0.35);
+  --input: oklch(1 0 0 / 15%);
+  --ring: oklch(0.70 0.18 258);
+
+  --ink: oklch(0.95 0.02 250);
+  --ink-soft: oklch(0.76 0.03 250);
+  --gold: oklch(0.72 0.16 250);
+  --gold-soft: oklch(0.32 0.10 258);
+  --royal-deep: oklch(0.32 0.18 262);
+  --royal-mid: oklch(0.60 0.18 258);
+  --emerald-deep: oklch(0.85 0.06 250);
+  --emerald-mid: oklch(0.72 0.12 250);
+  --slate-deep: oklch(0.22 0.04 258);
+  --slate-mid: oklch(0.40 0.04 258);
+
+  --glass: oklch(0.26 0.06 262 / 0.62);
+  --glass-strong: oklch(0.30 0.07 262 / 0.85);
+  --glass-border: oklch(0.70 0.12 250 / 0.28);
+
+  /* Lesson-specific colors (dark mode) — ko'k oila */
+  --lesson-accent: oklch(0.70 0.16 250);
+  --lesson-secondary: oklch(0.60 0.16 258);
+
+  --chart-1: oklch(0.60 0.16 258);
+  --chart-2: oklch(0.70 0.15 240);
+  --chart-3: oklch(0.55 0.08 258);
+  --chart-4: oklch(0.65 0.15 250);
+  --chart-5: oklch(0.62 0.13 232);
+  --sidebar: oklch(0.16 0.03 250);
+  --sidebar-foreground: oklch(0.97 0.01 240);
+  --sidebar-primary: oklch(0.70 0.18 258);
+  --sidebar-primary-foreground: oklch(0.14 0.03 250);
+  --sidebar-accent: oklch(0.24 0.04 250);
+  --sidebar-accent-foreground: oklch(0.95 0.015 240);
+  --sidebar-border: oklch(1 0 0 / 12%);
+  --sidebar-ring: oklch(0.70 0.18 258);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  html {
+    scroll-behavior: smooth;
+    -webkit-font-smoothing: antialiased;
+  }
+  body {
+    @apply bg-background text-foreground;
+    font-feature-settings: "ss01", "cv11";
+    /* YAGONA KO'K FON — barcha oynalarda bir xil (LiquidBackground bilan birga) */
+    background:
+      radial-gradient(130% 100% at 50% 0%, oklch(0.96 0.03 240) 0%, oklch(0.93 0.045 250) 42%, oklch(0.89 0.06 258) 78%, oklch(0.86 0.07 262) 100%);
+    background-attachment: fixed;
+    min-height: 100vh;
+  }
+  .dark body {
+    background:
+      radial-gradient(130% 100% at 50% 0%, oklch(0.26 0.07 262) 0%, oklch(0.22 0.065 262) 45%, oklch(0.18 0.06 262) 80%, oklch(0.16 0.055 262) 100%);
+    background-attachment: fixed;
+  }
+}
+
+/* ===== Liquid Glass primitives ===== */
+@layer components {
+  .glass {
+    background: var(--glass);
+    backdrop-filter: blur(22px) saturate(180%);
+    -webkit-backdrop-filter: blur(22px) saturate(180%);
+    border: 1px solid var(--glass-border);
+    box-shadow:
+      0 1px 0 0 oklch(1 0 0 / 0.55) inset,
+      0 -1px 0 0 oklch(0.3 0.12 258 / 0.08) inset,
+      0 24px 48px -24px oklch(0.38 0.16 262 / 0.35),
+      0 2px 6px -2px oklch(0.38 0.16 262 / 0.15);
+  }
+
+  .glass-strong {
+    background: var(--glass-strong);
+    backdrop-filter: blur(32px) saturate(200%);
+    -webkit-backdrop-filter: blur(32px) saturate(200%);
+    border: 1px solid var(--glass-border);
+    box-shadow:
+      0 1px 0 0 oklch(1 0 0 / 0.65) inset,
+      0 -1px 0 0 oklch(0.3 0.12 258 / 0.08) inset,
+      0 30px 60px -20px oklch(0.38 0.16 262 / 0.42),
+      0 4px 12px -4px oklch(0.38 0.16 262 / 0.18);
+  }
+
+  .glass-card {
+    background: var(--glass);
+    backdrop-filter: blur(22px) saturate(180%);
+    -webkit-backdrop-filter: blur(22px) saturate(180%);
+    border: 1px solid var(--glass-border);
+    box-shadow:
+      0 1px 0 0 oklch(1 0 0 / 0.55) inset,
+      0 -1px 0 0 oklch(0.3 0.12 258 / 0.08) inset,
+      0 24px 48px -24px oklch(0.38 0.16 262 / 0.35),
+      0 2px 6px -2px oklch(0.38 0.16 262 / 0.15);
+    border-radius: 1.5rem;
+    position: relative;
+    overflow: hidden;
+  }
+
+  /* Liquid Video Card — tolqinsimon chetlar, blur, shimmer */
+  .liquid-video-card {
+    position: relative;
+    background: linear-gradient(135deg, oklch(0.97 0.02 250 / 0.65), oklch(0.93 0.04 260 / 0.55));
+    backdrop-filter: blur(28px) saturate(200%) brightness(1.05);
+    -webkit-backdrop-filter: blur(28px) saturate(200%) brightness(1.05);
+    border: 1.5px solid oklch(1 0 0 / 0.45);
+    border-radius: 1.25rem;
+    box-shadow:
+      0 1px 0 0 oklch(1 0 0 / 0.7) inset,
+      0 -1px 0 0 oklch(0.4 0.1 258 / 0.06) inset,
+      0 20px 50px -15px oklch(0.35 0.15 260 / 0.25),
+      0 4px 12px -3px oklch(0.35 0.15 260 / 0.12);
+    overflow: hidden;
+    transition: all 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  .liquid-video-card::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(130% 90% at -10% -10%, oklch(1 0 0 / 0.35), transparent 55%),
+      radial-gradient(80% 70% at 110% 10%, oklch(0.72 0.18 245 / 0.15), transparent 55%);
+    pointer-events: none;
+    z-index: 1;
+  }
+  .liquid-video-card::after {
+    content: "";
+    position: absolute;
+    inset: -2px;
+    border-radius: inherit;
+    background: conic-gradient(
+      from 180deg,
+      oklch(1 0 0 / 0.0) 0%,
+      oklch(0.85 0.12 245 / 0.18) 25%,
+      oklch(1 0 0 / 0.0) 50%,
+      oklch(0.80 0.15 270 / 0.15) 75%,
+      oklch(1 0 0 / 0.0) 100%
+    );
+    animation: liquid-shimmer 6s linear infinite;
+    pointer-events: none;
+    z-index: 2;
+    mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    mask-composite: exclude;
+    -webkit-mask-composite: xor;
+    padding: 1.5px;
+  }
+  .liquid-video-card:hover {
+    transform: translateY(-6px) scale(1.02);
+    box-shadow:
+      0 1px 0 0 oklch(1 0 0 / 0.7) inset,
+      0 -1px 0 0 oklch(0.4 0.1 258 / 0.06) inset,
+      0 30px 60px -15px oklch(0.4 0.18 255 / 0.35),
+      0 8px 20px -4px oklch(0.4 0.18 255 / 0.18);
+    border-color: oklch(0.85 0.12 245 / 0.5);
+  }
+
+  @keyframes liquid-shimmer {
+    0%   { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+
+  .glass-card::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(120% 80% at 0% 0%, oklch(1 0 0 / 0.28), transparent 60%),
+      radial-gradient(80% 60% at 100% 0%, oklch(0.68 0.16 250 / 0.12), transparent 60%);
+    pointer-events: none;
+  }
+
+  .glass-pill {
+    background: var(--glass);
+    backdrop-filter: blur(22px) saturate(180%);
+    -webkit-backdrop-filter: blur(22px) saturate(180%);
+    border: 1px solid var(--glass-border);
+    box-shadow:
+      0 1px 0 0 oklch(1 0 0 / 0.55) inset,
+      0 2px 8px -2px oklch(0.38 0.16 262 / 0.20);
+    border-radius: 9999px;
+    padding: 0.4rem 0.9rem;
+    font-size: 0.78rem;
+    letter-spacing: 0.04em;
+  }
+
+  .gold-text {
+    background: linear-gradient(135deg, oklch(0.55 0.18 250) 0%, oklch(0.66 0.17 240) 50%, oklch(0.45 0.18 262) 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+
+  .emerald-text {
+    background: linear-gradient(135deg, oklch(0.48 0.16 258) 0%, oklch(0.36 0.16 262) 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+
+  /* Section heading underline (ko'k chiziq) */
+  .section-eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.18em;
+    color: var(--emerald-mid);
+  }
+  .section-eyebrow::before {
+    content: "";
+    width: 28px;
+    height: 2px;
+    border-radius: 2px;
+    background: linear-gradient(90deg, oklch(0.55 0.18 250), oklch(0.55 0.18 250 / 0));
+  }
+
+  /* Ticket perforation utility */
+  .ticket-notch {
+    position: absolute;
+    top: 50%;
+    width: 20px;
+    height: 20px;
+    background: var(--background);
+    border-radius: 9999px;
+    transform: translateY(-50%);
+    box-shadow: inset 0 0 0 1px oklch(0 0 0 / 0.06);
+  }
+  .ticket-notch-left { left: -10px; }
+  .ticket-notch-right { right: -10px; }
+}
+
+/* ===== Animations ===== */
+@keyframes float-blob {
+  0%, 100% { transform: translate(0, 0) scale(1) rotate(0deg); }
+  33% { transform: translate(40px, -30px) scale(1.08) rotate(8deg); }
+  66% { transform: translate(-30px, 25px) scale(0.95) rotate(-6deg); }
+}
+
+@keyframes drift-slow {
+  0%, 100% { transform: translate(0, 0); }
+  50% { transform: translate(-30px, 40px); }
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+@keyframes pulse-glow {
+  0%, 100% { opacity: 0.5; transform: scale(1); }
+  50% { opacity: 0.85; transform: scale(1.05); }
+}
+
+@keyframes ripple {
+  0% { transform: scale(0.8); opacity: 0.6; }
+  100% { transform: scale(2.4); opacity: 0; }
+}
+
+@keyframes float-icon {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  50% { transform: translateY(-8px) rotate(3deg); }
+}
+
+@keyframes float3d {
+  0%, 100% { 
+    transform: translate(0, 0) rotateX(0deg) rotateY(0deg) scale(1) translateZ(0);
+  }
+  25% { 
+    transform: translate(40px, -50px) rotateX(20deg) rotateY(25deg) scale(1.15) translateZ(10px);
+  }
+  50% { 
+    transform: translate(-30px, 30px) rotateX(-15deg) rotateY(-20deg) scale(0.9) translateZ(-5px);
+  }
+  75% { 
+    transform: translate(50px, 20px) rotateX(25deg) rotateY(-15deg) scale(1.1) translateZ(8px);
+  }
+}
+
+@keyframes draw-line {
+  from { stroke-dashoffset: 1000; }
+  to { stroke-dashoffset: 0; }
+}
+
+.animate-float-blob { animation: float-blob 18s ease-in-out infinite; }
+.animate-drift-slow { animation: drift-slow 22s ease-in-out infinite; }
+.animate-pulse-glow { animation: pulse-glow 6s ease-in-out infinite; }
+.animate-float-icon { animation: float-icon 4s ease-in-out infinite; }
+
+/* Reveal-on-scroll baseline (Framer Motion handles most) */
+.reveal-init {
+  opacity: 0;
+  transform: translateY(24px);
+  transition: opacity 0.8s cubic-bezier(0.22, 1, 0.36, 1), transform 0.8s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.reveal-in {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Custom scrollbar — ko'k uyg'unlik */
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, oklch(0.55 0.16 250 / 0.45), oklch(0.45 0.17 262 / 0.45));
+  border-radius: 999px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, oklch(0.48 0.17 258 / 0.65), oklch(0.40 0.17 262 / 0.65));
+  background-clip: padding-box;
+}
+
+/* Selection color — ko'k */
+::selection {
+  background: oklch(0.55 0.16 250 / 0.30);
+  color: var(--emerald-deep);
+}
+
+/* Grid paper background — ko'k nozik setka (bir xil fon qismi) */
+.bg-grid-paper {
+  background-image:
+    linear-gradient(oklch(0.45 0.14 258 / 0.07) 1px, transparent 1px),
+    linear-gradient(90deg, oklch(0.45 0.14 258 / 0.07) 1px, transparent 1px);
+  background-size: 32px 32px;
+  background-position: -1px -1px;
+}
+
+/* Dotted notebook background — ko'k nuqtalar */
+.bg-dot-paper {
+  background-image: radial-gradient(oklch(0.45 0.14 258 / 0.14) 1px, transparent 1px);
+  background-size: 22px 22px;
+}
+
+/* YAGONA KO'K FON utiliti — istalgan oynada bir xil fon uchun */
+.app-blue-bg {
+  background:
+    radial-gradient(130% 100% at 50% 0%, oklch(0.96 0.03 240) 0%, oklch(0.93 0.045 250) 42%, oklch(0.89 0.06 258) 78%, oklch(0.86 0.07 262) 100%);
+  background-attachment: fixed;
+}
+.dark .app-blue-bg {
+  background:
+    radial-gradient(130% 100% at 50% 0%, oklch(0.26 0.07 262) 0%, oklch(0.22 0.065 262) 45%, oklch(0.18 0.06 262) 80%, oklch(0.16 0.055 262) 100%);
+  background-attachment: fixed;
+}
+
+/* ===== Design Tokens for Aesthetic Application ===== */
+@layer base {
+  :root {
+    /* Motion tokens */
+    --motion-duration-fast: 150ms;
+    --motion-duration-normal: 300ms;
+    --motion-duration-slow: 500ms;
+    --motion-ease-default: cubic-bezier(0.22, 1, 0.36, 1);
+    --motion-ease-in: cubic-bezier(0.55, 0.055, 0.675, 0.19);
+    --motion-ease-out: cubic-bezier(0.215, 0.61, 0.355, 1);
+    
+    /* Spatial tokens */
+    --space-unit: 4px;
+    --space-scale: 1;
+    --space-xs: calc(var(--space-unit) * 1);  /* 4px */
+    --space-sm: calc(var(--space-unit) * 2);  /* 8px */
+    --space-md: calc(var(--space-unit) * 3);  /* 12px */
+    --space-lg: calc(var(--space-unit) * 4);  /* 16px */
+    --space-xl: calc(var(--space-unit) * 6);  /* 24px */
+    --space-2xl: calc(var(--space-unit) * 8); /* 32px */
+    --space-3xl: calc(var(--space-unit) * 12); /* 48px */
+    
+    /* Typography tokens */
+    --font-weight-regular: 400;
+    --font-weight-medium: 500;
+    --font-weight-semibold: 600;
+    --font-weight-bold: 700;
+    --font-weight-extrabold: 800;
+    
+    /* Border radius tokens */
+    --radius-xs: 4px;
+    --radius-sm: 6px;
+    --radius-md: 8px;
+    --radius-lg: 12px;
+    --radius-xl: 16px;
+    --radius-2xl: 24px;
+    --radius-full: 9999px;
+    
+    /* Shadow tokens — ko'k soya */
+    --shadow-sm: 0 1px 2px 0 oklch(0.38 0.16 262 / 0.08);
+    --shadow-md: 0 4px 6px -1px oklch(0.38 0.16 262 / 0.12), 0 2px 4px -2px oklch(0.38 0.16 262 / 0.12);
+    --shadow-lg: 0 10px 15px -3px oklch(0.38 0.16 262 / 0.14), 0 4px 6px -4px oklch(0.38 0.16 262 / 0.12);
+    --shadow-xl: 0 20px 25px -5px oklch(0.38 0.16 262 / 0.16), 0 8px 10px -6px oklch(0.38 0.16 262 / 0.12);
+  }
+}
+
+/* ===== Component Tokens ===== */
+@layer components {
+  /* Button tokens */
+  .btn-primary {
+    @apply bg-gradient-to-br from-indigo-700 to-indigo-600 text-white font-bold shadow-lg;
+    transition: all var(--motion-duration-normal) var(--motion-ease-default);
+  }
+  .btn-primary:hover {
+    @apply scale-105;
+  }
+  .btn-primary:disabled {
+    @apply opacity-50 cursor-not-allowed;
+    transform: none;
+  }
+  
+  .btn-secondary {
+    @apply text-[color:var(--ink-soft)] hover:text-[color:var(--emerald-deep)];
+    background: var(--glass);
+    backdrop-filter: blur(22px) saturate(180%);
+    -webkit-backdrop-filter: blur(22px) saturate(180%);
+    border: 1px solid var(--glass-border);
+    border-radius: 1.5rem;
+    transition: all var(--motion-duration-normal) var(--motion-ease-default);
+  }
+  
+  .btn-danger {
+    @apply bg-rose-50 border border-rose-200 text-rose-700 font-bold;
+    transition: all var(--motion-duration-normal) var(--motion-ease-default);
+  }
+  .btn-danger:hover {
+    @apply bg-rose-100;
+  }
+  
+  /* Input tokens */
+  .input-field {
+    @apply w-full rounded-xl px-4 py-2.5 text-sm text-[color:var(--emerald-deep)] placeholder:text-[color:var(--ink-soft)] outline-none;
+    background: var(--glass);
+    backdrop-filter: blur(22px) saturate(180%);
+    -webkit-backdrop-filter: blur(22px) saturate(180%);
+    border: 1px solid var(--glass-border);
+    transition: all var(--motion-duration-normal) var(--motion-ease-default);
+  }
+  .input-field:focus {
+    @apply ring-2 ring-blue-400;
+  }
+  
+  /* Card tokens */
+  .card-interactive {
+    @apply rounded-2xl p-5;
+    background: var(--glass);
+    backdrop-filter: blur(22px) saturate(180%);
+    -webkit-backdrop-filter: blur(22px) saturate(180%);
+    border: 1px solid var(--glass-border);
+    transition: all var(--motion-duration-normal) var(--motion-ease-default);
+  }
+  .card-interactive:hover {
+    @apply shadow-xl;
+    transform: translateY(-2px);
+  }
+  
+  /* Badge tokens */
+  .badge-success {
+    @apply text-xs font-bold text-indigo-700;
+    background: var(--glass);
+    backdrop-filter: blur(22px) saturate(180%);
+    -webkit-backdrop-filter: blur(22px) saturate(180%);
+    border: 1px solid var(--glass-border);
+    border-radius: 9999px;
+    padding: 0.4rem 0.9rem;
+    font-size: 0.78rem;
+    letter-spacing: 0.04em;
+  }
+  
+  .badge-warning {
+    @apply text-xs font-bold text-amber-700;
+    background: var(--glass);
+    backdrop-filter: blur(22px) saturate(180%);
+    -webkit-backdrop-filter: blur(22px) saturate(180%);
+    border: 1px solid var(--glass-border);
+    border-radius: 9999px;
+    padding: 0.4rem 0.9rem;
+    font-size: 0.78rem;
+    letter-spacing: 0.04em;
+  }
+  
+  .badge-danger {
+    @apply text-xs font-bold text-rose-700;
+    background: var(--glass);
+    backdrop-filter: blur(22px) saturate(180%);
+    -webkit-backdrop-filter: blur(22px) saturate(180%);
+    border: 1px solid var(--glass-border);
+    border-radius: 9999px;
+    padding: 0.4rem 0.9rem;
+    font-size: 0.78rem;
+    letter-spacing: 0.04em;
+  }
+  
+  .badge-info {
+    @apply text-xs font-bold text-purple-700;
+    background: var(--glass);
+    backdrop-filter: blur(22px) saturate(180%);
+    -webkit-backdrop-filter: blur(22px) saturate(180%);
+    border: 1px solid var(--glass-border);
+    border-radius: 9999px;
+    padding: 0.4rem 0.9rem;
+    font-size: 0.78rem;
+    letter-spacing: 0.04em;
+  }
+  
+  /* Table tokens */
+  .table-header {
+    @apply text-left p-4 text-xs font-bold text-[color:var(--ink-soft)] uppercase tracking-wider;
+  }
+  
+  .table-cell {
+    @apply p-4;
+  }
+  
+  .table-row {
+    @apply hover:bg-white/5 transition-colors;
+  }
+  
+  /* Navigation tokens */
+  .nav-link {
+    @apply flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-bold transition-all;
+  }
+  
+  .nav-link-active {
+    @apply bg-gradient-to-br from-indigo-700 to-indigo-600 text-white shadow-lg;
+  }
+  
+  .nav-link-inactive {
+    @apply text-[color:var(--ink-soft)] hover:text-[color:var(--emerald-deep)];
+    background: var(--glass);
+    backdrop-filter: blur(22px) saturate(180%);
+    -webkit-backdrop-filter: blur(22px) saturate(180%);
+    border: 1px solid var(--glass-border);
+    border-radius: 1.5rem;
+  }
+  
+  /* Pagination tokens */
+  .pagination-btn {
+    @apply w-8 h-8 rounded-lg text-xs font-bold transition-all;
+  }
+  
+  .pagination-btn-active {
+    @apply bg-gradient-to-br from-indigo-700 to-indigo-600 text-white shadow-lg;
+  }
+  
+  .pagination-btn-inactive {
+    @apply text-[color:var(--ink-soft)] hover:text-[color:var(--emerald-deep)];
+    background: var(--glass);
+    backdrop-filter: blur(22px) saturate(180%);
+    -webkit-backdrop-filter: blur(22px) saturate(180%);
+    border: 1px solid var(--glass-border);
+  }
+  
+  /* Loading state tokens */
+  .loading-spinner {
+    @apply h-8 w-8 animate-spin text-indigo-600;
+  }
+  
+  .loading-container {
+    @apply min-h-screen grid place-items-center bg-background;
+  }
+  
+  /* Lesson-specific enhancements */
+  .lesson-content {
+    @apply text-[16px] leading-relaxed;
+  }
+  
+  .lesson-heading {
+    @apply font-extrabold text-[color:var(--emerald-deep)];
+  }
+  
+  .lesson-list-item {
+    @apply flex gap-3 text-[color:var(--ink-soft)] leading-relaxed;
+  }
+  
+  .lesson-list-bullet {
+    @apply text-blue-500 font-bold mt-1;
+  }
+
+  .lesson-divider {
+    @apply my-8 border-0 h-px bg-gradient-to-r from-transparent via-[color:var(--border)] to-transparent;
+  }
+
+  .lesson-code {
+    @apply rounded-lg bg-gradient-to-br from-blue-50 to-indigo-50 px-2 py-1 text-sm font-mono text-[color:var(--emerald-deep)] border border-blue-200/50;
+  }
+  
+  /* Lesson navigation enhancements */
+  .lesson-nav-btn {
+    @apply rounded-xl px-5 py-3 text-sm font-semibold transition-all flex items-center gap-2;
+  }
+  
+  .lesson-nav-prev {
+    @apply text-[color:var(--emerald-deep)] hover:-translate-y-1 hover:shadow-lg;
+    background: var(--glass);
+    backdrop-filter: blur(22px) saturate(180%);
+    -webkit-backdrop-filter: blur(22px) saturate(180%);
+    border: 1px solid var(--glass-border);
+  }
+  
+  .lesson-nav-next {
+    @apply text-white shadow-lg hover:scale-105 hover:shadow-xl;
+    background: linear-gradient(135deg, oklch(0.42 0.08 258), oklch(0.35 0.08 258));
+  }
+  
+  /* Lesson progress card */
+  .lesson-progress-card {
+    @apply rounded-xl px-6 py-4 flex items-center justify-between;
+    background: var(--glass);
+    backdrop-filter: blur(22px) saturate(180%);
+    -webkit-backdrop-filter: blur(22px) saturate(180%);
+    border: 1px solid var(--glass-border);
+  }
+  
+  .lesson-progress-badge {
+    @apply h-8 w-8 rounded-full flex items-center justify-center text-white font-bold text-sm;
+    background: linear-gradient(135deg, oklch(0.55 0.09 258), oklch(0.42 0.08 258));
+  }
+  
+  /* Lesson content typography enhancements */
+  .lesson-heading-1 {
+    @apply text-3xl font-extrabold text-[color:var(--emerald-deep)];
+    margin: 36px 0 20px;
+  }
+  
+  .lesson-heading-2 {
+    @apply text-2xl font-extrabold text-[color:var(--emerald-deep)];
+    margin: 32px 0 16px;
+  }
+  
+  .lesson-heading-3 {
+    @apply text-xl font-bold text-[color:var(--emerald-deep)];
+    margin: 24px 0 12px;
+  }
+  
+  .lesson-paragraph {
+    @apply text-[16px] text-[color:var(--ink-soft)] leading-relaxed mb-4;
+  }
+  
+  .lesson-list {
+    @apply space-y-2 ml-4 mb-4;
+  }
+  
+  .lesson-list-item {
+    @apply flex gap-3 text-[color:var(--ink-soft)] leading-relaxed;
+  }
+  
+  /* Organization chart enhancements */
+  .org-chart-container {
+    @apply mt-4 overflow-x-auto;
+  }
+  
+  .org-chart-director {
+    @apply rounded-xl px-5 py-3 bg-gradient-to-br from-blue-50 to-indigo-100 border border-blue-300 text-center shadow-md;
+  }
+
+  .org-chart-connector {
+    @apply w-px h-6 bg-gradient-to-b from-blue-400 to-indigo-400;
+  }
+  
+  .org-chart-horizontal-line {
+    @apply absolute top-0 left-0 right-0 h-px bg-indigo-400;
+  }
+  
+  .org-chart-branch {
+    @apply flex flex-col items-center w-10 shrink-0;
+  }
+  
+  .org-chart-tree-char {
+    @apply text-indigo-600 font-mono text-sm font-bold -mt-0.5;
+  }
+  
+  .org-chart-dept-card {
+    @apply rounded-lg px-4 py-2 bg-white/80 border border-indigo-200 shadow-sm hover:shadow-md hover:scale-[1.02] transition-all min-w-fit;
+  }
+  
+  .org-chart-dept-name {
+    @apply font-semibold text-indigo-700 text-xs;
+  }
+  
+  .org-chart-person-name {
+    @apply text-indigo-500 text-xs ml-2;
+  }
+  
+  /* Better tree line connections */
+  .org-tree-vertical {
+    @apply w-px bg-indigo-400;
+  }
+  
+  .org-tree-horizontal {
+    @apply h-px bg-indigo-400;
+  }
+  
+  .org-tree-connector {
+    @apply flex items-center;
+  }
+  
+  .org-tree-branch-point {
+    @apply relative;
+  }
+  
+  /* Success/Error message tokens */
+  .message-success {
+    @apply rounded-2xl p-4 flex items-center gap-3 border-l-4 border-indigo-500;
+    background: var(--glass);
+    backdrop-filter: blur(22px) saturate(180%);
+    -webkit-backdrop-filter: blur(22px) saturate(180%);
+    border: 1px solid var(--glass-border);
+    border-left: 4px solid oklch(0.55 0.09 258);
+  }
+  
+  .message-error {
+    @apply rounded-2xl p-4 flex items-center gap-3 border-l-4 border-rose-500;
+    background: var(--glass);
+    backdrop-filter: blur(22px) saturate(180%);
+    -webkit-backdrop-filter: blur(22px) saturate(180%);
+    border: 1px solid var(--glass-border);
+    border-left: 4px solid oklch(0.577 0.245 27.325);
+  }
+  
+  /* Avatar tokens */
+  .avatar {
+    @apply grid place-items-center rounded-xl bg-gradient-to-br from-blue-600 to-indigo-600 text-white font-extrabold text-sm shadow-lg;
+  }
+  
+  .avatar-lg {
+    @apply h-14 w-14;
+  }
+  
+  .avatar-md {
+    @apply h-11 w-11;
+  }
+  
+  .avatar-sm {
+    @apply h-10 w-10;
+  }
+}
+
+/* ===== Focus States for Accessibility ===== */
+@layer base {
+  *:focus-visible {
+    @apply outline-2 outline-offset-2 outline-blue-500;
+  }
+  
+  /* Skip link for keyboard navigation */
+  .skip-link {
+    @apply absolute top-0 left-0 bg-indigo-700 text-white px-4 py-2 z-50;
+    transform: translateY(-100%);
+    transition: transform var(--motion-duration-fast) var(--motion-ease-default);
+  }
+  
+  .skip-link:focus {
+    @apply translate-y-0;
+  }
+}
+
+/* ===== Toggle Switch — smooth spring animatsiya ===== */
+@keyframes toggle-pop {
+  0% { transform: scale(1) translateX(var(--thumb-pos)); }
+  30% { transform: scale(1.15, 0.9) translateX(var(--thumb-pos)); }
+  50% { transform: scale(0.95, 1.05) translateX(var(--thumb-pos)); }
+  70% { transform: scale(1.03, 0.97) translateX(var(--thumb-pos)); }
+  100% { transform: scale(1) translateX(var(--thumb-pos)); }
+}
+
+.toggle-track {
+  position: relative;
+  width: 44px;
+  height: 24px;
+  border-radius: 9999px;
+  cursor: pointer;
+  flex-shrink: 0;
+  /* Smooth color transition — interrupted by animation on thumb */
+  transition: background-color 300ms ease, box-shadow 300ms ease;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+}
+
+.toggle-track::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
+  pointer-events: none;
+  z-index: 2;
+}
+
+.toggle-track--inactive {
+  background: linear-gradient(135deg, #cbd5e1, #94a3b8);
+  box-shadow:
+    0 0 0 2px rgba(148, 163, 184, 0.2),
+    0 1px 3px rgba(0, 0, 0, 0.06);
+}
+
+.toggle-track--active {
+  background: linear-gradient(135deg, #10b981, #059669);
+  box-shadow:
+    0 0 0 2px rgba(16, 185, 129, 0.25),
+    0 0 10px 2px rgba(16, 185, 129, 0.2),
+    0 2px 6px rgba(5, 150, 105, 0.25);
+}
+
+.toggle-track--disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+.toggle-thumb {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 20px;
+  height: 20px;
+  border-radius: 9999px;
+  background: white;
+  box-shadow:
+    0 1px 3px rgba(0, 0, 0, 0.12),
+    0 1px 2px rgba(0, 0, 0, 0.08);
+  z-index: 3;
+  pointer-events: none;
+  will-change: transform;
+  /* Smooth translate — the key to non-janky movement */
+  transition: transform 300ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.toggle-thumb--active {
+  --thumb-pos: 20px;
+  transform: translateX(20px);
+  animation: toggle-pop 380ms cubic-bezier(0.34, 1.2, 0.64, 1) forwards;
+}
+
+.toggle-thumb--inactive {
+  --thumb-pos: 0px;
+  transform: translateX(0);
+  animation: toggle-pop 320ms cubic-bezier(0.34, 1.2, 0.64, 1) forwards;
+}
+
+/* Hover — faqat track */
+.toggle-track:not(.toggle-track--disabled):hover {
+  filter: brightness(1.04);
+}
+
+/* Active bosishda — thumb biroz siqiladi (squish) */
+.toggle-track:not(.toggle-track--disabled):active .toggle-thumb {
+  transform: scaleX(1.12) translateX(var(--thumb-pos, 0px));
+  transition: transform 100ms ease;
+}
+
+/* ===== Ish faoliyati indikatori — juda sekin pulsatsiya ===== */
+@keyframes work-active-glow {
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.45), 0 0 10px 2px rgba(16, 185, 129, 0.25);
+  }
+  50% {
+    box-shadow: 0 0 0 7px rgba(16, 185, 129, 0), 0 0 22px 6px rgba(16, 185, 129, 0.4);
+  }
+}
+
+.work-active-glow {
+  animation: work-active-glow 3.2s ease-in-out infinite;
+}
+
+/* ===== Reduced Motion ===== */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* ===== Shrift ↔ border mosligi (font-fit) =====
+   Tamoyil: komponent darajasidagi Tailwind klasslari (h-*, py-*, leading-*, text-*)
+   har doim ustun turadi. Shu sababli bu yerda `!important` ishlatilmaydi va
+   elementlar majburan kattalashtirilmaydi — matn/ikonka o'z borderiga sig'adi. */
+html { font-size: 100%; }
+
+/* O'qish uchun qulay, lekin viewportda haddan tashqari o'sib ketmaydigan asosiy o'lcham */
+body {
+  font-size: clamp(0.875rem, 0.2vw + 0.8rem, 0.95rem);
+  line-height: 1.6;
+}
+
+/* Sarlavhalar: display-shrift gliflari (ascender/descender + diakritika)
+   line-box ichida qolishi uchun kamida 1.3 line-height kafolatlanadi.
+   (O'lchov: 48px va 72px display shriftda 1.3 → overflow = 0.)
+   `:where()` specificity 0 — har qanday `leading-*` klassi bu qoidadan ustun. */
+:where(h1, h2, h3, h4, h5, h6),
+:where(.text-2xl, .text-3xl, .text-4xl, .text-5xl, .text-6xl, .text-7xl, .text-8xl) {
+  line-height: 1.3;
+}
+
+/* Forma maydonlari: shrift meros olinadi, o'lcham/balandlik klasslari ustun turadi */
+:where(input, textarea, select, .input-field) {
+  font-size: inherit;
+  line-height: 1.4;
+}
+/* Tugmalarga majburiy padding/line-height berilmaydi — h-8/h-6 kabi qat'iy
+   balandlikdagi tugmalar o'z borderi ichida qolishi kerak. */

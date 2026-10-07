@@ -53,7 +53,11 @@ export async function POST(req: Request) {
         department: department || "",
         position: position || "",
         role: "user",
-        status: "pending",
+        // Yangi ro'yxatdan o'tgan foydalanuvchi darhol saytni ishlata oladi.
+        // Sabab: `pending` holat middleware'da `/login?reason=not-approved`
+        // ga tushirardi — ya'ni yangi odam saytni umuman ishlatolmagan.
+        // Bloklash endi faqat admin qarori bilan (`blocked`) amal qiladi.
+        status: "approved",
       },
     });
 

@@ -1,1 +1,0 @@
-﻿{"ok":true,"info":{"url":"https://edu.akelagroup.uz/api/telegram","has_custom_certificate":false,"pending_update_count":0,"max_connections":40,"ip_address":"216.198.79.1","allowed_updates":["message","callback_query"]}}

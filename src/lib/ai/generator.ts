@@ -13,7 +13,7 @@
  * to'g'ri/noto'g'ri variantlar yasaladi. Natijada test doim chiqadi.
  */
 
-import { complete, resolveProvider, estimateTokens, ProviderUnavailableError } from "./provider";
+import { complete, resolveProviderAsync, estimateTokens, ProviderUnavailableError } from "./provider";
 import { parseJsonLoose, clip } from "./json";
 import { webSearch, fetchPageText, type SearchHit } from "./search";
 import { wrapUntrustedSource } from "./sanitize";
@@ -136,7 +136,7 @@ export async function generateTest(input: GenerateInput): Promise<GenerateResult
     warnings.push(`Manba ${corpus.length} belgi edi, modelga ${MAX_CORPUS_CHARS} belgi yuborildi.`);
   }
 
-  const provider = resolveProvider();
+  const provider = await resolveProviderAsync();
   let draft: GeneratedDraft | null = null;
 
   if (provider.live) {

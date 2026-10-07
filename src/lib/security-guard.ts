@@ -86,22 +86,39 @@ export async function blockForDevTools(input: {
 }) {
   const user = await prisma.user.findUnique({
     where: { id: input.userId },
-    select: { id: true, name: true, surname: true, email: true, department: true, status: true },
+    select: { id: true, name: true, surname: true, email: true, department: true, status: true, role: true },
   });
   if (!user) return { blocked: false, reason: "Foydalanuvchi topilmadi" };
 
-  const alreadyBlocked = user.status === "blocked";
-  if (!alreadyBlocked) {
-    await prisma.user.update({
-      where: { id: input.userId },
-      data: {
-        status: "blocked",
-        blockedAt: new Date(),
-        blockedReason: input.reason.slice(0, 191),
-        securityNotes: { increment: 1 },
-      },
+  // Adminlar avtomatik bloklanmaydi (faqat audit yoziladi, Telegram ogohlantirishsiz)
+  if (user.role === "admin") {
+    await recordSecurityEvent({
+      userId: input.userId,
+      type: "devtools_open",
+      severity: "info",
+      ip: clientIp(input.req),
+      userAgent: userAgent(input.req),
+      path: input.req.nextUrl?.pathname,
+      detail: `Admin konsol tekshiruvi: ${input.detail || input.reason}`,
     });
+    return { blocked: false, alreadyBlocked: false, reason: "Admin — bloklash bekor qilindi" };
   }
+
+  const alreadyBlocked = user.status === "blocked";
+
+  // BLOKLASH EMAS — FAQAT OGOHLANTIRISH.
+  // Sabab: bloklash foydalanuvchini saytdan chiqarib yuboradi va u
+  // ishlashda davom eta olmaydi. Endi hech kim bloklanmaydi: hodisa
+  // qayd etiladi, Telegram'da xabar beriladi va foydalanuvchiga
+  // OGOHLANTIRISH ko'rsatiladi. `status` butunlay tegilmaydi.
+  await prisma.user.update({
+    where: { id: input.userId },
+    data: {
+      blockedAt: new Date(),
+      blockedReason: "OGOHLANTIRISH: " + input.reason.slice(0, 170),
+      securityNotes: { increment: 1 },
+    },
+  });
 
   const fullName = [user.surname, user.name].filter(Boolean).join(" ").trim() || user.email;
 
@@ -118,8 +135,8 @@ export async function blockForDevTools(input: {
   // Telegram xabari — `await` bilan: serverless'da "otib yuborib qo'yish"
   // javob qaytarilgach o'chib ketadi (xabar butunlay yetib borMAYdi).
   await notifySecurityAlert({
-    type: "DevTools / konsol ochildi → avtomatik bloklash",
-    severity: "critical",
+    type: "DevTools / konsol ochildi → OGOHLANTIRISH",
+    severity: "warn",
     fullName,
     email: user.email,
     department: user.department,
@@ -128,10 +145,11 @@ export async function blockForDevTools(input: {
     ip: clientIp(input.req),
     path: input.req.nextUrl?.pathname,
     detail: input.detail,
-    blocked: true,
+    blocked: false,
   }).catch((e) => console.error("[security] telegram xato:", e?.message || e));
 
-  return { blocked: true, alreadyBlocked, reason: input.reason };
+  // BloklanMAYdi — faqat ogohlantiriladi
+  return { blocked: false, alreadyBlocked, reason: input.reason };
 }
 
 /**
@@ -174,18 +192,38 @@ export async function handleSecurityReport(req: NextRequest) {
     );
   }
 
-  if (event === "devtools_open" || event === "console_disabled_attempt" || event === "shortcut_blocked") {
-    const result = await blockForDevTools({
+  // DevTools ochiq aniqlanganida HECH QANDAY amal bajarilmaydi.
+  //
+  // Sizning talab: "devtools ochiqligi aniqlansa hech qanday amal
+  // bajarilmasligi kerak". Shu sababli bu yerda:
+  //   - foydalanuvchi bloklanMAYdi
+  //   - `blockedReason`/`blockedAt` YOZILMAYDI (go'ya xabar ham yo'q)
+  //   - Telegram xabari YUBORILMAYDI
+  //   - hech qanday foydalanuvchi ko'rinishiga ta'sir qilinMAYDI
+  //
+  // Klient esa DevTools ochiqligida kontentni bo'sh ekran bilan yashiradi
+  // (`ConsoleGuard.tsx`) — ya'ni himoya ko'rinishda, foydalanuvchiga zarar
+  // yetkazmasdan.
+  if (event === "devtools_open") {
+    return NextResponse.json({ ok: true, blocked: false, ignored: true, message: "Hodisa qayd etilmadi." });
+  }
+
+  // Qolgan barcha hodisalar — faqat JURNALDA (bloklashsiz).
+  if (event === "console_disabled_attempt" || event === "shortcut_blocked") {
+    await recordSecurityEvent({
       userId: String(session.userId),
-      reason: "Saytda konsol/DevTools ochildi",
-      req,
-      detail: detail || event,
+      type: event,
+      severity: "warn",
+      ip,
+      userAgent: ua,
+      path,
+      detail: `${detail || event} (bloklashsiz — kuchsiz signal)`,
     });
     return NextResponse.json({
       ok: true,
-      blocked: true,
-      alreadyBlocked: result.alreadyBlocked,
-      message: "Akkauntingiz bloklandi. Administrator bilan bog'laning.",
+      recorded: true,
+      blocked: false,
+      note: "Hodisa qayd etildi, akkaunt bloklanmadi",
     });
   }
 

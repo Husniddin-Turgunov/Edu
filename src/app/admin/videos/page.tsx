@@ -6,6 +6,8 @@ import { useEffect, useState, useCallback } from "react";
 import { cachedFetch } from "@/lib/admin-cache";
 import { AdminSidebar, AdminHeader } from "@/components/admin/AdminSidebar";
 import { videoThumb } from "@/lib/video-thumb";
+import { groupVideos, totalDuration } from "@/lib/video-groups";
+import { PlaylistCard } from "@/components/akela/PlaylistCard";
 import {
   Plus,
   Search,
@@ -22,6 +24,9 @@ import {
   Home,
   Check,
   Upload,
+  ListVideo,
+  Layers,
+  ArrowLeft,
 } from "lucide-react";
 
 type Video = {
@@ -95,7 +100,66 @@ export default function AdminVideosPage() {
   const [uploading, setUploading] = useState(false);
   const [uploadPct, setUploadPct] = useState(0);
 
-  // Kompyuterdan video yuklash (XHR — foiz ko'rsatkichi bilan)
+  // ===== YouTube playlist import =====
+  type PlItem = { videoId: string; title: string; duration: string; thumb: string; url: string; exists: boolean };
+  const [plOpen, setPlOpen] = useState(false);
+  const [plUrl, setPlUrl] = useState("");
+  const [plLoading, setPlLoading] = useState(false);
+  const [plImporting, setPlImporting] = useState(false);
+  const [plError, setPlError] = useState<string | null>(null);
+  const [plData, setPlData] = useState<{ title: string; items: PlItem[] } | null>(null);
+  const [plSel, setPlSel] = useState<Set<string>>(new Set());
+  const [plCategory, setPlCategory] = useState("");
+  const [plLessons, setPlLessons] = useState(false);
+  const [plCourses, setPlCourses] = useState(false);
+  const [catFilter, setCatFilter] = useState("");
+
+  const openPlaylist = () => {
+    setPlOpen(true); setPlUrl(""); setPlData(null); setPlError(null); setPlSel(new Set());
+    setPlCategory(""); setPlLessons(false); setPlCourses(false);
+  };
+
+  const loadPlaylist = async () => {
+    setPlError(null); setPlData(null);
+    if (!plUrl.trim()) { setPlError("Playlist havolasini kiriting"); return; }
+    setPlLoading(true);
+    try {
+      const res = await fetch("/api/admin/videos/playlist", {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "preview", url: plUrl.trim() }),
+      });
+      const data = await res.json();
+      if (!data?.ok) throw new Error(data?.error || "Playlistni o'qib bo'lmadi");
+      setPlData(data.playlist);
+      setPlCategory(data.playlist.title);
+      setPlSel(new Set((data.playlist.items as PlItem[]).filter((i) => !i.exists).map((i) => i.videoId)));
+    } catch (e: any) { setPlError(e.message || "Xatolik"); }
+    finally { setPlLoading(false); }
+  };
+
+  const importPlaylist = async () => {
+    if (!plData || plSel.size === 0) return;
+    setPlError(null); setPlImporting(true);
+    try {
+      const res = await fetch("/api/admin/videos/playlist", {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "import", url: plUrl.trim(), category: plCategory.trim() || plData.title,
+          videoIds: [...plSel], showInLessons: plLessons, showOnCourses: plCourses,
+        }),
+      });
+      const data = await res.json();
+      if (!data?.ok) throw new Error(data?.error || "Qo'shib bo'lmadi");
+      setPlOpen(false); setCatFilter(data.category || ""); load();
+    } catch (e: any) { setPlError(e.message || "Xatolik"); }
+    finally { setPlImporting(false); }
+  };
+
+  // Kompyuterdan video yuklash — Vercel Blob'ga TO'G'RI (serverless limitisiz).
+  //
+  // ESKI USUL (`fetch` + FormData) ishlamasdi: serverless funksiya tanasi
+  // ~4.5 MB bilan cheklangan, shuning uchun brauzer 100% ga yetib, keyin
+  // server rad qilardi; qo'shimcha `fs` yozish Vercel'da `EROFS` berardi.
   const uploadFile = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     e.target.value = "";
@@ -103,34 +167,40 @@ export default function AdminVideosPage() {
     setError(null);
     setUploading(true);
     setUploadPct(0);
-    const fd = new FormData();
-    fd.append("file", file);
-    const xhr = new XMLHttpRequest();
-    xhr.open("POST", "/api/admin/upload-video");
-    xhr.upload.onprogress = (ev) => {
-      if (ev.lengthComputable) setUploadPct(Math.round((ev.loaded / ev.total) * 100));
-    };
-    xhr.onload = () => {
-      setUploading(false);
+
+    (async () => {
       try {
-        const data = JSON.parse(xhr.responseText);
-        if (!data?.ok) throw new Error(data?.error || "Yuklab bo'lmadi");
+        // Fayl Vercel Blob'ga TO'G'RIDAN-TO'G'RI yuboriladi. Blob xavfsizlik
+        // uchun `handleUploadUrl` orqali bizning route'imizga kelib token
+        // so'raydi — serverless tanasi (4.5 MB) umuman ishlatilmaydi.
+        const { upload } = await import("@vercel/blob/client");
+        const blob = await upload(`videos/${Date.now()}_${file.name.replace(/[^\w.\-]/g, "_")}`, file, {
+          access: "public",
+          handleUploadUrl: "/api/admin/upload-video",
+          contentType: file.type || undefined,
+          onUploadProgress: (p) => {
+            if (!p.loaded || !p.total) return;
+            setUploadPct(Math.min(100, Math.round((p.loaded / p.total) * 100)));
+          },
+        });
+
+        setUploadPct(100);
+        // `PutBlobResult` da `size` maydoni yo'q (2.x) — hajmni o'zimiz hisoblaymiz.
+        const bytes = file.size || 0;
         setForm((f) => ({
           ...f,
-          url: data.url,
-          size: f.size || data.sizeLabel || "",
-          title: f.title || (data.fileName || "").replace(/\.[^/.]+$/, ""),
+          url: blob.url,
+          size:
+            f.size ||
+            (bytes > 1048576 ? `${(bytes / 1048576).toFixed(1)} MB` : `${Math.max(1, Math.round(bytes / 1024))} KB`),
+          title: f.title || file.name.replace(/\.[^/.]+$/, ""),
         }));
-        setUploadPct(100);
       } catch (err: any) {
-        setError(err.message || "Yuklashda xatolik");
+        setError(err?.message || "Yuklashda xatolik");
+      } finally {
+        setUploading(false);
       }
-    };
-    xhr.onerror = () => {
-      setUploading(false);
-      setError("Tarmoq xatosi — qayta urining");
-    };
-    xhr.send(fd);
+    })();
   };
 
   // Placement editor
@@ -283,12 +353,22 @@ export default function AdminVideosPage() {
     return parts;
   };
 
+  const categories = Array.from(
+    videos.reduce((m, v) => m.set(v.category || "Tizim", (m.get(v.category || "Tizim") || 0) + 1), new Map<string, number>())
+  );
+
   const filtered = videos.filter(
     (v) =>
-      !search ||
-      v.title.toLowerCase().includes(search.toLowerCase()) ||
-      (v.category || "").toLowerCase().includes(search.toLowerCase())
+      (!catFilter || (v.category || "Tizim") === catFilter) &&
+      (!search ||
+        v.title.toLowerCase().includes(search.toLowerCase()) ||
+        (v.category || "").toLowerCase().includes(search.toLowerCase()))
   );
+
+  // Playlist (toifa) bitta karta bo'lib turadi; ochilganda alohida-alohida chiqadi
+  const rows = !search && !catFilter
+    ? groupVideos(filtered)
+    : filtered.map((v) => ({ kind: "single" as const, video: v }));
 
   if (status !== "authenticated") {
     return (
@@ -306,12 +386,20 @@ export default function AdminVideosPage() {
           title="Videolar"
           subtitle="Yangi video qo'shing — ro'yxatda va bosh sahifada eng birinchi chiqadi"
           action={
-            <button
-              onClick={openCreate}
-              className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-br from-blue-700 to-indigo-600 px-4 py-2.5 text-sm font-bold text-white shadow-lg shadow-blue-900/20 hover:scale-105 transition-transform"
-            >
-              <Plus className="w-4 h-4" /> Video qo'shish
-            </button>
+            <div className="flex flex-wrap gap-2">
+              <button
+                onClick={openPlaylist}
+                className="inline-flex items-center gap-2 rounded-xl border border-blue-300 glass px-4 py-2.5 text-sm font-bold text-blue-700 shadow-sm hover:bg-blue-50 transition-colors"
+              >
+                <ListVideo className="w-4 h-4" /> YouTube playlist
+              </button>
+              <button
+                onClick={openCreate}
+                className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-br from-blue-700 to-indigo-600 px-4 py-2.5 text-sm font-bold text-white shadow-lg shadow-blue-900/20 hover:scale-105 transition-transform"
+              >
+                <Plus className="w-4 h-4" /> Video qo'shish
+              </button>
+            </div>
           }
         />
 
@@ -322,9 +410,45 @@ export default function AdminVideosPage() {
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Video qidirish..."
-              className="w-full pl-10 pr-4 py-2.5 text-sm bg-white border border-blue-200/60 rounded-xl focus:outline-none focus:border-blue-500"
+              className="w-full pl-10 pr-4 py-2.5 text-sm glass border border-blue-200/60 rounded-xl focus:outline-none focus:border-blue-500"
             />
           </div>
+
+          {catFilter && (
+            <div className="mb-4 flex flex-wrap items-center gap-3" data-testid="playlist-open-bar">
+              <button onClick={() => setCatFilter("")} className="inline-flex items-center gap-1.5 rounded-xl border border-blue-200 glass px-3.5 py-2 text-sm font-bold text-blue-700 hover:bg-blue-50">
+                <ArrowLeft className="w-4 h-4" /> Barcha videolar
+              </button>
+              <span className="text-lg font-extrabold text-neutral-900">{catFilter}</span>
+              <span className="text-sm text-neutral-500">
+                {filtered.length} ta dars{totalDuration(filtered) ? ` · jami ${totalDuration(filtered)}` : ""}
+              </span>
+            </div>
+          )}
+
+          {categories.length > 1 && (
+            <div className="mb-5 flex flex-wrap gap-2" data-testid="video-category-chips">
+              <button
+                onClick={() => setCatFilter("")}
+                className={`rounded-full border px-3.5 py-1.5 text-xs font-bold transition-colors ${
+                  !catFilter ? "border-blue-600 bg-blue-600 text-white" : "border-blue-200 glass text-blue-700 hover:bg-blue-50"
+                }`}
+              >
+                Barchasi <span className="opacity-70">{videos.length}</span>
+              </button>
+              {categories.map(([name, n]) => (
+                <button
+                  key={name}
+                  onClick={() => setCatFilter(catFilter === name ? "" : name)}
+                  className={`rounded-full border px-3.5 py-1.5 text-xs font-bold transition-colors ${
+                    catFilter === name ? "border-blue-600 bg-blue-600 text-white" : "border-blue-200 glass text-blue-700 hover:bg-blue-50"
+                  }`}
+                >
+                  {name} <span className="opacity-70">{n}</span>
+                </button>
+              ))}
+            </div>
+          )}
 
           {loading ? (
             <div className="flex items-center gap-2 text-sm text-neutral-500">
@@ -344,8 +468,23 @@ export default function AdminVideosPage() {
             </div>
           ) : (
             <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-              {filtered.map((v, i) => (
-                <div key={v.id} className="liquid-video-card rounded-2xl bg-white border border-blue-200/60 overflow-hidden hover:shadow-lg transition-shadow backdrop-blur-xl">
+              {rows.map((row) => row.kind === "playlist" ? (
+                <PlaylistCard
+                  key={"pl-" + row.name}
+                  name={row.name}
+                  videos={row.videos}
+                  onOpen={() => setCatFilter(row.name)}
+                  footer={
+                    <button
+                      onClick={() => setCatFilter(row.name)}
+                      className="inline-flex w-full items-center justify-center gap-1.5 rounded-lg bg-gradient-to-br from-blue-700 to-indigo-600 px-3 py-1.5 text-xs font-bold text-white shadow hover:scale-[1.02] transition-transform"
+                    >
+                      <Layers className="w-3.5 h-3.5" /> Ochish ({row.videos.length})
+                    </button>
+                  }
+                />
+              ) : (() => { const v = row.video; const num = catFilter ? filtered.findIndex((x) => x.id === v.id) + 1 : 0; return (
+                <div key={v.id} className="liquid-video-card rounded-2xl glass-card overflow-hidden hover:shadow-lg transition-shadow">
                   <div className="relative aspect-video bg-gradient-to-br from-[#0e1e3a] to-[#1a2855] grid place-items-center overflow-hidden">
                     {videoThumb(v) && (
                       <img src={videoThumb(v)!} alt={v.title} className="absolute inset-0 h-full w-full object-cover" loading="lazy" />
@@ -365,6 +504,9 @@ export default function AdminVideosPage() {
                         </span>
                       )}
                     </div>
+                    {num > 0 && (
+                      <span className="absolute top-2 right-2 rounded-md bg-blue-600 px-2 py-0.5 text-[11px] font-black text-white">{num}-dars</span>
+                    )}
                     {v.duration && (
                       <span className="absolute bottom-2 right-2 rounded-md bg-black/80 px-2 py-0.5 text-xs font-bold text-white">
                         {v.duration}
@@ -418,10 +560,105 @@ export default function AdminVideosPage() {
                     </div>
                   </div>
                 </div>
-              ))}
+              ); })())}
             </div>
           )}
         </div>
+
+        {/* ===== YouTube playlist import ===== */}
+        {plOpen && (
+          <div className="fixed inset-0 z-50 grid place-items-center bg-black/40 p-4" onClick={() => !plImporting && setPlOpen(false)}>
+            <div className="w-full max-w-2xl rounded-2xl bg-white p-6 shadow-2xl max-h-[92vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+              <div className="flex items-center justify-between mb-1">
+                <h3 className="text-lg font-extrabold text-neutral-900 flex items-center gap-2">
+                  <ListVideo className="w-5 h-5 text-blue-600" /> YouTube playlist'dan qo'shish
+                </h3>
+                <button onClick={() => !plImporting && setPlOpen(false)} className="p-1.5 rounded-lg text-neutral-400 hover:bg-neutral-100" aria-label="Yopish">
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+              <p className="text-sm text-neutral-500 mb-4">
+                Playlist havolasini qo'ying — barcha videolar bir yo'la, bitta toifa ostida qo'shiladi.
+                Keyin shu toifa bo'yicha faqat ularni ko'rish mumkin.
+              </p>
+              <div className="flex gap-2">
+                <input
+                  value={plUrl}
+                  onChange={(e) => setPlUrl(e.target.value)}
+                  onKeyDown={(e) => e.key === "Enter" && loadPlaylist()}
+                  placeholder="https://www.youtube.com/playlist?list=PL..."
+                  dir="ltr"
+                  data-testid="playlist-url"
+                  className="min-w-0 flex-1 rounded-xl border border-neutral-200 px-3 py-2.5 text-sm focus:outline-none focus:border-blue-500"
+                />
+                <button
+                  onClick={loadPlaylist}
+                  disabled={plLoading}
+                  data-testid="playlist-load"
+                  className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-br from-blue-700 to-indigo-600 px-4 py-2 text-sm font-bold text-white shadow disabled:opacity-50"
+                >
+                  {plLoading && <Loader2 className="w-4 h-4 animate-spin" />} O'qish
+                </button>
+              </div>
+              {plError && <p className="mt-3 rounded-xl bg-rose-50 border border-rose-200 px-4 py-2.5 text-sm text-rose-700">{plError}</p>}
+
+              {plData && (
+                <div className="mt-4" data-testid="playlist-preview">
+                  <label className="block text-xs font-bold text-neutral-700 mb-1">Toifa (kategoriya) nomi</label>
+                  <input
+                    value={plCategory}
+                    onChange={(e) => setPlCategory(e.target.value)}
+                    className="w-full rounded-xl border border-neutral-200 px-3 py-2.5 text-sm focus:outline-none focus:border-blue-500"
+                  />
+                  <div className="mt-3 flex flex-wrap items-center justify-between gap-2 text-xs">
+                    <span className="font-bold text-neutral-700">{plSel.size} / {plData.items.length} video tanlandi</span>
+                    <span className="flex gap-3">
+                      <button className="font-bold text-blue-700 hover:underline" onClick={() => setPlSel(new Set(plData.items.filter((i) => !i.exists).map((i) => i.videoId)))}>Hammasini tanlash</button>
+                      <button className="font-bold text-neutral-500 hover:underline" onClick={() => setPlSel(new Set())}>Tozalash</button>
+                    </span>
+                  </div>
+                  <div className="mt-2 max-h-72 overflow-y-auto rounded-xl border border-neutral-200 divide-y divide-neutral-100">
+                    {plData.items.map((it, i) => (
+                      <label key={it.videoId} className={`flex cursor-pointer items-center gap-3 px-3 py-2 hover:bg-blue-50/40 ${it.exists ? "opacity-50" : ""}`}>
+                        <input
+                          type="checkbox"
+                          checked={plSel.has(it.videoId)}
+                          disabled={it.exists}
+                          onChange={(e) => {
+                            const n = new Set(plSel);
+                            e.target.checked ? n.add(it.videoId) : n.delete(it.videoId);
+                            setPlSel(n);
+                          }}
+                        />
+                        <span className="w-6 shrink-0 text-right text-[11px] font-bold text-neutral-400">{i + 1}</span>
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img src={it.thumb} alt="" className="h-9 w-16 shrink-0 rounded object-cover" loading="lazy" />
+                        <span className="min-w-0 flex-1 truncate text-sm font-semibold text-neutral-800">{it.title}</span>
+                        {it.exists && <span className="shrink-0 rounded bg-neutral-200 px-1.5 py-0.5 text-[10px] font-bold text-neutral-600">qo'shilgan</span>}
+                        {it.duration && <span className="shrink-0 text-[11px] text-neutral-500">{it.duration}</span>}
+                      </label>
+                    ))}
+                  </div>
+                  <div className="mt-3 flex flex-wrap gap-x-5 gap-y-1.5 text-xs font-bold text-neutral-700">
+                    <label className="flex items-center gap-1.5"><input type="checkbox" checked={plLessons} onChange={(e) => setPlLessons(e.target.checked)} /> Dars oynalarida ko'rsatish</label>
+                    <label className="flex items-center gap-1.5"><input type="checkbox" checked={plCourses} onChange={(e) => setPlCourses(e.target.checked)} /> Kurslar sahifasida ko'rsatish</label>
+                  </div>
+                  <div className="mt-5 flex justify-end gap-2">
+                    <button onClick={() => setPlOpen(false)} disabled={plImporting} className="rounded-xl border border-neutral-200 px-4 py-2 text-sm font-bold text-neutral-600 hover:bg-neutral-50 disabled:opacity-50">Bekor qilish</button>
+                    <button
+                      onClick={importPlaylist}
+                      disabled={plImporting || plSel.size === 0}
+                      data-testid="playlist-import"
+                      className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-br from-blue-700 to-indigo-600 px-5 py-2 text-sm font-bold text-white shadow disabled:opacity-50"
+                    >
+                      {plImporting && <Loader2 className="w-4 h-4 animate-spin" />} {plSel.size} ta videoni qo'shish
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
 
         {modalOpen && (
           <div className="fixed inset-0 z-50 grid place-items-center bg-black/40 p-4" onClick={() => !saving && setModalOpen(false)}>

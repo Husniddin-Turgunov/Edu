@@ -3,32 +3,21 @@
 import { useEffect, useRef, useState } from "react";
 
 /**
- * Konsol / DevTools qatlami (faqat ishlab chiqarishda — `enabled=false`).
+ * Konsol / DevTools qatlami.
  *
- * UCH QATLAM bor va ularning maqsadi turlicha:
+ * Sizning talab: "devtools ochiqligi aniqlansa HECH QANDAY amal bajarilmasin
+ * — na bloklash, na ogohlantirish, na Telegram. Faqat konsolga OCHIB
+ * BO'LMASIN."
  *
- *  1) TEZKOR QARSHI CHORA — F12, Ctrl+Shift+I/J/C, o'ng tugma va
- *     `console.*` bloklanadi. Bu faqat "tez vazifani sekinlashtiradi";
- *     qatlam 3 dan o'tib bo'lmaydi.
+ * SHU SABABLI:
+ *  - Serverga HECH QANDAY so'rov yuborilmaydi (`/api/security/report` chaqirilmaydi)
+ *  - Hech qanday banner, xabar yoki ogohlantirish ko'rsatilmaydi
+ *  - Foydalanuvchi hech qachon bloklanmaydi
+ *  - DevTools aniqlanganda sahifa MA'LUMOTI YASHIRILADI (bo'sh qora ekran)
  *
- *  2) ANIQLASH — oyna o'lchami farqi, `devtools` open/close hodisasi va
- *     `debugger` vaqti tuzog'i. Aniqlanganda xabar serverga yuboriladi.
- *
- *  3) SERVER QARORI (asl himoya) — bu komponent faqat xabar beradi.
- *     `/api/security/report` hodisani bazaga yozadi, foydalanuvchini
- *     `status = "blocked"` qilib qo'yadi va Telegram orqali adminlarga
- *     xabar yuboradi. Bloklash klientda emas, bazada yuz beradi — shuning
- *     uchun konsol orqali "bekor qilib bo'lmaydi": har bir server so'rovi
- *     `getSession()` orqali joriy `status` ni qayta tekshiradi.
- *
- * Konsol butunlay o'chmaydi (brauzer buni to'liq taqiqlay olmaydi) —
- * maqsad: ochilishini aniqlash va ochiq turib qolishiga yo'l qo'ymaslik.
+ * Bloklash klientda emas, balki umuman yo'q. Qolgan himoya: klaviatura
+ * (F12, Ctrl+Shift+I/J/C), o'ng tugma menyusi va `console.*` bloklanadi.
  */
-
-type GuardEvent = {
-  event: "devtools_open" | "devtools_closed" | "console_disabled_attempt" | "shortcut_blocked";
-  detail?: string;
-};
 
 function silenceConsole() {
   const noop = () => {};
@@ -39,104 +28,54 @@ function silenceConsole() {
       /* ba'zi brauzerlar muvjud emasligi uchun */
     }
   }
-  try {
-    (window as any).__consoleSilenced = true;
-  } catch {
-    /* ignore */
-  }
-}
-
-/** Konsolni qayta tiklashga urinishni aniqlash. */
-function watchConsoleReEnable(onAttempt: () => void) {
-  let tripped = false;
-  const timer = window.setInterval(() => {
-    if (tripped) return;
-    const silenced = (window as any).__consoleSilenced;
-    const nowNoop = (() => {
-      try {
-        const original = Function.prototype.bind.call(Function, function () {});
-        void original;
-        return (console.log as any)?.toString?.().includes("native code") === false;
-      } catch {
-        return false;
-      }
-    })();
-    if (silenced && nowNoop) {
-      tripped = true;
-      window.clearInterval(timer);
-      onAttempt();
-    }
-  }, 1500);
-  return () => window.clearInterval(timer);
 }
 
 export default function ConsoleGuard({ enabled = false }: { enabled?: boolean }) {
-  const [blocked, setBlocked] = useState(false);
-  const reported = useRef(false);
+  /** DevTools ochiqligi aniqlanganmi? Unda kontent yashiriladi. */
+  const [hidden, setHidden] = useState(false);
+  /** Hozir yashirilgan holatda ham qayta-qayta o'lchash kerak (cheklovchan emas). */
+  const openRef = useRef(false);
 
   useEffect(() => {
     if (!enabled) return;
 
     let stopped = false;
-    const report = (payload: GuardEvent) => {
-      // Bitta sahifada ko'p xabar yubormaymiz (faqat birinchi)
-      if (payload.event === "devtools_open" && reported.current) return;
-      if (payload.event === "devtools_open") reported.current = true;
-      void fetch("/api/security/report", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-        keepalive: true,
-      })
-        .then(async (res) => {
-          if (res.status === 401) return; // sessiya yo'q — server bloklamaydi
-          const data = await res.json().catch(() => null);
-          if (data?.blocked) setBlocked(true);
-        })
-        .catch(() => {});
-    };
 
     silenceConsole();
 
-    // 1) Oyna o'lchami / DevTools oynasi farqi
+    // 1) Oyna o'lchami farqi — DevTools yon yoki pastda ochiqligi
     const THRESHOLD = 160;
     const checkSize = () => {
       if (stopped) return;
       const widthGap = window.outerWidth - window.innerWidth;
       const heightGap = window.outerHeight - window.innerHeight;
-      const wide = widthGap > THRESHOLD;
-      const tall = heightGap > THRESHOLD && widthGap > 60;
-      if (wide || tall) {
-        if (!reported.current) {
-          report({ event: "devtools_open", detail: `delta ${Math.round(widthGap)}x${Math.round(heightGap)}` });
-        }
-      } else if (reported.current) {
-        reported.current = false;
-        report({ event: "devtools_closed" });
+      const isOpen = widthGap > THRESHOLD || (heightGap > THRESHOLD && widthGap > 60);
+      if (isOpen !== openRef.current) {
+        openRef.current = isOpen;
+        setHidden(isOpen);
       }
     };
 
-    // 2) `debugger` tuzog'i — DevTools "pause on debugger" bilan ishlaydi
+    // 2) `debugger` tuzog'i — "pause on debugger" bilan ishlaydi
     let debuggerHits = 0;
     const debuggerTrap = window.setInterval(() => {
       const before = performance.now();
-      // eslint-disable-next-line no-debugger
       try {
-        // @ts-ignore — at runtime bu `debugger` statement'ni ishga tushiradi
+        // @ts-ignore — runtime'da `debugger` statement'ni ishga tushiradi
         new Function("debugger")();
       } catch {
         /* ignore */
       }
-      const delta = performance.now() - before;
-      if (delta > 100) {
+      if (performance.now() - before > 100) {
         debuggerHits++;
-        if (debuggerHits >= 2 && !reported.current) {
-          report({ event: "devtools_open", detail: "debugger trap" });
+        if (debuggerHits >= 2 && !openRef.current) {
+          openRef.current = true;
+          setHidden(true);
         }
       }
     }, 1200);
 
-    // 3) Klaviatura
+    // 3) Klaviatura — konsolni ochishga imkon berilmaydi
     const onKeyDown = (e: KeyboardEvent) => {
       const key = (e.key || "").toLowerCase();
       const isF12 = key === "f12";
@@ -145,14 +84,9 @@ export default function ConsoleGuard({ enabled = false }: { enabled?: boolean })
       if (isF12 || isInspectCombo) {
         e.preventDefault();
         e.stopPropagation();
-        report({ event: "shortcut_blocked", detail: isF12 ? "F12" : `Ctrl+Shift+${key.toUpperCase()}` });
-        setBlocked(true);
       }
     };
-    const onContextMenu = (e: MouseEvent) => {
-      e.preventDefault();
-      report({ event: "console_disabled_attempt", detail: "context menu" });
-    };
+    const onContextMenu = (e: MouseEvent) => e.preventDefault();
     const onSelectStart = (e: Event) => e.preventDefault();
     const onDragStart = (e: Event) => e.preventDefault();
 
@@ -161,9 +95,6 @@ export default function ConsoleGuard({ enabled = false }: { enabled?: boolean })
     window.addEventListener("contextmenu", onContextMenu, true);
     window.addEventListener("selectstart", onSelectStart, true);
     window.addEventListener("dragstart", onDragStart, true);
-    const unwatchConsole = watchConsoleReEnable(() =>
-      report({ event: "console_disabled_attempt", detail: "console qayta tiklandi" }),
-    );
     const initial = window.setTimeout(checkSize, 900);
 
     return () => {
@@ -175,32 +106,19 @@ export default function ConsoleGuard({ enabled = false }: { enabled?: boolean })
       window.removeEventListener("contextmenu", onContextMenu, true);
       window.removeEventListener("selectstart", onSelectStart, true);
       window.removeEventListener("dragstart", onDragStart, true);
-      unwatchConsole();
     };
   }, [enabled]);
 
-  if (!enabled || !blocked) return null;
+  // DevTools ochiq — kontent BO'SH qora ekran bilan yopiladi.
+  // Hech qanday xabar, banner yoki bloklash yo'q.
+  if (!enabled || !hidden) return null;
 
   return (
     <div
-      role="alertdialog"
-      aria-modal="true"
-      className="fixed inset-0 z-[9999] flex items-center justify-center bg-[#04140f]/95 px-6 backdrop-blur"
-    >
-      <div className="w-full max-w-md rounded-2xl border border-rose-500/40 bg-[#0b241c] p-8 text-center shadow-2xl">
-        <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-rose-500/15 text-3xl">
-          ⛔
-        </div>
-        <h1 className="text-lg font-bold text-rose-200">Akkauntingiz bloklandi</h1>
-        <p className="mt-3 text-sm leading-relaxed text-emerald-100/80">
-          Saytning konsol yoki DevTools oynasi aniqlandi. Test qoidalari shuni talab qiladi —
-          javoblar faqat serverda tekshiriladi.
-        </p>
-        <p className="mt-4 text-xs text-emerald-200/60">
-          Bloklashni faqat administrator bekor qila oladi. Sabab va vaqt Telegram bot orqali
-          adminga yuborilgan.
-        </p>
-      </div>
-    </div>
+      role="presentation"
+      aria-hidden="true"
+      className="fixed inset-0 z-[99999] bg-[#050807]"
+      onContextMenu={(e) => e.preventDefault()}
+    />
   );
 }

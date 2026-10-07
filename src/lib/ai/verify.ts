@@ -30,9 +30,9 @@ const asId = (v: unknown) => (typeof v === "string" && v.length >= 3 ? v : "");
 
 /** Fayl diskda borligi va bo'sh emasligi tekshiriladi. */
 async function fileOnDisk(storagePath: string) {
-  const abs = nodePath.join(process.cwd(), storagePath);
+  const abs = nodePath.join(/*turbopackIgnore: true*/ process.cwd(), storagePath);
   const allowed = nodePath.join(process.cwd(), "upload", "ai-files");
-  if (!nodePath.resolve(abs).startsWith(nodePath.resolve(allowed))) return { ok: false, detail: "Fayl yo'li xavfsizlik chegarasidan tashqarida" };
+  if (!nodePath.resolve(/*turbopackIgnore: true*/ abs).startsWith(nodePath.resolve(allowed))) return { ok: false, detail: "Fayl yo'li xavfsizlik chegarasidan tashqarida" };
   try {
     const info = await stat(abs);
     return info.isFile() && info.size > 0
@@ -92,9 +92,9 @@ const verifyImage: VerifyFn = async (_args, _ctx, result) => {
   try {
     const { readFile } = await import("node:fs/promises");
     const nodePath = await import("node:path");
-    const abs = nodePath.join(process.cwd(), row.storagePath);
+    const abs = nodePath.join(/*turbopackIgnore: true*/ process.cwd(), row.storagePath);
     const allowed = nodePath.join(process.cwd(), "upload", "ai-files");
-    if (!nodePath.resolve(abs).startsWith(nodePath.resolve(allowed))) {
+    if (!nodePath.resolve(/*turbopackIgnore: true*/ abs).startsWith(nodePath.resolve(allowed))) {
       return { ok: false, detail: "Fayl yo'li xavfsizlik chegarasidan tashqarida" };
     }
     const buf = await readFile(abs);

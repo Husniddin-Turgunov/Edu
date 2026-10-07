@@ -19,8 +19,22 @@ import { decideApi, checkOrigin } from "@/lib/security/api-policy";
  * privilejli prefikslar (admin/ai/user/...) sessiya talab qiladi, har bir
  * o'zgaruvchi (POST/PUT/PATCH/DELETE) so'rov Origin bilan mos bo'lishi
  * shart (CSRF). Route ichidagi ro'l tekshiruvlari O'ZGARMAYDI.
+ * Faqat AUTH sahifalari ochiq qoladi: `/login`, `/register`, `/reset-password`.
+ * Qolgan hamma sahifa (shu jumladan bosh sahifa `/`) sessiya talab qiladi —
+ * login qilmagan odam sayt ichidagi hech qaysi sahifani ko'ra olmaydi.
  */
-const GUARDED_PREFIXES = ["/admin", "/dashboard", "/courses", "/tests", "/my"];
+const GUARDED_PREFIXES = [
+  "/",
+  "/admin",
+  "/course",
+  "/courses",
+  "/dashboard",
+  "/guides",
+  "/my",
+  "/start",
+  "/test",
+  "/tests",
+];
 
 // ——— Login brute-force himoyasi (edge, in-memory) ———
 // 10 daqiqada 10 ta urinishdan keyin 429. Har bir izolyatsiyada alohida
@@ -105,14 +119,20 @@ export async function middleware(req: NextRequest) {
     return NextResponse.redirect(url);
   }
 
-  // Eski tokenlarda `status` yo'q bo'lishi mumkin — o'zlari uchun ular
-  // tekshiruvsiz o'tmasin, faqat qayta kirishga majbur qilamiz.
+  // Eski tokenlarda `status` yo'q bo'lishi mumkin. U holda bu QATLAM
+  // rad etmaydi — qaror Node qatlamida (`getSession()` → bazadagi joriy holat)
+  // qabul qilinadi. Aks holda `status` maydalanmagan har bir token
+  // `/login?reason=not-approved` ga tushib, admin paneli umuman ochilmay qolardi.
   const status = (token as any).status;
   const isActive = (token as any).isActive;
-  if (status !== "approved" || isActive === false) {
+  // Faqat ADMIN qarori bilan bloklangan yoki rad etilgan foydalanuvchilar
+  // to'xtatiladi. Boshqa holatlar (jumladan eski `pending`) o'tkaziladi —
+  // aks holda yangi ro'yxatdan o'tgan odam `not-approved` sahifasiga tushib
+  // saytni umuman ishlatolmagan.
+  if (status !== undefined && (status === "blocked" || status === "rejected" || isActive === false)) {
     const url = req.nextUrl.clone();
     url.pathname = "/login";
-    url.search = "?reason=not-approved";
+    url.search = status === "blocked" || isActive === false ? "?reason=blocked" : "?reason=rejected";
     return NextResponse.redirect(url);
   }
 
@@ -121,11 +141,16 @@ export async function middleware(req: NextRequest) {
 
 export const config = {
   matcher: [
+    "/",
     "/admin/:path*",
-    "/dashboard/:path*",
+    "/course/:path*",
     "/courses/:path*",
-    "/tests/:path*",
+    "/dashboard/:path*",
+    "/guides/:path*",
     "/my/:path*",
+    "/start/:path*",
+    "/test/:path*",
+    "/tests/:path*",
     "/api/:path*",
   ],
 };

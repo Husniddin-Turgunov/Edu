@@ -9,7 +9,7 @@
  */
 
 import { db } from "@/lib/db";
-import { complete, completeStream, resolveProvider, estimateCost, estimateTokens, ProviderUnavailableError, userFacingProviderError, type ChatMessage } from "./provider";
+import { complete, completeStream, resolveProvider, resolveProviderAsync, estimateCost, estimateTokens, ProviderUnavailableError, userFacingProviderError, type ChatMessage } from "./provider";
 import { ReplyDeltaExtractor } from "./stream-json";
 import { injectionGuardBlock, scanUserMessage, wrapUntrustedSource } from "./sanitize";
 import { parseJsonLoose, clip } from "./json";
@@ -435,7 +435,7 @@ export async function runAgent(input: AgentInput): Promise<AgentResponse> {
       steps,
       conversationId: input.conversationId || "",
       usage: emptyUsage(),
-      providerLive: resolveProvider().live,
+      providerLive: (await resolveProviderAsync()).live,
     };
   }
 
@@ -465,7 +465,7 @@ export async function runAgent(input: AgentInput): Promise<AgentResponse> {
   const memory = await sessionMemory(conversation.id, input.message);
   const history = await loadHistory(conversation.id, input.message);
   const snapshot = await platformSnapshot();
-  const model = resolveProvider();
+  const model = await resolveProviderAsync();
 
   const systemPrompt = buildSystemPrompt(input.actor, snapshot, memory);
   const ctx: ToolContext = { actor: input.actor, conversationId: conversation.id, source: "chat", userMessage: input.message };
@@ -476,9 +476,24 @@ export async function runAgent(input: AgentInput): Promise<AgentResponse> {
   let completionTokens = 0;
   let cost = 0;
 
-  if (!model.live) {
+if (!model.live) {
     const planned = deterministicPlan(input, ctx);
-    pushStep({ type: "thinking", summary: "AI kaliti yo'q вЂ” o'rnatilgan reja ishlatildi" });
+    pushStep({ type: "thinking", summary: "AI kaliti yo'q — o'rnatilgan reja ishlatildi" });
+    // Hech qanday vosita kerak bo'lmagan so'zlar (salom, yordam, noma'lub
+    // so'z) — to'g'ridan-to'g'ri matn bilan javoblanadi. Avval bular ham
+    // `analytics.overview` ishga tushirdi, shuning uchun AI har doim bir
+    // xil statistika javobini qaytarardi.
+    if (planned.plainReply) {
+      emitPhase("answer", "Javob yozilmoqda");
+      await finishTurn(conversation.id, planned.plainReply, steps);
+      return done({
+        reply: planned.plainReply,
+        steps,
+        conversationId: conversation.id,
+        usage: { ...emptyUsage(), model: model.model, provider: model.name, latencyMs: Date.now() - started },
+        providerLive: false,
+      });
+    }
     emitPhase("tools", "Vositalarni bajarish");
     const executed = await executeActions(planned.actions, ctx, pushStep, emitPhase, confirmEmit, pickEmit, input.message);
     emitPhase("answer", "Javob yozilmoqda");
@@ -1107,10 +1122,35 @@ function emptyUsage() {
  * Bu to'liq o'rn bosmaydi - lekin chat ishlashda davom etadi.
  */
 function deterministicPlan(input: AgentInput, ctx: ToolContext) {
-  const text = input.message.toLowerCase();
+  const text = input.message.toLowerCase().trim();
   const actions: { tool: string; args?: Record<string, unknown> }[] = [];
 
   const has = (...words: string[]) => words.some((w) => text.includes(w));
+
+  // ——— SALOMLASH: hech qanday vosita ishlamaydi ———
+  //
+  // Oldin bu holat YO'Q edi va `else` qaniga tushib, `analytics.overview`
+  // ishga tushardi: "salom" yozilsa, foydalanuvchi statistika dashboard'ini
+  // olardi. "salom" — savol emas, salomlashuv; unga vosita kerak emas.
+  const isGreeting =
+    /^(salom|salom!|salomlar|assalomu alaykum|assalamu alaykum|salom alaykum|hi|hello|hey|good (morning|evening|day)|yo'?x?shi|xayr|rahmat|zo'r|zo'r bo'ldi|tabshok|zo'r rahmat)\b/.test(
+      text,
+    ) ||
+    text.length <= 3;
+
+  if (isGreeting) {
+    void ctx;
+    return { actions, plainReply: greetingReply(input.actor.name) };
+  }
+
+  // ——— NIMA QILA OLASAN / YORDAM ———
+  const asksHelp =
+    has("nima qila", "nima qil", "qanday yordam", "yordam ber", "imkoniyat", "qanday ishlay", "kimsan", "who are you", "help");
+
+  if (asksHelp) {
+    void ctx;
+    return { actions, plainReply: helpReply(input.actor) };
+  }
 
   if (has("statistik", "analitik", "umumiy", "qancha topshir")) {
     actions.push({ tool: "analytics.overview", args: {} });
@@ -1126,12 +1166,53 @@ function deterministicPlan(input: AgentInput, ctx: ToolContext) {
     actions.push({ tool: "draft.list", args: {} });
   } else if (has("internet", "qidir")) {
     actions.push({ tool: "web.search", args: { query: input.message } });
-  } else {
-    actions.push({ tool: "analytics.overview", args: {} });
   }
+  // Noma'lub so'z uchun HECH NARSA ishga tushmaydi: avvalgi `else` har bir
+  // tushunarsiz xabarda `analytics.overview` ishga tushirib, AI bir xil
+  // javobni takror qilib berardi. Endi foydalanuvchiga "tushunmadim" deyiladi
+  // va nima qilish mumkinligi aytiladi.
 
   void ctx;
-  return { actions };
+  return { actions, plainReply: actions.length ? undefined : fallbackReply(input.actor) };
+}
+
+/** Salomlashuvga tabiiy javob — vosita YO'Q. */
+function greetingReply(name?: string | null) {
+  const who = String(name || "").trim();
+  return who ? `Salom, ${who}! Savolingizni yozing — statistika, testlar, fayllar yoki sayt sozlamalari bo'yicha yordam beraman.` : "Salom! Savolingizni yozing — statistika, testlar, fayllar yoki sayt sozlamalari bo'yicha yordam beraman.";
+}
+
+/** "Nima qila olasan?" — imkoniyatlar ro'yxati. */
+function helpReply(actor: ToolActor) {
+  const role = actor.isAdmin ? "admin" : actor.role === "grader" ? "grader" : "xodim";
+  return [
+    "Men AKELA platformasining assistentiman. Quyidagilarni chat orqali qila olasiz:",
+    "",
+    "• Statistika: «umumiy statistikani ko'rsat», «bo'limlar kesimi»",
+    "• Noinotg'ri savollar: «qaysi savollar ko'p noto'g'ri berilgan?»",
+    "• Testlar: «test yarat», «testni yashir», «testni o'chir»",
+    "• Darslar: «darsni yashir», «darsni och»",
+    "• Fayllar: biriktirilgan fayldan test tuzing, tayyor fayl yuklab oling",
+    "• Ruxsatlar: «ruxsat qoidalarini ko'rsat»",
+    `• Sizning ro'lingiz: ${role}`,
+  ].join("\n");
+}
+
+/** Tushunilmagan so'z — nima qilish mumkinligi bilan. */
+function fallbackReply(actor: ToolActor) {
+  return [
+    "Bu so'rovni aniq tushunmadim — shuning uchun hech qanday o'zgarish qilmadim.",
+    "",
+    "Aniqroq yozsangiz darhol bajaraman. Masalan:",
+    "• «umumiy statistikani ko'rsat»",
+    "• «qaysi savollar eng ko'p noto'g'ri berilgan?»",
+    "• «IT bo'limiga 'Xavfsizlik texnikasi' darsini yashir»",
+    "",
+    `Kalit yo'q rejimi: hozir faqat so'z asosidagi buyruqlar ishlaydi. AI kaliti qo'yilsa, tabiiy tilda yozganingiz ham bajariladi.`,
+    `_actor: ${actor.role}`,
+  ]
+    .filter((l) => !l.startsWith("_actor"))
+    .join("\n");
 }
 
 /**

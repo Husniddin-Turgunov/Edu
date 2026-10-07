@@ -71,7 +71,7 @@ async function resolveSessionRaw(): Promise<
 
   // 2) NextAuth session
   try {
-    const { authOptions } = await import("@/app/api/auth/[...nextauth]/route");
+    const { authOptions } = await import("@/lib/auth-options");
     const session: any = await getServerSession(authOptions as any);
     if (session?.user) {
       const u = session.user as any;

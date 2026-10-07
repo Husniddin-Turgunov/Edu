@@ -30,7 +30,12 @@ const securityHeaders = [
       "img-src 'self' data: blob: https:",
       "font-src 'self' data:",
       "connect-src 'self'" + (isProd ? "" : " ws: wss:"),
-      "frame-src 'self' blob:",
+      // Video playerlar iframe orqali ishlaydi: YouTube (nocookie), Vimeo,
+      // TikTok. Oldin faqat `'self' blob:` ruxsat bor edi — brauzer YouTube
+      // kadrlarini bloklab, "video ko'rib bo'lmaydi" holatini berardi
+      // (havola to'g'ri bo'lsa ham). Endi faqat KERAKLI domenlar ochiq —
+      // `https:` umumiy ruxsat berilmaydi.
+      "frame-src 'self' blob: https://www.youtube-nocookie.com https://www.youtube.com https://youtube.com https://youtu.be https://player.vimeo.com https://www.tiktok.com",
       "frame-ancestors 'self'",
       "object-src 'none'",
       "base-uri 'self'",
@@ -40,7 +45,7 @@ const securityHeaders = [
 ];
 
 const nextConfig: NextConfig = {
-  /* config options here */
+  output: "standalone",
   typescript: {
     // MUKAMMAL TEKSHIRUV: xatolar build'ni to'xtatadi (tsc --noEmit ham
     // CI tekshiruvida ishlaydi) — eskidek xatolarni yashirmaymiz.

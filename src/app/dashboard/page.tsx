@@ -203,7 +203,16 @@ export default function DashboardPage() {
               </div>
             </div>
             <button
-              onClick={() => signOut({ callbackUrl: "/login" })}
+              onClick={() => {
+                // `redirect: false` — NextAuth o'zi `NEXTAUTH_URL` bo'yicha
+                // redirect qiladi va boshqa domenga olib ketsa mumkin.
+                // Sessiya shu domen ichida tozalanadi, keyin joriy
+                // domenning `/login` siga qadam qilamiz.
+                void signOut({ redirect: false }).finally(() => {
+                  router.replace("/login");
+                  router.refresh();
+                });
+              }}
               className="inline-flex items-center gap-2 self-start md:self-center rounded-xl bg-white/10 ring-1 ring-white/20 px-4 py-2.5 text-sm font-bold text-white hover:bg-white/20 transition-colors"
             >
               <LogOut className="h-4 w-4" /> Chiqish

@@ -1,0 +1,63 @@
+# Akela EDU — hamma serverda BIRTA buyruq:
+#   docker compose up -d --build
+# DB xotirasi volume'da saqlanadi, server qayta ishga tushsa ma'lumot yo'qolmaydi.
+#
+# DATABASE_URL tartibi:
+#   .env ichida DATABASE_URL bo'lsa — u ishlatiladi (masalan, tashqi 95.46.96.13 MySQL);
+#   .env da DATABASE_URL yo'q bo'lsa — ichki db xizmati avtomatik ishlatiladi (default).
+# DB_SYNC: push (default) | migrate | skip — DB mavjud bo'lsa tymgallash uchun.
+
+name: akela
+
+services:
+  db:
+    image: mysql:8.4
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: akela
+      MYSQL_USER: akela
+      MYSQL_PASSWORD: ${DB_PASSWORD:-akela_secret_change_me}
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:-root_secret_change_me}
+    volumes:
+      - db_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -uroot -p\"$$MYSQL_ROOT_PASSWORD\" --silent"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 40s
+
+  app:
+    build:
+      context: .
+    image: akela-edu:latest
+    container_name: akela-edu
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "${PORT:-3000}:3000"
+    env_file:
+      - path: .env
+        required: false
+    environment:
+      NODE_ENV: production
+      PORT: "3000"
+      HOSTNAME: "0.0.0.0"
+      DATABASE_URL: ${DATABASE_URL:-mysql://akela:akela_secret_change_me@db:3306/akela}
+      NEXTAUTH_URL: ${NEXTAUTH_URL:-http://localhost:3000}
+      DB_SYNC: ${DB_SYNC:-push}
+    healthcheck:
+      test:
+        - CMD
+        - node
+        - -e
+        - "fetch('http://127.0.0.1:3000/api/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 45s
+
+volumes:
+  db_data:

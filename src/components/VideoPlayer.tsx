@@ -38,7 +38,30 @@ export function getEmbedUrl(src: string): { type: "youtube" | "vimeo" | "tiktok"
       else id = u.searchParams.get("v") || "";
       id = id.split("?")[0].split("&")[0];
       if (/^[\w-]{6,}$/.test(id)) {
-        return { type: "youtube", embed: `https://www.youtube-nocookie.com/embed/${id}?rel=0` };
+        // YouTube boshqa videolarga o'tishni TAQIQLASH:
+        //
+        // `rel=0` YouTube tomonidan allaqachon e'tiborsiz qoldirilgan, shuning
+        // uchun tavsiya videolari baribir ko'rinib turadi va keyin boshqa
+        // videolarga o'tish mumkin bo'lardi.
+        //
+        // Ishi qiladigan parametr — `playlist=<o'z video id>`. YouTube "keyingi"
+        // navbatini shu ro'yxatdan oladi, ya'ni navbatda faqat SHU video qoladi
+        // va boshqa videolarga o'tib bo'lmaydi. Uning ustiga:
+        //   - `modestbranding` — YouTube logotipi/bannerlarini kamaytiradi;
+        //   - `iv_load_policy=3` — klaviatura/ekran ko'rsatkichini to'xtaydi
+        //     (test savollari uchun klaviatura "chalg'i" bo'lib ketmasin);
+        //   - `playsinline` — telefonda oyna kichraymasin;
+        //   - `enablejsapi=0` — tashqi JS boshqaruvini o'chiradi.
+        const params = [
+          "rel=0",
+          `playlist=${id}`,
+          "modestbranding=1",
+          "playsinline=1",
+          "iv_load_policy=3",
+          "enablejsapi=0",
+          "autoplay=0",
+        ].join("&");
+        return { type: "youtube", embed: `https://www.youtube-nocookie.com/embed/${id}?${params}` };
       }
       return null;
     }
@@ -227,9 +250,14 @@ export default function VideoPlayer({
         <iframe
           key={embed.embed}
           src={embed.embed}
-          title={title || "Video"}
+          title={(title || "Video").trim()}
           className="w-full aspect-video bg-black"
           allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+          /* `allow-popups` YO'Q — YouTube tavsiya linklari `target="_blank"`
+             bilan ochilishi bloklanadi, ya'ni foydalanuvchi YouTube sahifasi
+             yoki boshqa videoga o'ta olmaydi. `allow-same-origin` o'z
+             manzilimizda o'ynash uchun kerak. */
+          sandbox="allow-scripts allow-same-origin allow-presentation"
           allowFullScreen
           onLoad={() => {
             setLoading(false);

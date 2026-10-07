@@ -33,6 +33,7 @@ const PUBLIC_PREFIXES = [
   "/api/mcp", // ichida MCP API kaliti tekshiruvi
   "/api/health",
   "/api/public",
+  "/api/liquid-glass", // dizayn parametrlari (faqat o'qish)
   "/api/portal-settings", // login sahifasi sozlamalari (registrationOpen)
   "/api/security/report", // xavfsizlik xabar berish — ommaviy, ichida rate-limit
   "/api/courses", // ochiq katalog (sahifa darajasida ro'l tekshiruvi bor)

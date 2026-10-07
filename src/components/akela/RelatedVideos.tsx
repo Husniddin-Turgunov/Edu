@@ -2,7 +2,8 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { Play, Clock } from "lucide-react";
+import { Play, Clock, Layers } from "lucide-react";
+import { groupVideos, totalDuration } from "@/lib/video-groups";
 
 type V = {
   id: string;
@@ -12,6 +13,7 @@ type V = {
   coursesOrder?: number;
   showOnDashboard?: boolean;
   dashboardOrder?: number;
+  category?: string;
   showInLessons?: boolean;
   lessonsOrder?: number;
 };
@@ -55,7 +57,23 @@ export function RelatedVideos() {
         Tegishli videolar
       </h3>
       <div className="mt-4 grid gap-3 sm:grid-cols-2">
-        {lessons.map((v) => (
+        {groupVideos(lessons).map((g) => g.kind === "playlist" ? (
+          <Link
+            key={"pl-" + g.name}
+            href={`/courses/videos?cat=${encodeURIComponent(g.name)}`}
+            className="group flex items-center gap-3 rounded-2xl border border-white/70 bg-white/70 p-3 transition-all hover:-translate-y-0.5 hover:shadow-lg"
+          >
+            <span className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-gradient-to-br from-[#0e1e3a] to-[#1a2855] text-white">
+              <Layers className="h-5 w-5" />
+            </span>
+            <span className="min-w-0 flex-1">
+              <span className="block truncate text-sm font-extrabold text-[color:var(--emerald-deep)] group-hover:text-blue-600">{g.name}</span>
+              <span className="mt-0.5 inline-flex items-center gap-1 text-[11px] text-[color:var(--ink-soft)]">
+                <Clock className="h-3 w-3" /> {g.videos.length} ta dars{totalDuration(g.videos) ? ` · ${totalDuration(g.videos)}` : ""}
+              </span>
+            </span>
+          </Link>
+        ) : ((v) => (
           <Link
             key={v.id}
             href={`/courses/videos/${v.id}`}
@@ -75,7 +93,7 @@ export function RelatedVideos() {
               )}
             </span>
           </Link>
-        ))}
+        ))(g.video))}
       </div>
     </div>
   );

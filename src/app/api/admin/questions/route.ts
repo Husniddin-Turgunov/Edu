@@ -35,27 +35,32 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ ok: false, error: "Unauthorized" }, { status: 401 });
     }
     const body = await req.json();
-    const { testId, text, type, points, explanation, choices, correctAnswer } = body;
+    const { testId, text, type, points, explanation, choices, correctAnswer, isMandatory } = body;
 
     if (!testId || !text) {
       return NextResponse.json({ ok: false, error: "testId and text are required" }, { status: 400 });
     }
 
     const questionType = type || "single";
+    // Majburiy bayrog'i FAQAT jadval (Excel) savollarida. Boshqa turlarda
+    // maydon yuborilmagan bo'lsa — DB defaulti (`true`) saqlanadi va eski
+    // testlarning tartibi buzilmaydi.
+    const mandatory = questionType === "excel" ? isMandatory !== false : true;
 
-    if (questionType === "written") {
-      // Yozma javobli savol — correctAnswer talab qilinadi
-      if (!correctAnswer || !correctAnswer.trim()) {
+    // YOZMA va JADVAL (Excel) savollari — variantlar talab qilinmaydi.
+    // "excel" uchun to'g'ri javob kataklari TestSpreadsheet da saqlanadi,
+    // shuning uchun bu yerda faqat savol matni kiritiladi.
+    if (questionType === "written" || questionType === "excel") {
+      if (questionType === "written" && (!correctAnswer || !correctAnswer.trim())) {
         return NextResponse.json({ ok: false, error: "To'g'ri javob matnini kiriting" }, { status: 400 });
       }
       const question = await lmsStorage.createQuestion({
-        testId, text, type: "written", points, explanation,
-        correctAnswer: correctAnswer.trim(),
-        choices: [], // yozma javobda variantlar yo'q
+        testId, text, type: questionType, points, explanation,
+        correctAnswer: questionType === "written" ? correctAnswer.trim() : "",
+        isMandatory: mandatory,
+        choices: [], // bu turlarda variantlar yo'q
       });
       return NextResponse.json({ ok: true, question });
-    apiCacheClear(CACHE_KEYS.adminOnboarding);
-    apiCacheClear(CACHE_KEYS.adminTests);
     }
 
     // Variantli savol (single/multiple)
@@ -65,7 +70,9 @@ export async function POST(req: NextRequest) {
     if (!choices.some((c: any) => c.isCorrect)) {
       return NextResponse.json({ ok: false, error: "At least one correct answer required" }, { status: 400 });
     }
-    const question = await lmsStorage.createQuestion({ testId, text, type: questionType, points, explanation, choices });
+    const question = await lmsStorage.createQuestion({
+      testId, text, type: questionType, points, explanation, choices, isMandatory: mandatory,
+    });
     return NextResponse.json({ ok: true, question });
   } catch (error) {
     console.error("POST /api/admin/questions error:", error);

@@ -381,23 +381,25 @@ export const lmsStorage = {
   },
 
   // ====== QUESTIONS ======
-  async createQuestion(data: { testId: string; text: string; type?: string; points?: number; explanation?: string; correctAnswer?: string; choices?: { text: string; isCorrect: boolean }[] }) {
-    const maxOrder = await prisma.question.aggregate({
-      where: { testId: data.testId },
-      _max: { order: true },
-    });
-    const questionType = data.type || "single";
-    const createData: any = {
-      testId: data.testId,
-      text: data.text,
-      type: questionType,
-      points: data.points ?? 1,
-      explanation: data.explanation,
-      correctAnswer: data.correctAnswer || null,
-      order: (maxOrder._max.order ?? -1) + 1,
-    };
-    // Yozma javobda variantlar kerak emas
-    if (questionType !== "written" && data.choices && data.choices.length > 0) {
+async createQuestion(data: { testId: string; text: string; type?: string; points?: number; explanation?: string; correctAnswer?: string; isMandatory?: boolean; choices?: { text: string; isCorrect: boolean }[] }) {
+      const maxOrder = await prisma.question.aggregate({
+        where: { testId: data.testId },
+        _max: { order: true },
+      });
+      const questionType = data.type || "single";
+      const createData: any = {
+        testId: data.testId,
+        text: data.text,
+        type: questionType,
+        points: data.points ?? 1,
+        explanation: data.explanation,
+        correctAnswer: data.correctAnswer || null,
+        order: (maxOrder._max.order ?? -1) + 1,
+        // Majburiy savol — default `true`. Testda har doim birinchi chiqadi.
+        isMandatory: data.isMandatory === undefined ? true : Boolean(data.isMandatory),
+      };
+      // Yozma javob va jadval savollarida variantlar kerak emas
+      if (questionType !== "written" && questionType !== "excel" && data.choices && data.choices.length > 0) {
       createData.choices = {
         create: data.choices.map((c, i) => ({
           text: c.text,
@@ -538,7 +540,10 @@ export const lmsStorage = {
     const test = await prisma.test.findUnique({
       where: { id: testId },
       include: {
+        // `isMandatory` ajratish uchun kerak (majburiylar birinchi chiqadi),
+        // `spreadsheet` — test vaqtida Excel oynasi ochilishi uchun.
         questions: { orderBy: { order: "asc" }, include: { choices: { orderBy: { order: "asc" } } } },
+        spreadsheet: true,
       },
     });
     if (!test) return null;
@@ -583,6 +588,19 @@ export const lmsStorage = {
     if (test.shuffleQuestions) {
       questions = this.shuffleArray(questions);
     }
+
+    // ===== MAJBURIY savollar BIRINCHI bo'lib chiqadi =====
+    //
+    // Foydalanuvchi talabi: majburiy deb belgilangan savol har bir testda
+    // BIR MARTA doim beriladi va DOIM birinchi bo'lib turadi. Shu sabab
+    // aralashgandan KEYIN ularni ajratib, oldinga qo'yamiz — shunda
+    // majburiy savol hech qachon chiqib qolmaydi va tartibi qat'iy.
+    // Qolgan savollar (aralashgan holda) majburiylardan keyin turadi.
+    const mandatory = questions.filter((q: any) => (q as any).isMandatory !== false);
+    if (mandatory.length) {
+      const rest = questions.filter((q: any) => (q as any).isMandatory === false);
+      questions = [...mandatory, ...rest];
+    }
     const limit = Number((test as any).questionCount) || 0;
     if (limit > 0 && questions.length > limit) {
       questions = questions.slice(0, limit);
@@ -602,6 +620,16 @@ export const lmsStorage = {
     });
     return {
       ...test,
+      // Jadval (Excel) fayli — test ekranda ochiladi. To'g'ri javoblar
+      // (answerKeyJson) SAQLANMAYDI: ular faqat natijani ko'rsatishda ishlatiladi,
+      // foydalanuvchiga yuborilmaydi (aks holda javobni oldindan ko'rishi mumkin).
+      spreadsheet: test.spreadsheet
+        ? {
+            fileName: test.spreadsheet.fileName,
+            sheetsJson: test.spreadsheet.sheetsJson,
+            hasAnswers: Boolean(test.spreadsheet.answerKeyJson),
+          }
+        : null,
       questions,
       // Ko'rsatilgan savollar soni (cheklov qo'llangandan keyin)
       presentedCount: questions.length,

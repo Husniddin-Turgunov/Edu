@@ -51,7 +51,7 @@ import {
 } from "./analytics";
 import { generateTest } from "./generator";
 import { webSearch, fetchPageText, searchEngineInfo } from "./search";
-import { resolveProvider, estimateTokens, modelHealthReport, providerChainInfo, preferredModelName } from "./provider";
+import { resolveProvider, resolveProviderAsync, estimateTokens, modelHealthReport, providerChainInfo, preferredModelName } from "./provider";
 import { clip } from "./json";
 import { broadcast, subscriberCount } from "@/lib/telegram-bot";
 import { generatePassword } from "@/lib/auth-core";
@@ -2678,7 +2678,7 @@ export const TOOLS: ToolDef[] = [
     fields: [],
     schema: z.object({}),
     async execute(_args, ctx) {
-      const provider = resolveProvider();
+      const provider = await resolveProviderAsync();
       const today = new Date().toISOString().slice(0, 10);
       const usage = await db.aiUsage.findMany({
         where: { OR: [{ day: today }, { userId: ctx.actor.userId }] },
