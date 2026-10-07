@@ -1047,21 +1047,8 @@ body {
    Sinish/dispersiya: backdrop-filter ichida SVG filtri (real sahifa kontenti).
    Chegara (fresnel + glare): ::after — shader rim xaritasi.
    ===================================================================== */
-/* Chegara/fresnel/glare endi GPU qatlamida chiziladi (canvas.lg-layer) —
-   shuning uchun DOM qatlamida faqat inson o'qiydigan nozik chegara qoladi. */
-html.lg-on .glass::after,
-html.lg-on .glass-strong::after,
-html.lg-on .glass-card::after,
-html.lg-on .glass-pill::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  border-radius: inherit;
-  pointer-events: none;
-  border: 1px solid oklch(1 0 0 / 0.35);
-  box-shadow: inset 0 1px 0 0 oklch(1 0 0 / 0.4);
-  z-index: 1;
-}
+/* Chegara, fresnel va glare endi GPU shader'ining O'ZIDA chiziladi
+   (liquid-glass-gl.ts) — alohida ::after qatlami yo'q. */
 
 /* Butun saytdagi tugma/kartalar uchun avtomatik liquid glass (chegara + sinish) */
 html.lg-on .lg-auto {
@@ -1069,38 +1056,11 @@ html.lg-on .lg-auto {
   backdrop-filter: blur(0px) saturate(180%);
   -webkit-backdrop-filter: blur(0px) saturate(180%);
 }
-html.lg-on .lg-auto::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  border-radius: inherit;
-  pointer-events: none;
-  /* faqat chekka — gradient rangini oqizmasligi uchun background yo'q */
-  border: 1px solid oklch(1 0 0 / 0.42);
-  box-shadow: inset 0 1px 0 0 oklch(1 0 0 / 0.45);
-  z-index: 0;
-}
+
 
 /* Hover holati ham liquid glass (yorug'lik chetga uradi, qattiqroq chegara) */
-html.lg-on .lg-auto:hover,
-html.lg-on .glass-panel:hover,
-html.lg-on .glass:hover,
-html.lg-on .glass-strong:hover,
-html.lg-on .glass-card:hover,
-html.lg-on .glass-pill:hover {
-  filter: brightness(1.035) saturate(1.08);
-}
-html.lg-on .lg-auto:hover::after,
-html.lg-on .glass-panel:hover::after,
-html.lg-on .glass:hover::after,
-html.lg-on .glass-strong:hover::after,
-html.lg-on .glass-card:hover::after,
-html.lg-on .glass-pill:hover::after {
-  border-color: oklch(1 0 0 / 0.85);
-  box-shadow:
-    inset 0 1px 0 0 oklch(1 0 0 / 0.85),
-    inset 0 -1px 0 0 oklch(0.45 0.14 258 / 0.12);
-}
+/* Hover: yorug'lik GPU shader'ida (alpha + rim kuchayadi) — CSS qatlam yo'q */
+
 
 /* statik pozitsiyadagi avtomatik glass elementlar uchun */
 html.lg-on .lg-auto.lg-rel { position: relative; }
@@ -1110,18 +1070,10 @@ html.lg-on .glass-panel {
   position: relative;
   background: var(--glass);
   border: 1px solid var(--glass-border);
-  border-radius: 2rem;
-  box-shadow: 0 24px 48px -28px oklch(0.38 0.16 262 / 0.3);
+  border-radius: 1.25rem;
+  box-shadow: 0 8px 20px -12px oklch(0.38 0.16 262 / 0.2);
 }
-html.lg-on .glass-panel::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  border-radius: inherit;
-  pointer-events: none;
-  background: var(--lg-rim, none) center / 100% 100% no-repeat;
-  z-index: 0;
-}
+
 
 /* Liquid Glass "suv" qatlami: yaqin shakllar birlashadi (smin), chetlar yoritiladi */
 canvas.lg-layer {

@@ -43,6 +43,7 @@ export type GpuParams = {
   glareConvergence: number;
   glareOppositeFactor: number;
   glareAngle: number;
+  rimWidth: number; // px — shakl chegarasi shu qalinlikda chiziladi
   tint: [number, number, number, number];
 };
 
@@ -71,6 +72,7 @@ uniform float u_cursorR;
 uniform float u_cursorOn;
 uniform float u_cursorK;
 uniform float u_viewH;
+uniform float u_rimWidth;
 
 uniform float u_refThickness;
 uniform float u_refDistance;
@@ -147,9 +149,11 @@ void main() {
   vec2 p = vec2(gl_FragCoord.x / u_dpr, u_viewH - gl_FragCoord.y / u_dpr);
   float shapeAlpha;
   float merged = mergedSDF(p, shapeAlpha);
-  // shakl tashqarisida — butunlay chizilmaydi
-  if (merged > 0.0) discard;
+  // chegaradan 1px tashqarida — chizilmaydi
+  if (merged > 1.0) discard;
   float alpha = shapeAlpha;
+  // chegarani chizish uchun tashqariga 1px ochiq qoldiramiz
+  float cover = smoothstep(1.0, -1.0, merged);
 
   float nmerged = -merged;                     // chekkadan ichkariga masofa (px)
 
@@ -190,21 +194,31 @@ void main() {
     }
   }
 
-  // shisha terisi: tint + fresnel yorug'ligi + specular + chetda quyuqroq
+  // ─── shakl chegarasi (liquid rim) ───────────────────────────────────────────
+  // Chegara alohida qatlamda emas — shu fragment shader'ning o'zida, SDF
+  // masofasidan chiziladi. Shuning uchun qo'shni shakllar birlashganda
+  // chegara ham bir tekis "suv" qatlamiga aylanadi.
+  float rimW = max(1.1, u_rimWidth);
+  float rim = 1.0 - smoothstep(0.0, rimW, nmerged);
+  // yorug'lik tomonida chegara kuchayadi (repo glare burchagidan foydalanamiz)
+  float rimLight = 0.40 + 0.60 * clamp(glare * 1.7, 0.0, 1.0);
+  float rimA = rim * rimLight * alpha;
+
+  // ─── shisha tanasi ──────────────────────────────────────────────────────────
   float depth = clamp(1.0 - nmerged / 30.0, 0.0, 1.0);
-  // shisha tanasi: chetdan ichkariga yengilroq
-  float bodyA = u_tint.a * (0.10 + 0.26 * pow(depth, 0.55)) * alpha;
-  // fresnel — nozik yorug'lik halqasi (chetda)
+  float bodyA = u_tint.a * (0.08 + 0.2 * pow(depth, 0.55)) * alpha;
   float fresnelA = pow(fresnel, 0.9) * (u_refFresnelFactor / 100.0) * 1.35 * alpha;
-  // specular — kichik, keskin
   float glareA = pow(clamp(glare, 0.0, 1.0), 1.1) * 0.7 * alpha;
 
   vec3 col = u_tint.rgb;
   col = mix(col, vec3(1.0), clamp(fresnel * (u_refFresnelFactor / 100.0) * 0.9, 0.0, 1.0));
   col = mix(col, vec3(1.0), clamp(glare * 0.85, 0.0, 1.0));
 
-  float a = clamp(bodyA + fresnelA + glareA, 0.0, 0.92);
-  if (a < 0.006) discard;
+  float a = clamp(bodyA + fresnelA + glareA + rimA * 0.55, 0.0, 0.95) * cover;
+  if (a < 0.004) discard;
+  // chegara rangi — sovuq oq, shisha chekasiga yaqin
+  vec3 rimCol = vec3(0.97, 0.985, 1.0);
+  col = mix(col, rimCol, clamp(rim * rimLight * 0.85, 0.0, 1.0));
   // premultiplied alpha bilan chiqaramiz (ONE, ONE_MINUS_SRC_ALPHA)
   fragColor = vec4(col * a, a);
 }
@@ -305,6 +319,7 @@ export function createGlRenderer(): GlRenderer | null {
     gl.uniform1f(U("u_dpr"), dpr);
     gl.uniform2f(U("u_cursor"), cursor.x, cursor.y);
     gl.uniform1f(U("u_viewH"), canvas.height / dpr);
+    gl.uniform1f(U("u_rimWidth"), p.rimWidth);
     gl.uniform1f(U("u_cursorR"), cursor.r);
     gl.uniform1f(U("u_cursorOn"), cursor.on ? 1 : 0);
     gl.uniform1f(U("u_cursorK"), 14.0);

@@ -256,7 +256,9 @@ function frame(now: number) {
 
   for (const e of registry.values()) {
     spring(e);
-    e.alpha = e.el.matches(":hover") || e === drag ? 1 : 0.86;
+    // hover/drag — shishaning o'zi kuchayadi (alohida CSS qatlami yo'q)
+    const hot = e.el.matches(":hover") || e === drag;
+    e.alpha = hot ? 1 : 0.86;
   }
   computeMerge();
 
@@ -292,6 +294,7 @@ function frame(now: number) {
     glareConvergence: p.glareConvergence,
     glareOppositeFactor: p.glareOppositeFactor,
     glareAngle: p.glareAngle,
+    rimWidth: 1.8,
     tint: [1, 1, 1, 0.5],
   });
 }
