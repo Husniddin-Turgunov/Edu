@@ -455,6 +455,14 @@ function JobDayLessonInner() {
         )}
           </div>
 
+          {/* Tegishli video darslar (DB dan). Avval sahifa ENG OSTIDA,
+              uzun test ro'yxatidan keyin turardi — foydalanuvchi uni
+              ko'rmay "chiqmayapti" deb o'ylardi. Endi dars matnidan keyin,
+              yaqqol ko'rinadigan joyda. */}
+          <div className="mt-8">
+            <RelatedVideos />
+          </div>
+
           {/* Interactive Quiz Section if available */}
           {quizQuestions.length > 0 && (
             <div className="mt-12 border-t border-black/10 pt-8">
@@ -618,11 +626,6 @@ function JobDayLessonInner() {
               <Trophy className="h-4 w-4" /> Kursni yakunlash
             </Link>
           )}
-        </div>
-
-        {/* Kunga joylashtirilgan tegishli videolar */}
-        <div className="mt-6">
-          <RelatedVideos />
         </div>
       </div>
     </main>

@@ -48,6 +48,7 @@ export function usePlacedVideos() {
 export function RelatedVideos() {
   const { lessons } = usePlacedVideos();
   if (lessons.length === 0) return null;
+  const playCount = lessons.reduce((n, v) => n + (v.showInLessons ? 1 : 0), 0);
   return (
     <div className="liquid-video-card rounded-3xl p-6 backdrop-blur-xl">
       <h3 className="text-lg font-extrabold text-[color:var(--emerald-deep)] flex items-center gap-2">
@@ -55,7 +56,13 @@ export function RelatedVideos() {
           <Play className="h-4 w-4 fill-white ml-0.5" />
         </span>
         Tegishli videolar
+        <span className="ml-1 rounded-full bg-white/70 border border-white/70 px-2.5 py-0.5 text-[11px] font-bold text-[color:var(--emerald-deep)]">
+          {playCount} ta
+        </span>
       </h3>
+      <p className="mt-1 text-xs text-[color:var(--ink-soft)]">
+        Darsga bog&apos;liq video darslar — bosing va oching.
+      </p>
       <div className="mt-4 grid gap-3 sm:grid-cols-2">
         {groupVideos(lessons).map((g) => g.kind === "playlist" ? (
           <Link
