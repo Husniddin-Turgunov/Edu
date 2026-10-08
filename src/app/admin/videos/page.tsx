@@ -5,10 +5,13 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState, useCallback } from "react";
 import { cachedFetch } from "@/lib/admin-cache";
 import { AdminSidebar, AdminHeader } from "@/components/admin/AdminSidebar";
+import VideoPlayer from "@/components/VideoPlayer";
 import { videoThumb } from "@/lib/video-thumb";
 import { groupVideos, totalDuration } from "@/lib/video-groups";
 import { PlaylistCard } from "@/components/akela/PlaylistCard";
 import {
+  ChevronLeft,
+  ChevronRight,
   Plus,
   Search,
   Loader2,
@@ -26,6 +29,7 @@ import {
   Upload,
   ListVideo,
   Layers,
+  Settings,
   ArrowLeft,
 } from "lucide-react";
 
@@ -39,6 +43,7 @@ type Video = {
   url: string;
   poster?: string | null;
   isActive: boolean;
+  showInLessons?: boolean;
   showOnHome: boolean;
   homeOrder: number;
   createdAt: string;
@@ -103,6 +108,23 @@ export default function AdminVideosPage() {
   // ===== YouTube playlist import =====
   type PlItem = { videoId: string; title: string; duration: string; thumb: string; url: string; exists: boolean };
   const [plOpen, setPlOpen] = useState(false);
+  /** Ko'rish uchun ochilgan video (null = modal yopiq). */
+  const [preview, setPreview] = useState<Video | null>(null);
+  /** Ketma-ket pleer: ro'yxat + joriy indeks (playlistni boshidan ko'rish uchun). */
+  const [playList, setPlayList] = useState<Video[] | null>(null);
+  const [playIdx, setPlayIdx] = useState(0);
+
+  /** Playlistdagi videolarni ketma-ket ochadi (checkbox yo'q — oddiy Ochish). */
+  const playVideos = (list: Video[]) => {
+    if (!list.length) return;
+    setPlayList(list);
+    setPlayIdx(0);
+  };
+  /** Tahrirlanayotgan playlist (nomini o'zgartirish). */
+  const [plEdit, setPlEdit] = useState<{ from: string; to: string; count: number } | null>(null);
+  const [plSaving, setPlSaving] = useState(false);
+  /** Boshqarilayotgan playlist nomi (videolar ro'yxati). */
+  const [manage, setManage] = useState<string | null>(null);
   const [plUrl, setPlUrl] = useState("");
   const [plLoading, setPlLoading] = useState(false);
   const [plImporting, setPlImporting] = useState(false);
@@ -276,9 +298,65 @@ export default function AdminVideosPage() {
     }
   };
 
+  const savePlaylistName = async () => {
+    if (!plEdit) return;
+    const to = plEdit.to.trim();
+    if (!to || to === plEdit.from) return;
+    setError(null);
+    setPlSaving(true);
+    try {
+      const res = await fetch("/api/admin/videos/playlist", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ from: plEdit.from, to }),
+      });
+      const data = await res.json();
+      if (!data?.ok) throw new Error(data?.error || "Playlist nomi saqlanmadi");
+      // Agar ochiq playlist shu bo'lsa — yangi nomga ko'chiramiz
+      setCatFilter((cur) => (cur === plEdit.from ? to : cur));
+      setPlEdit(null);
+      load();
+    } catch (e: any) {
+      setError(e?.message || "Xatolik");
+    } finally {
+      setPlSaving(false);
+    }
+  };
+
   const remove = async (v: Video) => {
     if (!confirm(`"${v.title}" o'chirilsinmi?`)) return;
     await fetch(`/api/admin/videos?id=${v.id}`, { method: "DELETE" });
+    load();
+  };
+
+  /** Playlistni darslar sahifasida ko'rsatish / yashirish (barcha videolar uchun). */
+  const togglePlaylistLessons = async (name: string) => {
+    setError(null);
+    const list = videos.filter((x) => (x.category || "Tizim") === name);
+    if (!list.length) return;
+    const on = !list.every((x) => x.showInLessons);
+    const res = await fetch("/api/admin/videos/playlist", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ from: name, showInLessons: on }),
+    });
+    const d = await res.json().catch(() => null);
+    if (!d?.ok) setError(d?.error || "Ko'rinishni o'zgartirib bo'lmadi");
+    load();
+  };
+
+  /** Videoni boshqa playlistga ko'chiradi (category — playlist nomi). */
+  const moveVideo = async (v: Video, to: string) => {
+    setError(null);
+    const target = to.trim();
+    if ((v.category || "Tizim") === (target || "Tizim")) return;
+    const res = await fetch("/api/admin/videos", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id: v.id, category: target }),
+    });
+    const d = await res.json().catch(() => null);
+    if (!d?.ok) setError(d?.error || "Ko'chirilmadi");
     load();
   };
 
@@ -474,22 +552,73 @@ export default function AdminVideosPage() {
                   name={row.name}
                   videos={row.videos}
                   onOpen={() => setCatFilter(row.name)}
+                  /* Amallar qatori video kartasi bilan BIR XIL:
+                     [Ochish (flex-1)] [Ko'rish] [Tahrirlash] [Boshqarish] */
                   footer={
-                    <button
-                      onClick={() => setCatFilter(row.name)}
-                      className="inline-flex w-full items-center justify-center gap-1.5 rounded-lg bg-gradient-to-br from-blue-700 to-indigo-600 px-3 py-1.5 text-xs font-bold text-white shadow hover:scale-[1.02] transition-transform"
-                    >
-                      <Layers className="w-3.5 h-3.5" /> Ochish ({row.videos.length})
-                    </button>
+                    <div className="mt-3 flex gap-2">
+                      <button
+                        type="button"
+                        onClick={() => setCatFilter(row.name)}
+                        className="inline-flex flex-1 items-center justify-center gap-1.5 rounded-lg bg-gradient-to-br from-blue-700 to-indigo-600 px-3 py-1.5 text-xs font-bold text-white shadow transition hover:scale-[1.02]"
+                      >
+                        <Layers className="w-3.5 h-3.5" /> Ochish ({row.videos.length})
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => playVideos(row.videos)}
+                        disabled={!row.videos.length}
+                        title="Barcha videolarni ochish"
+                        className="inline-flex items-center justify-center rounded-lg border border-emerald-200 px-2.5 py-1.5 text-emerald-700 transition hover:bg-emerald-50 disabled:opacity-40"
+                      >
+                        <ListVideo className="w-3.5 h-3.5" />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => togglePlaylistLessons(row.name)}
+                        title={
+                          row.videos.every((x) => x.showInLessons)
+                            ? "Darslar sahifasida yashirish"
+                            : "Darslar sahifasida ko'rsatish"
+                        }
+                        className="inline-flex items-center justify-center rounded-lg border border-neutral-200 px-2.5 py-1.5 text-neutral-500 transition hover:bg-neutral-50"
+                      >
+                        {row.videos.every((x) => x.showInLessons) ? (
+                          <Eye className="w-3.5 h-3.5" />
+                        ) : (
+                          <EyeOff className="w-3.5 h-3.5" />
+                        )}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setPlEdit({ from: row.name, to: row.name, count: row.videos.length })}
+                        title="Playlistni tahrirlash"
+                        className="inline-flex items-center justify-center rounded-lg border border-blue-200 px-2.5 py-1.5 text-blue-700 transition hover:bg-blue-50"
+                      >
+                        <Pencil className="w-3.5 h-3.5" />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setManage(row.name)}
+                        title="Playlistni boshqarish (videolarni ko'rish, tahrirlash, ko'chirish)"
+                        className="inline-flex items-center justify-center rounded-lg border border-amber-200 px-2.5 py-1.5 text-amber-700 transition hover:bg-amber-50"
+                      >
+                        <Settings className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
                   }
                 />
               ) : (() => { const v = row.video; const num = catFilter ? filtered.findIndex((x) => x.id === v.id) + 1 : 0; return (
                 <div key={v.id} className="liquid-video-card rounded-2xl glass-card overflow-hidden hover:shadow-lg transition-shadow">
-                  <div className="relative aspect-video bg-gradient-to-br from-[#0e1e3a] to-[#1a2855] grid place-items-center overflow-hidden">
+                  <button
+                    type="button"
+                    onClick={() => setPreview(v)}
+                    title="Videoni ko'rish"
+                    className="relative aspect-video w-full grid place-items-center overflow-hidden bg-gradient-to-br from-[#0e1e3a] to-[#1a2855] cursor-pointer group"
+                  >
                     {videoThumb(v) && (
                       <img src={videoThumb(v)!} alt={v.title} className="absolute inset-0 h-full w-full object-cover" loading="lazy" />
                     )}
-                    <div className="relative flex h-14 w-14 items-center justify-center rounded-full bg-[color:var(--background)] border border-black/5 shadow-inner">
+                    <div className="relative flex h-14 w-14 items-center justify-center rounded-full bg-[color:var(--background)] border border-black/5 shadow-inner transition group-hover:scale-110">
                       <Play className="h-6 w-6 fill-white text-white ml-0.5" />
                     </div>
                     <div className="absolute top-2 left-2 flex flex-wrap gap-1.5 max-w-[90%]">
@@ -512,7 +641,7 @@ export default function AdminVideosPage() {
                         {v.duration}
                       </span>
                     )}
-                  </div>
+                  </button>
                   <div className="p-4">
                     <h3 className="font-extrabold text-neutral-900 leading-snug">{v.title}</h3>
                     {v.description && <p className="mt-1 text-xs text-neutral-500 line-clamp-2">{v.description}</p>}
@@ -851,6 +980,299 @@ export default function AdminVideosPage() {
                   </button>
                 </div>
               </div>
+            </div>
+          </div>
+        )}
+
+        {/* ===== PLAYLISTNI BOSHQARISH =====
+            Playlist ichidagi videolar: ko'rish, tahrirlash, boshqa
+            playlistga ko'chirish. */}
+        {manage && (
+          <div
+            className="fixed inset-0 z-[85] flex items-center justify-center bg-black/60 p-4"
+            onClick={() => setManage(null)}
+          >
+            <div
+              className="flex max-h-[88vh] w-full max-w-2xl flex-col overflow-hidden rounded-2xl bg-white shadow-2xl"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="flex items-start justify-between gap-3 border-b border-neutral-100 px-5 py-3">
+                <div className="min-w-0">
+                  <div className="text-base font-extrabold text-neutral-900">
+                    &quot;{manage}&quot; — boshqarish
+                  </div>
+                  <div className="mt-0.5 text-[11px] text-neutral-500">
+                    {videos.filter((x) => (x.category || "Tizim") === manage).length} ta video
+                  </div>
+                </div>
+                <button
+                  onClick={() => setManage(null)}
+                  aria-label="Yopish"
+                  className="shrink-0 rounded-lg p-1.5 text-neutral-400 transition hover:bg-neutral-100 hover:text-neutral-700"
+                >
+                  <X className="h-5 w-5" />
+                </button>
+              </div>
+
+              <div className="min-h-0 flex-1 overflow-y-auto p-4">
+                <div className="space-y-2">
+                  {videos
+                    .filter((x) => (x.category || "Tizim") === manage)
+                    .map((v, i) => (
+                      <div
+                        key={v.id}
+                        className="flex items-center gap-3 rounded-xl border border-neutral-100 p-2.5"
+                      >
+                        <span className="w-6 shrink-0 text-center text-xs font-bold text-neutral-400">
+                          {i + 1}
+                        </span>
+                        <div className="min-w-0 flex-1">
+                          <div className="truncate text-xs font-bold text-neutral-800">{v.title}</div>
+                          <div className="mt-0.5 text-[10px] text-neutral-500">
+                            {v.duration || "—"}
+                            {v.isActive ? "" : " · yashirin"}
+                          </div>
+                        </div>
+                        <select
+                          value={v.category || "Tizim"}
+                          onChange={(e) => moveVideo(v, e.target.value)}
+                          title="Boshqa playlistga ko'chirish"
+                          className="max-w-[150px] shrink-0 rounded-lg border border-neutral-200 px-2 py-1.5 text-[11px] font-semibold text-neutral-700 outline-none focus:border-blue-500"
+                        >
+                          {categories.map(([name]) => (
+                            <option key={name} value={name}>
+                              {name}
+                            </option>
+                          ))}
+                        </select>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setManage(null);
+                            setPreview(v);
+                          }}
+                          title="Ko'rish"
+                          className="shrink-0 rounded-lg border border-neutral-200 px-2.5 py-1.5 text-neutral-500 transition hover:bg-neutral-50"
+                        >
+                          <Play className="w-3.5 h-3.5" />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setManage(null);
+                            openEdit(v);
+                          }}
+                          title="Tahrirlash"
+                          className="shrink-0 rounded-lg border border-blue-200 px-2.5 py-1.5 text-blue-700 transition hover:bg-blue-50"
+                        >
+                          <Pencil className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                    ))}
+                </div>
+              </div>
+
+              <div className="flex justify-between gap-2 border-t border-neutral-100 px-5 py-3">
+                <div className="flex items-center gap-2">
+                  {/* Ochish — ikonkali tugma (checkbox yo'q: oddiy "Ochish") */}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const list = videos.filter((x) => (x.category || "Tizim") === manage);
+                      setManage(null);
+                      playVideos(list);
+                    }}
+                    title="Barcha videolarni ochish"
+                    aria-label="Barcha videolarni ochish"
+                    className="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-blue-700 to-indigo-600 text-white shadow"
+                  >
+                    <Play className="w-4 h-4 ml-0.5" />
+                  </button>
+                  <span className="text-[11px] text-neutral-500">
+                    Ketma-ket ko&apos;rish
+                  </span>
+                </div>
+                <button
+                  onClick={() => {
+                    setManage(null);
+                    setPlEdit({
+                      from: manage,
+                      to: manage,
+                      count: videos.filter((x) => (x.category || "Tizim") === manage).length,
+                    });
+                  }}
+                  className="inline-flex items-center justify-center gap-1.5 rounded-xl border border-blue-200 px-4 py-2.5 text-sm font-bold text-blue-700 transition hover:bg-blue-50"
+                >
+                  <Pencil className="w-4 h-4" /> Playlist nomini tahrirlash
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* ===== PLAYLISTNI TAHRIRLASH (nomini o'zgartirish) =====
+            Playlist = videolarning `category` maydoni. Nomlash barcha
+            videolarni yangi kategoriyaga ko'chiradi; hech qanday video
+            o'chirilmaydi. */}
+        {plEdit && (
+          <div
+            className="fixed inset-0 z-[85] flex items-center justify-center bg-black/60 p-4"
+            onClick={() => !plSaving && setPlEdit(null)}
+          >
+            <div
+              className="w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <h3 className="text-lg font-extrabold text-neutral-900">Playlistni tahrirlash</h3>
+              <p className="mt-1 text-xs text-neutral-500">
+                Bu playlistda <b>{plEdit.count}</b> ta video bor. Nomni o'zgartirsangiz
+                barcha videolar yangi nomga o'tadi.
+              </p>
+              <label className="mt-4 block text-xs font-bold text-neutral-700">Playlist nomi</label>
+              <input
+                autoFocus
+                value={plEdit.to}
+                maxLength={120}
+                onChange={(e) => setPlEdit({ ...plEdit, to: e.target.value })}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && plEdit.to.trim() && plEdit.to.trim() !== plEdit.from) savePlaylistName();
+                }}
+                className="mt-1.5 w-full rounded-xl border border-neutral-200 px-3 py-2.5 text-sm font-semibold outline-none focus:border-blue-500"
+              />
+              {error && <div className="mt-2 text-xs font-semibold text-rose-600">{error}</div>}
+              <div className="mt-5 flex gap-2">
+                <button
+                  onClick={() => setPlEdit(null)}
+                  disabled={plSaving}
+                  className="flex-1 rounded-xl border border-neutral-200 px-4 py-2.5 text-sm font-bold text-neutral-600 transition hover:bg-neutral-50 disabled:opacity-50"
+                >
+                  Bekor qilish
+                </button>
+                <button
+                  onClick={savePlaylistName}
+                  disabled={plSaving || !plEdit.to.trim() || plEdit.to.trim() === plEdit.from}
+                  className="inline-flex flex-1 items-center justify-center gap-2 rounded-xl bg-gradient-to-br from-blue-700 to-indigo-600 px-4 py-2.5 text-sm font-bold text-white shadow transition disabled:opacity-50"
+                >
+                  {plSaving && <Loader2 className="h-4 w-4 animate-spin" />} Saqlash
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Ketma-ket ko'rish: playlistdagi videolar navbat bilan. */}
+        {playList && playList[playIdx] && (
+          <div
+            className="fixed inset-0 z-[90] flex items-center justify-center bg-black/75 p-4"
+            onClick={() => setPlayList(null)}
+          >
+            <div
+              className="w-full max-w-3xl overflow-hidden rounded-2xl bg-white shadow-2xl"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="flex items-start justify-between gap-3 border-b border-neutral-100 px-5 py-3">
+                <div className="min-w-0">
+                  <div className="truncate font-extrabold text-neutral-900">
+                    {playList[playIdx].title}
+                  </div>
+                  <div className="mt-0.5 text-[11px] text-neutral-500">
+                    {playIdx + 1} / {playList.length}
+                  </div>
+                </div>
+                <button
+                  onClick={() => setPlayList(null)}
+                  aria-label="Yopish"
+                  className="shrink-0 rounded-lg p-1.5 text-neutral-400 transition hover:bg-neutral-100 hover:text-neutral-700"
+                >
+                  <X className="h-5 w-5" />
+                </button>
+              </div>
+              <VideoPlayer
+                key={"pl-" + playList[playIdx].id}
+                src={playList[playIdx].url}
+                title={playList[playIdx].title}
+                poster={videoThumb(playList[playIdx]) || undefined}
+                onEnded={() => setPlayIdx((i) => Math.min(i + 1, playList.length - 1))}
+              />
+              <div className="flex items-center justify-between gap-2 border-t border-neutral-100 px-4 py-3">
+                <button
+                  type="button"
+                  onClick={() => setPlayIdx((i) => Math.max(0, i - 1))}
+                  disabled={playIdx === 0}
+                  className="inline-flex items-center gap-1.5 rounded-xl border border-neutral-200 px-3 py-2 text-xs font-bold text-neutral-600 transition hover:bg-neutral-50 disabled:opacity-40"
+                >
+                  <ChevronLeft className="w-4 h-4" /> Oldingi
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setPlayList(null)}
+                  className="rounded-xl px-3 py-2 text-xs font-bold text-neutral-500 transition hover:bg-neutral-100"
+                >
+                  Ro&apos;yxatga qaytish
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setPlayIdx((i) => Math.min(playList.length - 1, i + 1))}
+                  disabled={playIdx >= playList.length - 1}
+                  className="inline-flex items-center gap-1.5 rounded-xl border border-neutral-200 px-3 py-2 text-xs font-bold text-neutral-600 transition hover:bg-neutral-50 disabled:opacity-40"
+                >
+                  Keyingi <ChevronRight className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* ===== VIDEO KO'RISH (preview) =====
+            Kartadagi rasm/play tugmasi avval hech narsa qilmasdi. Endi
+            bosilganda video shu yerda ochiladi. Faqat ko'rish — hech qanday
+            o'zgartirish yo'q. */}
+        {preview && (
+          <div
+            className="fixed inset-0 z-[80] flex items-center justify-center bg-black/70 p-4"
+            onClick={() => setPreview(null)}
+          >
+            <div
+              className="w-full max-w-3xl overflow-hidden rounded-2xl bg-white shadow-2xl"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="flex items-start justify-between gap-3 border-b border-neutral-100 px-5 py-3">
+                <div className="min-w-0">
+                  <div className="truncate font-extrabold text-neutral-900">{preview.title}</div>
+                  {preview.category && (
+                    <div className="mt-0.5 text-[11px] text-neutral-500">
+                      {preview.category}
+                      {preview.duration ? ` · ${preview.duration}` : ""}
+                    </div>
+                  )}
+                </div>
+                <button
+                  onClick={() => setPreview(null)}
+                  aria-label="Yopish"
+                  className="shrink-0 rounded-lg p-1.5 text-neutral-400 transition hover:bg-neutral-100 hover:text-neutral-700"
+                >
+                  <X className="h-5 w-5" />
+                </button>
+              </div>
+              <VideoPlayer
+                key={"preview-" + preview.id}
+                src={preview.url}
+                title={preview.title}
+                poster={videoThumb(preview) || undefined}
+              />
+              {preview.url && (
+                <div className="px-5 py-3 text-[11px] text-neutral-500">
+                  Manba:{" "}
+                  <a
+                    href={preview.url}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="break-all text-blue-600 underline"
+                  >
+                    {preview.url}
+                  </a>
+                </div>
+              )}
             </div>
           </div>
         )}

@@ -6,7 +6,13 @@ import { totalDuration } from "@/lib/video-groups";
 
 type V = { id: string; title: string; duration?: string | null; url: string; poster?: string | null };
 
-/** Playlist — bitta jamlangan karta (orqasida qatlamlar ko'rinadi). Bosilganda ochiladi. */
+/** Playlist — bitta jamlangan karta (orqasida qatlamlar ko'rinadi). Bosilganda ochiladi.
+ *
+ *  AMALLAR (`footer` orqali beriladi) — video kartasi bilan BIR XIL tuzilma:
+ *  keng asosiy tugma (`flex-1`) + kvadrat ikon tugmalari. Shu sababli playlist
+ *  kartasi ham video kartasi kabi ko'rinadi va bir xil ishlaydi:
+ *  Ochish · Ko'rish · Tahrirlash · Boshqarish.
+ */
 export function PlaylistCard({
   name,
   videos,
@@ -43,11 +49,11 @@ export function PlaylistCard({
             <h3 className="font-extrabold leading-snug text-neutral-900">{name}</h3>
             <div className="mt-2 flex flex-wrap items-center gap-1.5 text-[11px] text-neutral-500">
               <span className="inline-flex items-center gap-1 rounded-md border border-blue-100 bg-blue-50 px-2 py-0.5 font-bold text-blue-700">
-                <Layers className="h-3 w-3" /> Playlist
+                <Layers className="w-3 h-3" /> Playlist
               </span>
               {total && (
                 <span className="inline-flex items-center gap-1 rounded-md bg-neutral-100 px-2 py-0.5">
-                  <Clock className="h-3 w-3" /> jami {total}
+                  <Clock className="w-3 h-3" /> jami {total}
                 </span>
               )}
             </div>

@@ -1,104 +1,84 @@
 import { NextResponse } from "next/server";
 import { PrismaClient } from "@prisma/client";
 import { getSession } from "@/lib/auth";
-import { fetchPlaylist } from "@/lib/youtube-playlist";
 
 export const dynamic = "force-dynamic";
 
 const prisma = new PrismaClient();
 
-// Bir xil videoni ikki marta qo'shmaslik uchun YouTube ID ajratamiz
-function ytId(url: string): string | null {
-  const m = url.match(/(?:v=|youtu\.be\/|embed\/|shorts\/)([\w-]{6,})/);
-  return m ? m[1] : null;
-}
-
 /**
- * POST /api/admin/videos/playlist
- *  { action: "preview", url }                     -> playlist ro'yxati (DB'ga yozmaydi)
- *  { action: "import", url, category?, videoIds?,  -> tanlangan videolarni qo'shadi
- *    showInLessons?, showOnCourses?, description? }
+ * Playlist — bu videolarning `category` maydoni (alohida jadval yo'q).
+ * Shu sababli playlistni tahrirlash = o'sha kategoriyadagi BARCHA
+ * videolarni yangilash.
+ *
+ * PATCH /api/admin/videos/playlist
+ *   { "from": "Word darslari", "to": "Microsoft Word", "orderIds": ["id1","id2"] }
+ *   -> `orderIds` berilsa, playlist ichidagi tartam video id'si bo'yicha
+ *      `coursesOrder` maydoni orqali saqlanadi (1,2,3...).
  */
-export async function POST(req: Request) {
+export async function PATCH(req: Request) {
   try {
     const session = await getSession();
     if (!session?.isAdmin) {
-      return NextResponse.json({ error: "Ruxsat yo'q" }, { status: 403 });
+      return NextResponse.json({ ok: false, error: "Ruxsat yo'q" }, { status: 403 });
     }
-    const body = (await req.json()) as {
-      action?: "preview" | "import";
-      url?: string;
-      category?: string;
-      videoIds?: string[];
-      showInLessons?: boolean;
-      showOnCourses?: boolean;
-      description?: string;
-    };
-    if (!body.url) return NextResponse.json({ error: "Playlist havolasini kiriting" }, { status: 400 });
 
-    const pl = await fetchPlaylist(body.url);
+    const body = await req.json().catch(() => null);
+    if (!body) return NextResponse.json({ ok: false, error: "So'rov tanasi bo'sh" }, { status: 400 });
 
-    // Allaqachon qo'shilganlarni belgilaymiz
-    const existing = await prisma.video.findMany({
-      where: { url: { contains: "youtu" } },
-      select: { url: true },
-    });
-    const have = new Set(existing.map((e) => ytId(e.url)).filter(Boolean) as string[]);
+    const from = String(body.from ?? "").trim();
+    const to = String(body.to ?? from).trim();
+    const orderIds: string[] = Array.isArray(body.orderIds) ? body.orderIds.map(String) : [];
+    // Darslar sahifasida ko'rinishni boshqarish (playlist darajasida).
+    const showInLessons = body.showInLessons;
 
-    if (body.action !== "import") {
-      return NextResponse.json({
-        ok: true,
-        playlist: {
-          id: pl.playlistId,
-          title: pl.title,
-          channel: pl.channel,
-          items: pl.items.map((it) => ({ ...it, exists: have.has(it.videoId) })),
-        },
+    if (!from) return NextResponse.json({ ok: false, error: "from (playlist nomi) shart" }, { status: 400 });
+
+    // 0) Ko'rinishni o'zgartirish (nomlash emas)
+    if (showInLessons !== undefined) {
+      const on = !!showInLessons;
+      const res = await prisma.video.updateMany({
+        where: { category: from },
+        data: { showInLessons: on },
       });
+      return NextResponse.json({ ok: true, changed: res.count, name: from, showInLessons: on });
     }
 
-    const pick = body.videoIds?.length ? new Set(body.videoIds) : null;
-    const chosen = pl.items.filter((it) => (!pick || pick.has(it.videoId)) && !have.has(it.videoId));
-    if (chosen.length === 0) {
-      return NextResponse.json({ ok: true, created: 0, skipped: pl.items.length, category: body.category || pl.title });
+    if (!to) return NextResponse.json({ ok: false, error: "Yangi nom bo'sh bo'lishi mumkin emas" }, { status: 400 });
+    if (to.length > 120) {
+      return NextResponse.json({ ok: false, error: "Nom 120 belgidan oshmasligi kerak" }, { status: 400 });
     }
 
-    const category = String(body.category || pl.title).trim().slice(0, 120) || "YouTube";
-    // Ro'yxat createdAt DESC bo'yicha — 1-dars eng yuqorida chiqishi uchun vaqtni kamaytirib boramiz
-    const base = Date.now();
-    const lessonsBase =
-      (await prisma.video.aggregate({ _max: { lessonsOrder: true }, where: { showInLessons: true } }))._max
-        .lessonsOrder ?? -1;
-    const coursesBase =
-      (await prisma.video.aggregate({ _max: { coursesOrder: true }, where: { showOnCourses: true } }))._max
-        .coursesOrder ?? -1;
+    // 1) Nomlash (agar o'zgartirilayotgan bo'lsa)
+    let renamed = 0;
+    if (to !== from) {
+      // Agar yangi nom bilan playlist allaqachon bor bo'lsa — qo'shib
+      // ketmaslik uchun xabar beriladi (ma'lumot chalkashmasin).
+      const clash = await prisma.video.findFirst({ where: { category: to }, select: { id: true } });
+      if (clash) {
+        return NextResponse.json(
+          { ok: false, error: `"${to}" nomli playlist allaqachon bor. Avval uni ochib, videolarini ko'chiring.` },
+          { status: 409 },
+        );
+      }
+      const res = await prisma.video.updateMany({ where: { category: from }, data: { category: to } });
+      renamed = res.count;
+    }
 
-    await prisma.video.createMany({
-      data: chosen.map((it, i) => ({
-        title: it.title.slice(0, 500),
-        description: String(body.description || "").slice(0, 2000),
-        category,
-        duration: it.duration,
-        size: "",
-        url: it.url,
-        poster: it.thumb,
-        order: i,
-        isActive: true,
-        showInLessons: !!body.showInLessons,
-        lessonsOrder: lessonsBase + 1 + i,
-        showOnCourses: !!body.showOnCourses,
-        coursesOrder: coursesBase + 1 + i,
-        createdAt: new Date(base - i * 1000),
-      })),
-    });
+    // 2) Tartamni saqlash (ixtiyoriy)
+    let ordered = 0;
+    if (orderIds.length) {
+      await prisma.$transaction(
+        orderIds.map((id, i) =>
+          prisma.video.updateMany({ where: { id, category: to }, data: { coursesOrder: i + 1 } }),
+        ),
+      );
+      ordered = orderIds.length;
+    }
 
-    return NextResponse.json({
-      ok: true,
-      created: chosen.length,
-      skipped: pl.items.length - chosen.length,
-      category,
-    });
+    const count = await prisma.video.count({ where: { category: to } });
+    return NextResponse.json({ ok: true, renamed, ordered, count, name: to });
   } catch (e: any) {
-    return NextResponse.json({ error: e?.message || "Server xatosi" }, { status: 500 });
+    return NextResponse.json({ ok: false, error: e?.message || "Server xatosi" }, { status: 500 });
   }
 }

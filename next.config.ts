@@ -36,7 +36,13 @@ const securityHeaders = [
       // ochiq bo'lishi shart. blob: — MSE uchun (hls.js video elementiga
       // blob URL yopadi), data: — ba'zi posterlar uchun.
       "media-src 'self' blob: data: https://*.r2.dev https://*.r2.cloudflarestorage.com",
-      "connect-src 'self' blob: data: https://*.r2.dev https://*.r2.cloudflarestorage.com" +
+// Vercel Blob'ga FAYL YUKLASH. `@vercel/blob/client` faylni
+      // `https://vercel.com/api/blob/?pathname=...` orqali yuboradi (o'z
+      // relay endpoint'i), `*.blob.vercel-storage.com` emas. Bu domen
+      // connect-src da yo'q edi -> yuklash CSP tomonidan bloklanib OSILIB
+      // QOLARDI: kontakt keladi, lekin keyingi so'rov umuman ketmaydi
+      // (konsolda "violates the following Content Security Policy").
+      "connect-src 'self' blob: data: https://vercel.com https://*.r2.dev https://*.r2.cloudflarestorage.com https://*.blob.vercel-storage.com" +
         (isProd ? "" : " ws: wss:"),
       // hls.js o'z worker'ini blob: URL dan yaratadi (enableWorker: true)
       "worker-src 'self' blob:",
