@@ -11,6 +11,8 @@ import { UI_STRINGS, type Locale } from "@/lib/akela-content";
 import { AkelaOnboardingModal } from "@/components/akela/AkelaOnboardingModal";
 import { TicketCard, TicketBadge } from "@/components/akela/TicketCard";
 import { usePlacedVideos } from "@/components/akela/RelatedVideos";
+import { groupVideos } from "@/lib/video-groups";
+import { PlaylistCard } from "@/components/akela/PlaylistCard";
 
 type Job = any;
 
@@ -145,6 +147,25 @@ export default function CoursesPage() {
   const stillLoading = loadingOnboarding || loadingJobs || !allowed;
   // Kurslar sahifasiga joylashtirilgan videolar polosasi
   const { courses: stripVideos } = usePlacedVideos();
+  // "Video darslar" bo'limi uchun barcha videolar:
+  //  - home sahifasida ko'rinadiganlar (showOnHome) — BU YERDA ko'rinmasligi kerak
+  //  - dashboard ga qo'yilganlar (showOnDashboard) — bu yerda emas
+  const [allVideos, setAllVideos] = useState<any[]>([]);
+  useEffect(() => {
+    if (status !== "authenticated") return;
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await fetch("/api/videos", { cache: "no-store" });
+        const data = await res.json();
+        if (!cancelled && data?.ok) setAllVideos(data.videos || []);
+      } catch {}
+    })();
+    return () => { cancelled = true; };
+  }, [status]);
+  const courseVideos = allVideos.filter(
+    (v: any) => v.isActive !== false && !v.showOnHome && !v.showOnDashboard,
+  );
 
   if (status === "loading") {
     return (
@@ -183,8 +204,9 @@ export default function CoursesPage() {
       </section>
 
       <div className="mx-auto max-w-7xl px-6 py-10 space-y-14">
-        {/* Joylashtirilgan videolar polosasi — faqat biriktirilganlarga */}
-        {stripVideos.length > 0 && (allowed?.onboarding || (allowed?.jobIds.length || 0) > 0) && (
+        {/* Video darslar — playlistlar va oddiy videolar (alohida dizayn).
+          Home/dashboard ga qo'yilgan videolar BU YERDA ko'rinmaydi. */}
+        {courseVideos.length > 0 && (allowed?.onboarding || (allowed?.jobIds.length || 0) > 0) && (
           <section>
             <div className="mb-4 flex items-center gap-3">
               <span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-gradient-to-br from-blue-600 to-indigo-600 text-white shadow-lg">
@@ -196,34 +218,43 @@ export default function CoursesPage() {
               </Link>
             </div>
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-              {stripVideos.map((v: any) => (
-                <Link
-                  key={v.id}
-                  href={`/courses/videos/${v.id}`}
-                  className="group glass-card rounded-2xl p-4 transition-all hover:-translate-y-1 hover:shadow-xl"
-                >
-                  <div className="flex items-center gap-3">
-                    <span className="grid h-12 w-12 shrink-0 place-items-center rounded-xl bg-gradient-to-br from-[#0e1e3a] to-[#1a2855] text-white shadow">
-                      <Play className="h-5 w-5 fill-white ml-0.5" />
-                    </span>
-                    <span className="min-w-0 flex-1">
-                      <span className="block truncate text-sm font-extrabold text-[color:var(--emerald-deep)] group-hover:text-blue-600">
-                        {v.title}
-                      </span>
-                      {v.duration && (
-                        <span className="mt-0.5 inline-flex items-center gap-1 text-[11px] text-[color:var(--ink-soft)]">
-                          <Clock className="h-3 w-3" /> {v.duration}
+              {groupVideos(courseVideos).map((row: any, i: number) =>
+                row.kind === "playlist" ? (
+                  <PlaylistCard
+                    key={"pl-" + row.name}
+                    name={row.name}
+                    videos={row.videos}
+                    onOpen={() => { location.href = "/courses/videos?cat=" + encodeURIComponent(row.name); }}
+                  />
+                ) : (
+                  // Oddiy videolar — playlistdan BOSHQACHA (yengil) dizayn
+                  <Link
+                    key={row.video.id}
+                    href={"/courses/videos/" + row.video.id}
+                    className="group rounded-2xl border border-white/70 bg-white/70 p-3 transition-all hover:-translate-y-1 hover:shadow-lg"
+                  >
+                    <div className="relative aspect-video overflow-hidden rounded-xl bg-gradient-to-br from-[#0e1e3a] to-[#1a2855] grid place-items-center">
+                      <Play className="h-8 w-8 fill-white/90 text-white/90 ml-0.5" />
+                      {row.video.duration && (
+                        <span className="absolute bottom-2 right-2 rounded-md bg-black/80 px-2 py-0.5 text-[11px] font-bold text-white">
+                          {row.video.duration}
                         </span>
                       )}
-                    </span>
-                  </div>
-                </Link>
-              ))}
+                    </div>
+                    <div className="mt-3 block truncate text-sm font-extrabold text-[color:var(--emerald-deep)] group-hover:text-blue-600">
+                      {row.video.title}
+                    </div>
+                    <div className="mt-1 text-[11px] text-[color:var(--ink-soft)]">
+                      {row.video.category || "Tizim"}
+                    </div>
+                  </Link>
+                )
+              )}
             </div>
           </section>
         )}
 
-        {/* Atestatsiya testlari — yaratilgan va ko'rishga ruxsat etilgan (active) testlar */}
+{/* Atestatsiya testlari — yaratilgan va ko'rishga ruxsat etilgan (active) testlar */}
         {loadingAtest || atestTests.length > 0 ? (
         <section data-testid="atestatsiya-section">
           <div className="mb-6 flex items-center gap-3">
