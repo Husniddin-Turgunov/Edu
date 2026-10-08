@@ -64,8 +64,17 @@ export async function cachedFetch(
   }
   const res = await fetch(url, init);
   if (!res.ok) return res;
+
+  // MUHIM: faqat JSON javoblar keshlanadi. PDF/CSV/binary javoblarda
+  // `res.json()` chaqirilsa, joriy tanani buziladi (body "used already") va
+  // keyingi `res.blob()` BO'SH fayl qaytaradi — ya'ni yuklab olingan PDF 0
+  // bayt bo'lardi. Shuning uchun content-type tekshiriladi va JSON `clone()`
+  // orqali o'qiladi (asl Response butunlay qoladi).
+  const contentType = res.headers.get("content-type") || "";
+  if (!contentType.includes("json")) return res;
+
   try {
-    const data = await res.json();
+    const data = await res.clone().json();
     CACHE.set(key, { at: now, data });
     return makeResponse(data);
   } catch {

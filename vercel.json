@@ -2,6 +2,5 @@
   "version": 2,
   "framework": "nextjs",
   "buildCommand": "npx prisma generate && npx next build",
-  "installCommand": "npm ci",
-  "outputDirectory": ".next"
+  "installCommand": "npm ci"
 }

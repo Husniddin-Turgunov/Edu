@@ -40,7 +40,10 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
     return failResponse("Fayl muddati tugagan", 410);
   }
 
-  const abs = path.join(process.cwd(), file.storagePath);
+  // AI fayllari faqat lokal diskda saqlanadi (Vercel'da bu yo'l ishlamaydi —
+  // upload/ai-files shu yerda runtime'da yaratiladi). Dinamik yo'l butun
+  // loyihani trace qilmasligi uchun `turbopackIgnore` belgilanadi.
+  const abs = path.join(process.cwd(), /* turbopackIgnore: true */ file.storagePath);
   // Yo'l xavfsizligi: faqat upload/ai-files ichidan
   const allowedDir = path.join(process.cwd(), "upload", "ai-files");
   if (!path.resolve(abs).startsWith(path.resolve(allowedDir))) {

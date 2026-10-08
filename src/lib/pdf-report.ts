@@ -22,7 +22,7 @@ import { PDFDocument, PDFFont, rgb } from "pdf-lib";
 import * as fontkitNS from "@pdf-lib/fontkit";
 import { readFile } from "node:fs/promises";
 import path from "node:path";
-import { computeResultStats, type StatQuestion } from "@/lib/result-stats";
+import { computeResultStats, levelOfScore, type StatQuestion } from "@/lib/result-stats";
 
 // CJS/ESM interop: ba'zi bundlerlarda fontkit `default` ostida keladi
 const fontkit: any = (fontkitNS as any).default || fontkitNS;
@@ -63,6 +63,10 @@ export type PdfAttempt = {
   correct: number;
   wrong: number;
   total: number;
+  /** Test savollari natija topshirilgandan keyin almashtirilgan — savollar
+   *  bo'yicha to'g'ri/xato soni ma'lum emas. Hisobotda "—" chiqadi (nol emas),
+   *  chunki nol natijani "hammasi noto'g'ri" deb chalg'itadi. */
+  staleQuestionIds?: boolean;
 };
 
 export type UserReportInput = {
@@ -143,14 +147,9 @@ async function makeDoc(origin?: string) {
 
 // ====== Yordamchilar ======
 
-/** Ball bo'yicha bilim darajasi (admin/skills va bot bir xil mantiqda). */
-export function levelOfScore(score: number | null | undefined): string {
-  const s = typeof score === "number" ? score : 0;
-  if (s >= 86) return "I daraja";
-  if (s >= 70) return "II daraja";
-  if (s > 0) return "III daraja";
-  return "Baholanmagan";
-}
+/** Ball bo'yicha bilim darajasi — bitta manba `result-stats.ts` da
+ *  (admin panel va Telegram bot ham shundan foydalanadi). */
+export { levelOfScore };
 
 export function fullNameOf(user: PdfUser): string {
   return (
@@ -352,8 +351,13 @@ export async function buildUserReportPdf(
   const avg = scores.length ? Math.round(scores.reduce((a, b) => a + b, 0) / scores.length) : 0;
   const level = levelOfScore(avg);
   const passedCount = attempts.filter((a) => a.passed).length;
-  const totalCorrect = attempts.reduce((sum, a) => sum + a.correct, 0);
-  const totalWrong = attempts.reduce((sum, a) => sum + a.wrong, 0);
+  // Eski natijalar (test savollari natijadan keyin almashtirilgan) hisobga
+  // olinmaydi — ular uchun to'g'ri/xato soni ma'lum emas va 0 qo'shish
+  // xato ko'rsatkich bo'lardi ("hammasi noto'g'ri" degan ma'no).
+  const detailed = attempts.filter((a) => !a.staleQuestionIds);
+  const hasStale = detailed.length !== attempts.length;
+  const totalCorrect = detailed.reduce((sum, a) => sum + a.correct, 0);
+  const totalWrong = detailed.reduce((sum, a) => sum + a.wrong, 0);
 
   const box: PageBox = { doc, regular, bold, page: null, y: 0 };
   newPage(box);
@@ -371,8 +375,8 @@ export async function buildUserReportPdf(
   statBoxes(box, [
     [String(attempts.length), "Topshirish", INK],
     [String(passedCount), "O'tilgan", GREEN],
-    [String(totalCorrect), "Jami to'g'ri", GREEN],
-    [String(totalWrong), "Jami xato", totalWrong > 0 ? RED : MUT],
+    hasStale ? ["—", "Jami to'g'ri", GREEN] : [String(totalCorrect), "Jami to'g'ri", GREEN],
+    hasStale ? ["—", "Jami xato", MUT] : [String(totalWrong), "Jami xato", totalWrong > 0 ? RED : MUT],
   ]);
 
   const columns = [
@@ -411,8 +415,8 @@ export async function buildUserReportPdf(
       x += col.w;
     };
     cell(attempt.score != null ? attempt.score + "%" : "—", columns[1], bold);
-    cell(attempt.correct + "/" + attempt.total, columns[2], bold, GREEN);
-    cell(String(attempt.wrong), columns[3], bold, attempt.wrong > 0 ? RED : MUT);
+    cell(attempt.staleQuestionIds ? "—" : attempt.correct + "/" + attempt.total, columns[2], bold, GREEN);
+    cell(attempt.staleQuestionIds ? "—" : String(attempt.wrong), columns[3], bold, attempt.wrong > 0 ? RED : MUT);
     cell(attempt.passed ? "O'tdi" : "Yiqildi", columns[4], regular, attempt.passed ? GREEN : RED);
     cell(formatDate(attempt.completedAt), columns[5], regular, MUT, 8);
     box.y -= rowHeight;
@@ -457,12 +461,32 @@ export async function buildResultReportPdf(
   ]);
   box.y -= 6;
 
+  // Eski natija: savollar o'chirilgan -> to'g'ri/noto'g'ri soni ma'lum emas.
+  // Nol yoki "Baholanmagan" yozish natijani MA'NOSIZ chalg'itadi (aslida ball
+  // 90%). Shuning uchun bu uchta quti "—" bilan chiqadi, pastda esa aniq
+  // tushuntirish beriladi.
   statBoxes(box, [
     [String(stats.total), "Jami savol", INK],
-    [String(stats.correct), "To'g'ri javob", GREEN],
-    [String(stats.wrong), "Noto'g'ri javob", RED],
-    [String(stats.pending), "Baholanmagan", AMBER],
+    stats.staleQuestionIds ? ["—", "To'g'ri javob", GREEN] : [String(stats.correct), "To'g'ri javob", GREEN],
+    stats.staleQuestionIds ? ["—", "Noto'g'ri javob", RED] : [String(stats.wrong), "Noto'g'ri javob", RED],
+    stats.staleQuestionIds ? ["—", "Baholanmagan", AMBER] : [String(stats.pending), "Baholanmagan", AMBER],
   ]);
+
+  if (stats.staleQuestionIds) {
+    need(box, 40);
+    const lines = wrap(
+      "Bu test natijasi topshirilgandan keyin test savollari almashtirilgan. " +
+        "Shuning uchun savollar bo'yicha to'g'ri/noto'g'ri tafsiloti mavjud emas. " +
+        "Ushbu satrdagi umumiy ball va holat esa topshirilgan paytdagi haqiqiy natijadir.",
+      regular,
+      8,
+      MAXW,
+    );
+    lines.forEach((line, li) => {
+      box.page.drawText(line, { x: M, y: box.y - li * 10, size: 8, font: regular, color: AMBER });
+    });
+    box.y -= lines.length * 10 + 10;
+  }
 
   if (stats.truncated) {
     need(box, 16);
@@ -475,41 +499,46 @@ export async function buildResultReportPdf(
 
   const colNo = 26;
   const colText = MAXW - colNo - 74;
-  tableHead(box, [
-    { t: "#", w: colNo },
-    { t: "Savol", w: colText },
-    { t: "Natija", w: 74 },
-  ]);
+  // Eski natijada savollar bo'yicha jadval ma'nosiz — uni umuman chizmaymiz.
+  if (!stats.staleQuestionIds) {
+    tableHead(box, [
+      { t: "#", w: colNo },
+      { t: "Savol", w: colText },
+      { t: "Natija", w: 74 },
+    ]);
 
-  if (!stats.perQuestion.length) {
-    need(box, 18);
-    box.page.drawText("Savollar topilmadi.", { x: M, y: box.y, size: 10, font: regular, color: MUT });
-    box.y -= 18;
+    if (!stats.perQuestion.length) {
+      need(box, 18);
+      box.page.drawText("Savollar topilmadi.", { x: M, y: box.y, size: 10, font: regular, color: MUT });
+      box.y -= 18;
+    }
   }
 
-  stats.perQuestion.forEach((item, idx) => {
-    const lines = wrap(item.question.text || "(savol matni yo'q)", regular, 9, colText - 10).slice(0, 4);
-    const rowHeight = Math.max(20, lines.length * 12 + 6);
-    need(box, rowHeight);
-    if (idx % 2 === 1) {
-      box.page.drawRectangle({
-        x: M, y: box.y - rowHeight + 6, width: MAXW, height: rowHeight, color: ZEBRA,
+  if (!stats.staleQuestionIds) {
+    stats.perQuestion.forEach((item, idx) => {
+      const lines = wrap(item.question.text || "(savol matni yo'q)", regular, 9, colText - 10).slice(0, 4);
+      const rowHeight = Math.max(20, lines.length * 12 + 6);
+      need(box, rowHeight);
+      if (idx % 2 === 1) {
+        box.page.drawRectangle({
+          x: M, y: box.y - rowHeight + 6, width: MAXW, height: rowHeight, color: ZEBRA,
+        });
+      }
+      box.page.drawText(String(idx + 1), { x: M + 5, y: box.y - 4, size: 9, font: bold, color: MUT });
+      lines.forEach((line, li) => {
+        box.page.drawText(line, {
+          x: M + colNo + 5, y: box.y - 4 - li * 12, size: 9, font: regular, color: INK,
+        });
       });
-    }
-    box.page.drawText(String(idx + 1), { x: M + 5, y: box.y - 4, size: 9, font: bold, color: MUT });
-    lines.forEach((line, li) => {
-      box.page.drawText(line, {
-        x: M + colNo + 5, y: box.y - 4 - li * 12, size: 9, font: regular, color: INK,
+      const label = item.ok === true ? "To'g'ri" : item.ok === false ? "Xato" : "Baholanmagan";
+      const color = item.ok === true ? GREEN : item.ok === false ? RED : AMBER;
+      box.page.drawText(label, {
+        x: M + colNo + colText + 5, y: box.y - 4, size: 9, font: bold, color,
       });
+      box.y -= rowHeight;
+      rowSeparator(box);
     });
-    const label = item.ok === true ? "To'g'ri" : item.ok === false ? "Xato" : "Baholanmagan";
-    const color = item.ok === true ? GREEN : item.ok === false ? RED : AMBER;
-    box.page.drawText(label, {
-      x: M + colNo + colText + 5, y: box.y - 4, size: 9, font: bold, color,
-    });
-    box.y -= rowHeight;
-    rowSeparator(box);
-  });
+  }
 
   signatures(box, "Xodim imzosi: ___________________");
   pageNumbers(doc, regular);

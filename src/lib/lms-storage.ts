@@ -701,9 +701,38 @@ async createQuestion(data: { testId: string; text: string; type?: string; points
       presentedIds = allQuestions.map((q) => String(q.id));
     }
     const presentedSet = new Set(presentedIds);
-    const questions = allQuestions.filter((q) => presentedSet.has(String(q.id)));
+    const questions = allQuestions.filter((q: any) => presentedSet.has(String(q.id)));
+
+    // SAVOLLAR NUSXASI (snapshot).
+    //
+    // MUAMMO: `__questionIds` faqat savol ID'larini saqlaydi. Admin test
+    // tahrirlasa (savol qo'shsa/o'chirsa/o'zgartirsa) eski natijalarning
+    // ID'lari bazada qolmaydi -> keyinchalik hisobot (PDF, bot, admin panel)
+    // "Savollar topilmadi" dey to'g'ri/noto'g'ri taqsimotini chiqara olmaydi.
+    //
+    // YECHIM: natija saqlanganda ko'rsatilgan savollar matni, variantlari va
+    // to'g'ri javoblari `__snapshot` ichida nusxalanadi. Hisobotlar (PDF va
+    // bot) avval shu nusxadan foydalanadi — test o'zgartirilsa ham natija
+    // o'z holicha to'g'ri qo'yiladi.
+    const snapshot = questions.map((q: any) => ({
+      id: String(q.id),
+      type: q.type,
+      text: q.text ?? null,
+      correctAnswer: q.correctAnswer ?? null,
+      order: q.order ?? null,
+      choices: (q.choices || []).map((c: any) => ({
+        id: String(c.id),
+        text: c.text ?? null,
+        isCorrect: !!c.isCorrect,
+      })),
+    }));
+
     // Review/grading shu ro'yxatdan foydalanishi uchun natijaga saqlaymiz
-    const answersToStore = { ...data.answers, __questionIds: presentedIds };
+    const answersToStore = {
+      ...data.answers,
+      __questionIds: presentedIds,
+      __snapshot: snapshot,
+    };
 
     // Score: savollar SONI asosida — to'g'ri javoblar / jami MCQ savollar * 100
     // (points vazni emas, shuning uchun barcha to'g'ri bo'lsa 100% bo'ladi)

@@ -56,6 +56,9 @@ export async function GET(req: NextRequest) {
         correct: stats.correct,
         wrong: stats.wrong,
         total: stats.total,
+        // Test savollari natijadan keyin almashtirilgan — savollar bo'yicha
+        // to'g'ri/xato soni ma'lum emas. Hisobotda "—" ko'rsatiladi (nol emas).
+        staleQuestionIds: stats.staleQuestionIds,
       };
     });
 

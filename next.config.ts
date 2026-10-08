@@ -29,7 +29,18 @@ const securityHeaders = [
       "style-src 'self' 'unsafe-inline'",
       "img-src 'self' data: blob: https:",
       "font-src 'self' data:",
-      "connect-src 'self'" + (isProd ? "" : " ws: wss:"),
+      // HLS (.m3u8) videolar R2 dan oqadi. `media-src` yo'q edi — CSP uni
+      // `default-src 'self'` ga qaytarib, R2 kadrlarini bloklab qo'yardi
+      // (video.error.code = 4, ekranda "server ruxsat bermayapti (CORS)").
+      // media-src ham, connect-src ham (hls.js segmentlarni shu orqali oladi)
+      // ochiq bo'lishi shart. blob: — MSE uchun (hls.js video elementiga
+      // blob URL yopadi), data: — ba'zi posterlar uchun.
+      "media-src 'self' blob: data: https://*.r2.dev https://*.r2.cloudflarestorage.com",
+      "connect-src 'self' blob: data: https://*.r2.dev https://*.r2.cloudflarestorage.com" +
+        (isProd ? "" : " ws: wss:"),
+      // hls.js o'z worker'ini blob: URL dan yaratadi (enableWorker: true)
+      "worker-src 'self' blob:",
+      "child-src 'self' blob:",
       // Video playerlar iframe orqali ishlaydi: YouTube (nocookie), Vimeo,
       // TikTok. Oldin faqat `'self' blob:` ruxsat bor edi — brauzer YouTube
       // kadrlarini bloklab, "video ko'rib bo'lmaydi" holatini berardi
@@ -45,7 +56,11 @@ const securityHeaders = [
 ];
 
 const nextConfig: NextConfig = {
-  output: "standalone",
+  // `standalone` faqat Docker/Debian image uchun kerak (Dockerfile undan foydalanadi).
+  // Vercel'da Turbopack + standalone mos kelmaydi va build
+  // `next-server.js.nft.json: ENOENT` bilan to'xtaydi — shuning uchun Vercel'da o'chiriladi
+  // (Vercel o'z serverless output'ini o'zi yig'adi).
+  output: process.env.VERCEL ? undefined : "standalone",
   typescript: {
     // MUKAMMAL TEKSHIRUV: xatolar build'ni to'xtatadi (tsc --noEmit ham
     // CI tekshiruvida ishlaydi) — eskidek xatolarni yashirmaymiz.

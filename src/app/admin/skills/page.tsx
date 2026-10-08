@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { cachedFetch } from "@/lib/admin-cache";
+import { levelOfScore } from "@/lib/result-stats";
 import { AdminSidebar, AdminHeader } from "@/components/admin/AdminSidebar";
 import {
   Award,
@@ -522,22 +523,34 @@ function UsersView({ filtered, search, setSearch, expandedUser, setExpandedUser,
               setExpandedUser(u.id);
             }}
           >
-            <div className="flex items-start justify-between mb-3">
-              <div className="flex items-center gap-3">
-                <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white font-bold text-sm">
+            <div className="flex items-start justify-between gap-3 mb-3">
+              <div className="flex items-center gap-3 min-w-0 flex-1">
+                {/* `shrink-0` majburiy: uzun bo'lim nomi (kirill matn) kartadagi
+                    avatar siqib yuborardi — w-11 (44px) 24px ga tushib, barcha
+                    avatar turlicha ko'rindi. Endi hammasi bir xil kvadrat. */}
+                <div className="w-11 h-11 shrink-0 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white font-bold text-sm">
                   {u.name.split(" ").map((n: string) => n[0]).join("").slice(0, 2)}
                 </div>
-                <div>
-                  <div className="text-sm font-bold text-neutral-900">{u.name}</div>
-                  <div className="text-xs text-neutral-500">{u.department || "Bo'lim belgilanmagan"}</div>
+                <div className="min-w-0">
+                  <div className="text-sm font-bold text-neutral-900 truncate">{u.name}</div>
+                  <div className="text-xs text-neutral-500 truncate">{u.department || "Bo'lim belgilanmagan"}</div>
                 </div>
               </div>
-              <span className={`px-2.5 py-1 rounded-lg text-xs font-semibold border ${LEVEL_COLORS[u.levelColor]}`}>
-                {u.level}
-              </span>
-              {u.totalAttempts === 0 && (
-                <span className="ml-1 px-2 py-0.5 rounded-full bg-rose-100 text-rose-600 text-[9px] font-bold border border-rose-200">Ota olmagan</span>
-              )}
+              {/* Nishonlar o'z konteynerida — ular hech qachon nom yoki avatarni
+                  siqmaydi, hammasi bir xil balandlikda turadi. */}
+              <div className="flex shrink-0 items-center gap-1.5">
+                <span className={`px-2.5 py-1 rounded-lg text-xs font-semibold border whitespace-nowrap ${LEVEL_COLORS[u.levelColor]}`}>
+                  {u.level}
+                </span>
+                {/* "Ota olmagan" FAQAT testni topshirib yolg'iz natija olmagan
+                    foydalanuvchilar uchun. Hali umuman kirmagan odamda bu
+                    yozv ma'nosiz — ular uchun "Baholanmagan" daraja yetarli. */}
+                {u.totalAttempts > 0 && u.totalPassed === 0 && (
+                  <span className="px-2 py-0.5 rounded-full bg-rose-100 text-rose-600 text-[9px] font-bold border border-rose-200 whitespace-nowrap">
+                    Ota olmagan
+                  </span>
+                )}
+              </div>
             </div>
 
             {/* Progress bar */}
@@ -604,11 +617,46 @@ function UsersView({ filtered, search, setSearch, expandedUser, setExpandedUser,
                       </p>
                     </div>
                     <div className="flex items-center gap-2">
-                      <span
-                        className={`rounded-lg border px-2.5 py-1 text-xs font-semibold ${levelBadgeClass(expandedDetails?.level || u.level)}`}
-                      >
-                        {expandedDetails?.level || u.level}
-                      </span>
+                      {/* Daraja = SO'NGKI topshirilgan test natijasi darajasi
+                          (o'rtacha emas). Placeholder ("qayta topshirish
+                          berilgan", completedAt yo'q) natijalar hisobga olinmaydi. */}
+                      {(() => {
+                        const attempts: any[] = Array.isArray(expandedDetails?.testResults)
+                          ? expandedDetails.testResults
+                          : [];
+                        const last = attempts
+                          .filter(
+                            (a) =>
+                              a.completedAt &&
+                              a.gradingStatus !== "retake" &&
+                              typeof a.score === "number",
+                          )
+                          .sort(
+                            (a, b) =>
+                              +new Date(a.completedAt) - +new Date(b.completedAt),
+                          )
+                          .pop();
+                        const level = last ? levelOfScore(last.score) : "";
+                        if (!level) {
+                          return (
+                            <span className="rounded-lg border border-neutral-200 bg-neutral-50 px-2.5 py-1 text-xs font-semibold text-neutral-500">
+                              Daraja yo'q
+                            </span>
+                          );
+                        }
+                        return (
+                          <>
+                            <span
+                              className={`rounded-lg border px-2.5 py-1 text-xs font-semibold ${levelBadgeClass(level)}`}
+                            >
+                              {level}
+                            </span>
+                            <span className="text-[10px] text-neutral-400">
+                              oxirgi natija
+                            </span>
+                          </>
+                        );
+                      })()}
                       <button
                         type="button"
                         disabled={pdfBusy}
@@ -616,11 +664,19 @@ function UsersView({ filtered, search, setSearch, expandedUser, setExpandedUser,
                           try {
                             setPdfBusy(true);
                             const id = expandedDetails?.id || u.id;
-                            const res = await cachedFetch(
+                            // PDF BINARY — `cachedFetch` ishlatilmaydi. U javobni
+                            // `res.json()` bilan o'qib, joriy Response tanani buzadi
+                            // va keyingi `res.blob()` BO'SH fayl qaytaradi
+                            // (yuklab olingan PDF ichi bo'sh bo'lardi).
+                            const res = await fetch(
                               `/api/admin/skills/user-report?userId=${encodeURIComponent(id)}`,
+                              { cache: "no-store" },
                             );
-                            if (!res.ok) throw new Error("PDF tayyorlanmadi");
+                            if (!res.ok) throw new Error(`PDF tayyorlanmadi (${res.status})`);
                             const blob = await res.blob();
+                            if (blob.size < 1024) {
+                              throw new Error(`PDF bo'sh keldi (${blob.size} bayt)`);
+                            }
                             const url = URL.createObjectURL(blob);
                             const a = document.createElement("a");
                             a.href = url;
@@ -630,8 +686,12 @@ function UsersView({ filtered, search, setSearch, expandedUser, setExpandedUser,
                             a.click();
                             a.remove();
                             setTimeout(() => URL.revokeObjectURL(url), 4000);
-                          } catch {
-                            alert("PDF yuklanmadi. Qayta urinib ko'ring.");
+                          } catch (e) {
+                            alert(
+                              e instanceof Error && e.message.includes("bo'sh")
+                                ? "PDF bo'sh keldi. Sahifani yangilab qayta urining."
+                                : "PDF yuklanmadi. Qayta urinib ko'ring.",
+                            );
                           } finally {
                             setPdfBusy(false);
                           }
@@ -663,10 +723,14 @@ function UsersView({ filtered, search, setSearch, expandedUser, setExpandedUser,
                     {expandedDetails.testResults && expandedDetails.testResults.length > 0 ? (
                       <>
                         {expandedDetails.testResults.map((attempt: any, i: number) => {
+                          // Faol ruxsat: berilgan, vaqti kelmagan.
                           const isPlaceholder = attempt.gradingStatus === "retake" && !attempt.completedAt;
+                          // Vaqti o'tib yopilgan ruxsat — tarixda qoladi, lekin
+                          // endi amal qilmaydi; admin yangisini bera oladi.
+                          const isExpiredRetake = attempt.gradingStatus === "retake_expired" && !attempt.completedAt;
                           const isRetakeResult = typeof attempt.answers === "string" && attempt.answers.includes("__retake");
                           return (
-                          <div key={i} className="p-3 rounded-xl bg-blue-50/40 border border-blue-100">
+                          <div key={i} className={`p-3 rounded-xl border ${isExpiredRetake ? "bg-neutral-50 border-neutral-200" : "bg-blue-50/40 border-blue-100"}`}>
                             <div className="flex items-center justify-between mb-2">
                               <div className="text-xs font-bold text-neutral-800 truncate max-w-[70%]">
                                 {attempt.test?.title || `Test #${i + 1}`}
@@ -675,6 +739,10 @@ function UsersView({ filtered, search, setSearch, expandedUser, setExpandedUser,
                                 {isPlaceholder ? (
                                   <span className="text-[9px] font-extrabold px-2 py-0.5 rounded-full bg-amber-100 text-amber-700 border border-amber-300 whitespace-nowrap">
                                     Qayta topshirish berilgan
+                                  </span>
+                                ) : isExpiredRetake ? (
+                                  <span className="text-[9px] font-extrabold px-2 py-0.5 rounded-full bg-neutral-100 text-neutral-500 border border-neutral-300 whitespace-nowrap">
+                                    Vaqti tugagan
                                   </span>
                                 ) : (
                                   <>
@@ -726,6 +794,42 @@ function UsersView({ filtered, search, setSearch, expandedUser, setExpandedUser,
                             <div className="text-[10px] text-neutral-500">
                               Sana: {attempt.completedAt ? new Date(attempt.completedAt).toLocaleString("uz-UZ") : (attempt.startedAt ? new Date(attempt.startedAt).toLocaleString("uz-UZ") : "—")}
                             </div>
+                            {/* Vaqti tugagan ruxsat uchun — yangi imkoniyat berish
+                                tugmasi. Faol ruxsat (amber) bo'lsa takror berish
+                                kerak emas, shuning uchun tugma chiqmaydi. */}
+                            {isExpiredRetake && (
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setRetaking(`${attempt.userId || expandedDetails?.id}-${attempt.testId || attempt.test?.id}`);
+                                  fetch(`/api/admin/skills/retake`, {
+                                    method: "POST",
+                                    headers: { "Content-Type": "application/json" },
+                                    body: JSON.stringify({
+                                      userId: attempt.userId || expandedDetails?.id,
+                                      testId: attempt.testId || attempt.test?.id,
+                                    }),
+                                  })
+                                    .then((r) => r.json())
+                                    .then((d) => {
+                                      if (d.ok) {
+                                        cachedFetch(`/api/admin/skills?action=user&userId=${expandedDetails?.id}`, { cache: "no-store" })
+                                          .then((r2) => r2.json())
+                                          .then((d2) => { if (d2.ok) setExpandedDetails(d2.user); })
+                                          .catch(() => {});
+                                      }
+                                    })
+                                    .catch(() => {})
+                                    .finally(() => setRetaking(null));
+                                }}
+                                disabled={!!retaking}
+                                className="mt-2 px-3 py-1.5 rounded-lg bg-gradient-to-br from-amber-500 to-orange-500 text-white text-[10px] font-bold hover:shadow-md transition-all disabled:opacity-50"
+                              >
+                                {retaking === `${attempt.userId || expandedDetails?.id}-${attempt.testId || attempt.test?.id}`
+                                  ? "Berilmoqda..."
+                                  : "Qayta topshirish (yangi imkoniyat)"}
+                              </button>
+                            )}
                           </div>
                           );
                         })}

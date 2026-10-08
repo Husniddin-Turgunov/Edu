@@ -67,7 +67,7 @@ function clientIpOf(req: NextRequest): string {
   return req.headers.get("x-real-ip") || "unknown";
 }
 
-export async function middleware(req: NextRequest) {
+export async function proxy(req: NextRequest) {
   const { pathname } = req.nextUrl;
 
   // ——— API so'rovlari ———

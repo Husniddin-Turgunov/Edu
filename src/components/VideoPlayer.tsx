@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   Play,
   Pause,
@@ -106,7 +106,13 @@ export default function VideoPlayer({
   const [uploadedImage, setUploadedImage] = useState<string | null>(null);
 
   // Manba turi: YouTube/Vimeo embed, .m3u8 (HLS) yoki progressiv (mp4/webm/...)
-  const embed = getEmbedUrl(currentSrc);
+  //
+  // DIqqAT: `getEmbedUrl` har chaqiruvda YANGI obyekt qaytaradi. Uni to'g'ridan-
+  // to'g'ri `useEffect` dependency qilib olinsa, effekt har render'da qayta
+  // ishga tushadi -> hls.js har safar vahshatga uchratiladi -> fatal
+  // "bufferAppendNoProgress" -> ekranda "CORS" xatosi. Shu sababdan bu yerda
+  // `currentSrc` bo'yicha MEMO qilinadi (manba o'zgarmasa effekt bir marta).
+  const embed = useMemo(() => getEmbedUrl(currentSrc), [currentSrc]);
   const isHls = !embed && /\.m3u8(\?|#|$)/i.test(currentSrc);
 
   useEffect(() => {
@@ -122,6 +128,7 @@ export default function VideoPlayer({
     setError(null);
     let hls: any = null;
     let cancelled = false;
+    let recovered = false;
 
     const fail = (msg: string) => {
       if (!cancelled) {
@@ -161,10 +168,31 @@ export default function VideoPlayer({
             if (!cancelled) setLoading(false);
           });
           hls.on(Hls.Events.ERROR, (_e: any, data: any) => {
-            if (data && data.fatal) {
-              fail("Video yuklanmadi. URL noto'g'ri yoki server ruxsat bermayapti (CORS).");
-              try { hls.destroy(); } catch {}
+            if (!data || !data.fatal) return;
+            // Bu xatolar "server ruxsat bermadi" emas — tiklanadi:
+            if (data.details === Hls.ErrorDetails.BUFFER_APPEND_NO_PROGRESS ||
+                data.details === Hls.ErrorDetails.BUFFER_STALLED_ERROR ||
+                data.details === Hls.ErrorDetails.BUFFER_FULL) {
+              try { hls.startLoad(); return; } catch {}
             }
+            if (data.details === Hls.ErrorDetails.MANIFEST_LOAD_ERROR ||
+                data.details === Hls.ErrorDetails.MANIFEST_LOAD_TIMEOUT ||
+                data.details === Hls.ErrorDetails.MANIFEST_PARSING_ERROR) {
+              // manifest kalitidan tushib qolgan bo'lishi mumkin — bir marta
+              // qayta yuklash, keyin xato ko'rsatamiz.
+              if (!recovered) {
+                recovered = true;
+                setError(null);
+                setLoading(true);
+                try { hls.startLoad(); return; } catch {}
+              }
+            }
+            fail(
+              data.details
+                ? `Video yuklanmadi (${data.details}). Manba serveriga ruxsat berilmagan bo'lishi mumkin.`
+                : "Video yuklanmadi. URL noto'g'ri yoki server ruxsat bermayapti (CORS).",
+            );
+            try { hls.destroy(); } catch {}
           });
         } catch {
           fail("Video pleer yuklanmadi. Sahifani yangilab qayta urining.");

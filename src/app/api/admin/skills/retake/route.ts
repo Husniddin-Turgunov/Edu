@@ -1,6 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
 import { PrismaClient } from "@prisma/client";
 import { getSession } from "@/lib/auth";
+import {
+  hasActiveRetake,
+  RETAKE_ACTIVE,
+  RETAKE_EXPIRED,
+  RETAKE_TTL_DAYS,
+  sweepExpiredRetakes,
+} from "@/lib/retake";
 
 export const dynamic = "force-dynamic";
 
@@ -12,16 +19,14 @@ const prisma = new PrismaClient();
 //   * Eski natijalar (tarix) SAQLANADI — o'chirilmaydi.
 //   * Yangi imkoniyat = "retake placeholder" (TestResult qator):
 //       gradingStatus = "retake", completedAt = null, score = 0.
-//   * Bu placeholder bazada aniq "qayta topshirildi" debesa qoldiradi
-//     (foydalanuvchi ro'yxatida "Qayta topshirish berilgan" ko'rinadi).
-//   * Talaba testni topshirganda placeholder YUTILADI (yangi natijaga
-//     aylantiriladi) va unga `__retake: true` belgisi yoziladi — shunda
-//     admin "qayta topshirishdan keyingi natija" deb ko'rsatadi.
-//   * Idempotent: takror bosilsa ikkinchi placeholder yaratilmaydi.
+//   * Ruxsat `RETAKE_TTL_DAYS` kun amal qiladi. Vaqti o'tgach placeholder
+//     AVTOMATIK yopiladi (gradingStatus -> "retake_expired") va admin yangi
+//     imkoniyat bera oladi — eski urinishlar ro'yxatda qoladi.
+//   * Faol ruxsat bor ekan, takror bosilsa ikkinchi placeholder yaratilmaydi.
+//   * `startedAt` placeholder yaratilganda to'ldiriladi — TTL undan hisoblanadi.
 //
-// Muhim: getTestForTaking / submitTestResult faqat TUGALLANGAN
-// (completedAt != null) natijalarni hisoblaydi, shuning uchun placeholder
-// urinishlar sonini oshirmaydi va testni qayta ochishga xalaqit qilmaydi.
+// Muhim: `completedAt` NULL qoladi, shuning uchun placeholder urinishlar
+// sonini oshirmaydi va testni qayta ochishga xalaqit qilmaydi.
 export async function POST(req: NextRequest) {
   const session = await getSession();
   if (!session?.isAdmin) {
@@ -35,20 +40,20 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "userId and testId required" }, { status: 400 });
     }
 
-    // Avvaldan kutilayotgan retake bor bo'lsa — takror yaratmaymiz (idempotent)
-    const existing = await prisma.testResult.findFirst({
-      where: { userId, testId, gradingStatus: "retake", completedAt: null },
-    });
-    if (existing) {
+    // 1) Vaqti o'tgan ruxsatlarni avtomatik yopamiz (tarixda qoladi).
+    const closed = await sweepExpiredRetakes(prisma);
+
+    // 2) Hali faol ruxsat bormi? (sweep'dan keyin — o'tgani yopilgan)
+    if (await hasActiveRetake(prisma, userId, testId)) {
       return NextResponse.json({
         ok: true,
         alreadyGranted: true,
-        placeholder: existing,
-        message: "Qayta topshirish allaqachon berilgan",
+        closedExpired: closed,
+        message: "Qayta topshirish allaqachon berilgan (vaqti tugamagan)",
       });
     }
 
-    // Yangi imkoniyat = retake placeholder (tarix saqlanadi, faqat qo'shiladi)
+    // 3) Yangi imkoniyat = retake placeholder (tarix saqlanadi, faqat qo'shiladi)
     const placeholder = await prisma.testResult.create({
       data: {
         userId,
@@ -56,7 +61,7 @@ export async function POST(req: NextRequest) {
         score: 0,
         passed: false,
         answers: "{}",
-        gradingStatus: "retake",
+        gradingStatus: RETAKE_ACTIVE,
         completedAt: null,
       },
     });
@@ -64,7 +69,39 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({
       ok: true,
       placeholder,
-      message: "Qayta topshirish berildi",
+      closedExpired: closed,
+      expiresInDays: RETAKE_TTL_DAYS,
+      message: `Qayta topshirish berildi (${RETAKE_TTL_DAYS} kun ichida topshirish kerak)`,
+    });
+  } catch (e: any) {
+    return NextResponse.json({ error: e.message }, { status: 500 });
+  }
+}
+
+// GET — hozirgi ruxsat holati (admin panel UI uchun).
+export async function GET(req: NextRequest) {
+  const session = await getSession();
+  if (!session?.isAdmin) {
+    return NextResponse.json({ ok: false, error: "Unauthorized" }, { status: 401 });
+  }
+  try {
+    const sp = new URL(req.url).searchParams;
+    const userId = sp.get("userId") || "";
+    const testId = sp.get("testId") || "";
+    if (!userId || !testId) {
+      return NextResponse.json({ error: "userId and testId required" }, { status: 400 });
+    }
+    const closed = await sweepExpiredRetakes(prisma);
+    const active = await prisma.testResult.findFirst({
+      where: { userId, testId, gradingStatus: RETAKE_ACTIVE, completedAt: null },
+      select: { id: true, startedAt: true },
+    });
+    return NextResponse.json({
+      ok: true,
+      closedExpired: closed,
+      ttlDays: RETAKE_TTL_DAYS,
+      active: active ? { id: active.id, grantedAt: active.startedAt } : null,
+      status: active ? "active" : RETAKE_EXPIRED,
     });
   } catch (e: any) {
     return NextResponse.json({ error: e.message }, { status: 500 });

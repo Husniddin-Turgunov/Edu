@@ -4,7 +4,7 @@ import "./globals.css";
 import { Toaster } from "@/components/ui/toaster";
 import AuthProvider from "./providers";
 import { LiquidBackground } from "@/components/akela/LiquidBackground";
-import { LiquidGlassDefs } from "@/components/akela/LiquidGlassDefs";
+
 import { GradingFAB } from "@/components/GradingFAB";
 import { AiWidgetGate } from "@/components/akela/AiWidgetGate";
 import ConsoleGuard from "@/components/akela/ConsoleGuard";
@@ -62,7 +62,6 @@ export default function RootLayout({
       >
         {/* YAGONA KO'K FON — har bir oynada bir xil background kafolati */}
         <LiquidBackground />
-        <LiquidGlassDefs />
         <AuthProvider>
           {children}
           <GradingFAB />
