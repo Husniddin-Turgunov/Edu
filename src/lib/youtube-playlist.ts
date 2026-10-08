@@ -139,6 +139,77 @@ function extractJson(html: string, marker: string): any | null {
   return null;
 }
 
+/**
+ * InnerTube `browse` orqali playlist (VL prefiksi bilan).
+ *
+ * Nima uchun kerak: YouTube ba'zi playlistlarda HTML sahifani bo'sab
+ * beradi (`videoId` umuman yo'q, `captcha` belgisi bor) — bu holatda skrap
+ * hech narsa topmaydi. Lekin `ytInitialData` ichida API kaliti va client
+ * versiyasi BOR, shuning uchun to'g'ridan-to'g'ri `youtubei/v1/browse`
+ * so'rovi ko'pincha ishlaydi.
+ */
+async function browsePlaylist(
+  playlistId: string,
+  apiKey: string,
+  clientVersion: string,
+  seed: any
+): Promise<PlaylistItem[]> {
+  const items: PlaylistItem[] = [];
+  const seen = new Set<string>();
+  const titleFrom: any[] = [];
+  const push = (node: any) => {
+    for (const it of [...collect(node, "playlistVideoRenderer").map(toItem), ...collect(node, "lockupViewModel").map(lockupToItem)]) {
+      if (it && !seen.has(it.videoId)) {
+        seen.add(it.videoId);
+        items.push(it);
+      }
+    }
+  };
+
+  const post = async (payload: any): Promise<any | null> => {
+    const r = await fetch(`https://www.youtube.com/youtubei/v1/browse?key=${apiKey}&prettyPrint=false`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "User-Agent": UA, "Origin": "https://www.youtube.com" },
+      body: JSON.stringify(payload),
+      cache: "no-store",
+      signal: AbortSignal.timeout(20000),
+    });
+    if (!r.ok) return null;
+    const raw = await r.text().catch(() => "");
+    if (!raw.trim()) return null;
+    try {
+      return JSON.parse(raw);
+    } catch {
+      return null;
+    }
+  };
+
+  const first = await post({
+    context: { client: { clientName: "WEB", clientVersion, hl: "uz", gl: "UZ" } },
+    browseId: `VL${playlistId}`,
+  });
+  if (!first) return [];
+  titleFrom.push(first?.metadata?.playlistMetadataRenderer?.title);
+  push(first);
+
+  let token: string | undefined = findToken(first);
+  let guard = 0;
+  while (token && items.length < MAX_ITEMS && guard++ < 10) {
+    const j = await post({
+      context: { client: { clientName: "WEB", clientVersion, hl: "uz", gl: "UZ" } },
+      continuation: token,
+    });
+    if (!j) break;
+    const before = items.length;
+    push(j);
+    token = findToken(j);
+    if (items.length === before) break;
+  }
+  void seed;
+  void titleFrom;
+  return items;
+}
+
 export async function fetchPlaylist(input: string): Promise<PlaylistData> {
   const playlistId = parsePlaylistId(input);
   if (!playlistId) throw new Error("YouTube playlist havolasi noto'g'ri (list=... bo'lishi kerak)");
@@ -190,13 +261,40 @@ export async function fetchPlaylist(input: string): Promise<PlaylistData> {
       signal: AbortSignal.timeout(20000),
     });
     if (!r.ok) break;
-    const j = await r.json();
+    // YouTube bo'sh/HTML javob bersa `r.json()` throw qiladi (butun import
+    // ishini halokatga olib keladi) — shuning uchun matnni o'qib, JSON.parse
+    // ni himoyalaymiz: muvaffaqiyatsiz bo'lsa shu sahifada to'xtaymiz.
+    const raw = await r.text().catch(() => "");
+    if (!raw.trim()) break;
+    let j: any;
+    try {
+      j = JSON.parse(raw);
+    } catch {
+      break;
+    }
     const before = items.length;
     push(collect(j, "playlistVideoRenderer"), collect(j, "lockupViewModel"));
     token = findToken(j);
     if (items.length === before) break;
   }
 
-  if (items.length === 0) throw new Error("Playlistda ochiq video topilmadi");
+  if (items.length === 0) {
+    // Skrap ishlamadi -> InnerTube orqali urinib ko'ramiz (apiKey HTML'da bor)
+    if (apiKey) {
+      const viaApi = await browsePlaylist(playlistId, apiKey, clientVersion, data).catch(() => [] as PlaylistItem[]);
+      for (const it of viaApi) {
+        if (it && !seen.has(it.videoId)) {
+          seen.add(it.videoId);
+          items.push(it);
+        }
+      }
+    }
+  }
+
+  if (items.length === 0) {
+    throw new Error(
+      "Playlistda ochiq video topilmadi. Playlist yopiq (private) bo'lishi mumkin yoki YouTube so'rovni bloklagan — boshqa playlist havolasini sinab ko'ring.",
+    );
+  }
   return { playlistId, title: String(title).trim(), channel, items };
 }

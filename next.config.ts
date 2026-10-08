@@ -35,7 +35,11 @@ const securityHeaders = [
       // media-src ham, connect-src ham (hls.js segmentlarni shu orqali oladi)
       // ochiq bo'lishi shart. blob: — MSE uchun (hls.js video elementiga
       // blob URL yopadi), data: — ba'zi posterlar uchun.
-      "media-src 'self' blob: data: https://*.r2.dev https://*.r2.cloudflarestorage.com",
+      // Vercel Blob'dan YUKLANGAN videolar ham `*.public.blob.vercel-storage.com`
+      // dan oqadi (admin panel orqali kompyuterdan yuklangan mp4). Bu host
+      // ruxsatlanmaganda brauzer media yuklashni bloklab, "Video yuklanmadi
+      // (CORS)" xatosini beradi — shuning uchun media-src'ga ham qo'shiladi.
+      "media-src 'self' blob: data: https://*.r2.dev https://*.r2.cloudflarestorage.com https://*.blob.vercel-storage.com",
 // Vercel Blob'ga FAYL YUKLASH. `@vercel/blob/client` faylni
       // `https://vercel.com/api/blob/?pathname=...` orqali yuboradi (o'z
       // relay endpoint'i), `*.blob.vercel-storage.com` emas. Bu domen

@@ -141,6 +141,34 @@ export default function AdminVideosPage() {
     setPlCategory(""); setPlLessons(false); setPlCourses(false);
   };
 
+  /**
+   * API javobini xavfsiz o'qiydi: bo'sh yoki HTML javob (405/502/proxy)
+   * kelganda `res.json()` "unexpected end of data" xatosi beradi va haqiqiy
+   * sababni yashiradi — shuning uchun avval matnni o'qib, keyin JSON.parse
+   * qilamiz.
+   */
+  const readApi = async (res: Response, fallback: string) => {
+    const text = await res.text().catch(() => "");
+    if (!text.trim()) {
+      throw new Error(
+        res.status === 405
+          ? "Serverda bu amal bajarilmadi (405) — sahifani yangilab ko'ring"
+          : `Server bo'sh javob qaytardi (HTTP ${res.status}). ${fallback}`
+      );
+    }
+    let data: any = null;
+    try {
+      data = JSON.parse(text);
+    } catch {
+      throw new Error(
+        `Server javobi JSON emas (HTTP ${res.status}). Sayt yangilanmagan bo'lishi mumkin — sahifani yangilab ko'ring.`
+      );
+    }
+    if (!res.ok) throw new Error(data?.error || data?.message || `${fallback} (HTTP ${res.status})`);
+    if (data && data.ok === false) throw new Error(data.error || fallback);
+    return data;
+  };
+
   const loadPlaylist = async () => {
     setPlError(null); setPlData(null);
     if (!plUrl.trim()) { setPlError("Playlist havolasini kiriting"); return; }
@@ -150,8 +178,7 @@ export default function AdminVideosPage() {
         method: "POST", headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ action: "preview", url: plUrl.trim() }),
       });
-      const data = await res.json();
-      if (!data?.ok) throw new Error(data?.error || "Playlistni o'qib bo'lmadi");
+      const data = await readApi(res, "Playlistni o'qib bo'lmadi");
       setPlData(data.playlist);
       setPlCategory(data.playlist.title);
       setPlSel(new Set((data.playlist.items as PlItem[]).filter((i) => !i.exists).map((i) => i.videoId)));
@@ -170,8 +197,7 @@ export default function AdminVideosPage() {
           videoIds: [...plSel], showInLessons: plLessons, showOnCourses: plCourses,
         }),
       });
-      const data = await res.json();
-      if (!data?.ok) throw new Error(data?.error || "Qo'shib bo'lmadi");
+      const data = await readApi(res, "Qo'shib bo'lmadi");
       setPlOpen(false); setCatFilter(data.category || ""); load();
     } catch (e: any) { setPlError(e.message || "Xatolik"); }
     finally { setPlImporting(false); }
