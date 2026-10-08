@@ -89,25 +89,31 @@ export async function POST(req: Request) {
 
     // Playlist ichidagi tartam — coursesOrder (1,2,3...)
     const orderBase = await prisma.video.count({ where: { category } });
-    let created = 0;
-    await prisma.$transaction(
-      toCreate.map((m, i) =>
-        prisma.video.create({
-          data: {
-            title: m.title.slice(0, 300),
-            description: `YouTube playlist: ${pl.title}${pl.channel ? ` — ${pl.channel}` : ""}`,
-            category,
-            duration: m.duration || "",
-            url: m.url,
-            poster: m.thumb,
-            isActive: true,
-            showInLessons: !!body.showInLessons,
-            showOnCourses: !!body.showOnCourses,
-            coursesOrder: orderBase + i + 1,
-          },
-        }).then(() => { created++; }),
-      ),
+
+    // DIQQAT: `$transaction` FAQAT PrismaPromise massivini qabul qiladi.
+    // Bu yerga `.then(...)` qo'shilsa, oddiy Promise bo'lib qoladi va
+    // "All elements of the array need to be Prisma Client promises" xatosi
+    // chiqadi. Shuning uchun sof PrismaPromise'lar massivi beriladi, son
+    // ularni await qilishdan oldin aniqlanadi.
+    const createOps = toCreate.map((m, i) =>
+      prisma.video.create({
+        data: {
+          title: m.title.slice(0, 300),
+          description: `YouTube playlist: ${pl.title}${pl.channel ? ` — ${pl.channel}` : ""}`,
+          category,
+          duration: m.duration || "",
+          url: m.url,
+          poster: m.thumb,
+          isActive: true,
+          showInLessons: !!body.showInLessons,
+          showOnCourses: !!body.showOnCourses,
+          coursesOrder: orderBase + i + 1,
+        },
+      }),
     );
+
+    const results = await prisma.$transaction(createOps);
+    const created = results.length;
 
     return NextResponse.json({ ok: true, created, skipped: marked.length - toCreate.length, category });
   } catch (e: any) {
